@@ -112,6 +112,7 @@ class incidence_geometry :=
 (angle_symm : ∀ (a b c : point), angle a b c = angle c b a)
 (angle_nonneg : ∀ (a b c : point), 0 ≤ angle a b c)
 (length_nonneg : ∀ (a b : point), 0 ≤ length a b)
+(area_nonneg : ∀ (a b c : point), 0 ≤ area a b c)
 (degenerate_area : ∀ (a b : point), area a a b = 0)
 (area_invariant : ∀ (a b c : point), area a b c = area c a b ∧ area a b c = area a c b)
 (area_eq_of_SSS : ∀ {a b c a1 b1 c1 : point}, length a b = length a1 b1 → length b c = length b1 c1 →
