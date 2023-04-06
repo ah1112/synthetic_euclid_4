@@ -43,8 +43,8 @@ class incidence_geometry :=
 (more_pts : ∀ (S : Set point), S.Finite → ∃ (a : point), a ∉ S)
 (pt_B_of_ne : ∀ {b c : point}, b ≠ c → ∃ (a : point), B b a c)
 (pt_extension_of_ne : ∀ {b c : point}, b ≠ c → ∃ (a : point), B b c a)
-(diffside_of_not_online : ∀ {L : line}, ∀ {b : point}, ¬online b L →
-  ∃ (a : point), ¬online a L ∧ ¬sameside a b L)
+(diffside_of_not_online : ∀ {L : line}, ∀ {a : point}, ¬online a L →
+    ∃ (b : point), ¬online b L ∧ ¬sameside a b L)
 (line_of_pts : ∀ (a b : point), ∃ (L :line), online a L ∧ online b L)
 (circle_of_ne : ∀ {a b : point}, a ≠ b → ∃ (α : circle), center_circle a α ∧ on_circle b α)
 (pt_of_lines_inter : ∀ {L M : line}, lines_inter L M →
@@ -53,9 +53,9 @@ class incidence_geometry :=
   ∃ (a b : point),  a ≠ b ∧ online a L ∧ online b L ∧ on_circle a α ∧ on_circle b α )
 (pt_on_circle_of_inside_outside : ∀ {b c : point}, ∀ {α : circle},
   ¬on_circle c α →in_circle b α → ¬in_circle c α →
-  ∃ (a : point), B b a c ∧ on_circle a α )
-(pt_on_circle_of_inside_ne : ∀ {b c : point}, ∀ {α : circle}, b ≠ c →in_circle b α →
-  ∃ (a : point), B a b c ∧ on_circle a α )
+  ∃ (a : point), B b a c ∧ on_circle a α)
+(pt_oncircle_of_inside_ne : ∀ {a b : point}, ∀ {α : circle}, a ≠ b → in_circle b α →
+  ∃ (c : point), B a b c ∧ on_circle c α)
 (pts_of_circles_inter : ∀ {α β : circle}, circles_inter α β →
   ∃ (a b : point), a≠ b∧ on_circle a α ∧ on_circle a β ∧ on_circle b α ∧ on_circle b β )
 (pt_sameside_of_circles_inter : ∀ {b c d : point}, ∀ {L : line}, ∀ {α β : circle},
@@ -141,7 +141,6 @@ class incidence_geometry :=
 (SAS_iff_SSS : ∀ {a b c d e f : point}, length a b = length d e → length a c = length d f →
   (angle b a c = angle e d f ↔ length b c = length e f)) --Euclid Prop 4,8
 
-
 variable [i : incidence_geometry]
 open incidence_geometry
 -------------------------------------------------- Definitions -------------------------------------
@@ -155,12 +154,14 @@ def triangle (a b c : point) := ¬colinear a b c
 
 def eq_tri (a b c : point) := triangle a b c ∧ length a b = length a c ∧ length b a = length b c
   ∧ length c a = length c b
+
+def iso_tri (a b c : point) := triangle a b c ∧ length a b = length a c
 -------------------------------------------------- new  API --------------------------------------------'
-theorem online_of_line (L : line) : ∃ (a : point), online a L := by sorry
-  -- by rcases more_pts ∅ set.finite_empty with ⟨a, -⟩; exact classical.by_cases
-  -- (λ aL, by use a; exact aL) (λ aL, by rcases diffside_of_not_online aL with ⟨b, -, abL⟩;
-  -- rcases line_of_pts a b with ⟨M, aM, bM⟩; rcases pt_of_lines_inter
-  -- (lines_inter_of_not_sameside aM bM abL) with ⟨c, cL, -⟩; exact ⟨c, cL⟩)
+  theorem online_of_line (L : line) : ∃ (a : point), online a L := by 
+rcases more_pts ∅ Set.finite_empty with ⟨a, -⟩; exact Classical.by_cases 
+ (fun aL => by use a; exact aL) (fun aL => 
+by rcases diffside_of_not_online aL with ⟨b, -, abL⟩; rcases line_of_pts a b with ⟨M, aM, bM⟩; 
+   rcases pt_of_lines_inter (lines_inter_of_not_sameside aM bM abL) with ⟨c, cL, -⟩; exact ⟨c, cL⟩)
 
 theorem online_ne_of_line (L : line) : ∃ (a b : point), a ≠ b ∧ online a L ∧ online b L := sorry
   -- by rcases online_of_line L with ⟨a, aL⟩; rcases more_pts {a} (set.finite_singleton a) with ⟨b, hb⟩;
@@ -215,17 +216,17 @@ lemma diffside_symm (abL : diffside a b L) : diffside b a L :=
   ⟨abL.2.1, abL.1, (not_sameside_symm abL.2.2)⟩
 
 theorem diffside_of_sameside_diffside (abL : sameside a b L) (acL : diffside a c L) :
-  diffside b c L := sorry
--- by by_contra; unfold diffside at h; push_neg at h; exact acL.2.2
---   (sameside_trans (sameside_symm abL) (h (not_online_of_sameside (sameside_symm abL)) acL.2.1))
+  diffside b c L := by 
+by_contra h; unfold diffside at h; push_neg at h; exact acL.2.2
+ (sameside_trans (sameside_symm abL) (h (not_online_of_sameside (sameside_symm abL)) acL.2.1))
 
 theorem diffside_of_circles_inter (aα : center_circle a α) (bβ : center_circle b β)
   (αβ : circles_inter α β) : ∃ (c d : point) (L : line), online a L ∧ online b L ∧ on_circle c α ∧
-  on_circle c β ∧ on_circle d α ∧ on_circle d β ∧ diffside c d L := sorry
--- by rcases online_of_circles_inter aα bβ αβ with ⟨c, L, aL, bL, cα, cβ, cL⟩;
---   rcases diffside_of_not_online cL with ⟨e, eL, ceL⟩; rcases pt_sameside_of_circles_inter aL bL eL
---   aα bβ αβ with ⟨d, deL, dα, dβ⟩; exact ⟨c, d, L, aL, bL, cα, cβ, dα, dβ, diffside_symm
---   (diffside_of_sameside_diffside (sameside_symm deL) ⟨eL, cL, not_sameside_symm ceL⟩)⟩
+  on_circle c β ∧ on_circle d α ∧ on_circle d β ∧ diffside c d L := by 
+rcases online_of_circles_inter aα bβ αβ with ⟨c, L, aL, bL, cα, cβ, cL⟩;
+rcases diffside_of_not_online cL with ⟨e, eL, ceL⟩; rcases pt_sameside_of_circles_inter aL bL eL
+ aα bβ αβ with ⟨d, deL, dα, dβ⟩; exact ⟨c, d, L, aL, bL, cα, cβ, dα, dβ, diffside_symm
+ (diffside_of_sameside_diffside (sameside_symm deL) ⟨eL, cL, not_sameside_symm ceL⟩)⟩
 
 theorem online_of_3_2_online (ab : a ≠ b) (aL : online a L) (bL : online b L) (cL : online c L)
   (aM : online a M) (bM : online b M) : online c M := 
@@ -240,9 +241,9 @@ theorem eq_tri_of_length_online (ab : a ≠ b) (aL : online a L) (bL : online b 
 ⟨triangle_of_ne_online ab aL bL cL, by repeat {split}; sorry⟩ --linarith[length_perm_of_3pts a b c]⟩
 --3/23/23
 theorem B_circ_of_ne (ab : a ≠ b) (bc : b ≠ c) : ∃ (d : point) (α : circle), B a b d ∧
-  center_circle b α ∧ on_circle c α ∧ on_circle d α := sorry
--- by rcases circle_of_ne bc with ⟨α, bα, cα⟩; rcases pt_on_circle_of_inside_ne ab
---   (inside_circle_of_center bα) with ⟨d, Babd, dα⟩; exact ⟨d, α, Babd, bα, cα, dα⟩
+  center_circle b α ∧ on_circle c α ∧ on_circle d α := by
+rcases circle_of_ne bc with ⟨α, bα, cα⟩; rcases pt_oncircle_of_inside_ne ab
+ (inside_circle_of_center bα) with ⟨d, Babd, dα⟩; exact ⟨d, α, Babd, bα, cα, dα⟩
 
 theorem online_of_eq (ab : a = b) (aL : online a L) : online b L := by rwa [ab] at aL
 
@@ -267,12 +268,12 @@ theorem B_circ_out_of_B (ab : a ≠ b) (Bacd : B a c d) (ab_ac : length a b = le
 --   (incirc_of_lt aα dα (by linarith[length_sum_perm_of_B Bacd] : length a b < length a d)) with
 --   ⟨e, Babe, eα⟩; exact ⟨e, α, Babe, aα, dα, eα⟩
 
-theorem length_eq_of_on_circle (aα : center_circle a α) (bα : on_circle b α) (cα : on_circle c α) :
+theorem length_eq_of_oncircle (aα : center_circle a α) (bα : on_circle b α) (cα : on_circle c α) :
    length a b = length a c := (on_circle_iff_length_eq aα bα).mpr cα
 --3/28/23
-theorem on_circle_of_on_circle_length (aα : center_circle a α) (bα : on_circle b α)
+theorem on_circle_of_oncircle_length (aα : center_circle a α) (bα : on_circle b α)
   (ab_ac : length a b ≠ length a c) : ¬on_circle c α := 
-fun cα => ab_ac (length_eq_of_on_circle aα bα cα)
+fun cα => ab_ac (length_eq_of_oncircle aα bα cα)
 --3/28/23
 theorem incircle_of_on_circle_length (aα : center_circle a α) (bα : on_circle b α)
   (ab_ac : length a b ≤ length a c) : ¬in_circle c α :=
@@ -282,495 +283,88 @@ theorem length_eq_of_B_B (Bdbe: B d b e) (Bdaf : B d a f) (da_db : length d a = 
   (de_df : length d e = length d f):
 length a f = length b e := by linarith[length_sum_perm_of_B Bdbe, length_sum_perm_of_B Bdaf]
 
-theorem B_on_circle_of_inside_outside (a_in_α : in_circle a α) (b_out_α : out_circle b α) :
+theorem B_oncircle_of_inside_outside (a_in_α : in_circle a α) (b_out_α : out_circle b α) :
   ∃ (c : point), B a c b ∧ on_circle c α :=
 pt_on_circle_of_inside_outside b_out_α.1 a_in_α b_out_α.2
 --3/28/23
 theorem out_circle_of_lt (aα : center_circle a α) (bα : on_circle b α)
   (ab_lt_ac : length a b < length a c) : out_circle c α :=
-⟨on_circle_of_on_circle_length aα bα (by linarith), incircle_of_on_circle_length aα bα (by linarith)⟩
-
-------------------------------------------- old API ------------------------------------------------
-theorem len_symm_of_len {a b : point} {r:ℝ} (abcd : length a b = r) : length b a = r :=
-  by sorry--by rwa length_symm a b at abcd
-theorem len_symm2_of_len {a b c d : point} (abcd : length a b = length c d) : length b a = length d c :=
-  (len_symm_of_len (len_symm_of_len abcd).symm).symm
-theorem angle_symm_of_angle {a b c : point} {r:ℝ } (ang : angle a b c = r) :
-  angle c b a = r := by sorry
-  -- by rwa angle_symm a b c at ang
-theorem angle_symm2_of_angle {a b c d e f : point} (ab : a ≠ b) (ac : a ≠ c) (de : d ≠ e) (df : d ≠ f)
-  (ang : angle a b c = angle d e f) : angle c b a = angle f e d :=
-  (angle_symm_of_angle ) (angle_symm_of_angle ang.symm).symm
-
-/-
-convenient to have the ≠ there since they always get used
--/
-
-theorem line_of_B {a b c : point} (Babc : B a b c) :
-  ∃ (L : line), online a L ∧ online b L ∧ online c L ∧ a ≠ b ∧ b ≠ c ∧ c ≠ a :=
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  refine ⟨L, aL, bL, online_3_of_B Babc aL bL, (ne_12_of_B Babc), (ne_23_of_B Babc), (ne_13_of_B Babc).symm⟩,
-end-/
-
-theorem not_B_symm {a b c : point} (Babc : ¬B a b c) : ¬B c b a := by sorry --λ Bcba, Babc (B_symm Bcba)
-
-theorem Bbcd_or_Bbdc_of_Babc_Babd {a b c d : point} (cd : c ≠ d) (Babc : B a b c) (Babd : B a b d) :
-  B b c d ∨ B b d c :=
-  by sorry /-begin
-  rcases line_of_B Babc with ⟨L, aL, bL, cL, -, bc, -⟩,
-  cases B_of_three_online_ne  bc (ne_23_of_B Babd) cd bL cL (online_3_of_B Babd aL bL),
-  left, assumption, cases h, exfalso, exact (not_B324_of_B123_B124 Babc Babd) h, right, exact h, --again
-end-/
-
-theorem Bbcd_of_Babc_Bacd {a b c d : point} (Babc : B a b c) (Bacd : B a c d) : B b c d :=
-  by sorry /-begin
-  rcases line_of_B Babc with ⟨L, aL, bL, cL, -,bc,ca⟩,
-  have bd : b ≠ d,
-  { intro bd,
-    rw bd at Babc,
-    exact (not_B_of_B (B_symm Babc)) (B_symm Bacd), },
-  have := B_of_three_online_ne  bc bd (ne_23_of_B Bacd) bL cL (online_3_of_B Bacd aL cL),
-  cases this, exact this,
-  exfalso, cases this,
-  have Bdba := B124_of_B134_B123 (B_symm Bacd) (B_symm this),
-  cases Bbcd_or_Bbdc_of_Babc_Babd ca.symm Bdba (B_symm this) with Bet,
-  exact (not_B_of_B Bet) Babc,
-  exact (not_B_of_B h) (B_symm Babc),
-  exact (not_B_of_B (B_symm (B124_of_B134_B123 Babc (B_symm (B124_of_B123_B234 this (B_symm Bacd)))))) (B_symm Bacd),
-end-/
-
-theorem neq_of_online_offline (aL : online a L) (bL : ¬online b L) :   a ≠ b :=
-  by sorry /-begin
-  intro ab, rw ab at aL, exact bL aL,
-end-/
-
-theorem neq_of_sameside (bL: online b L) (acL: sameside a c L) : a ≠ b :=
-(neq_of_online_offline bL (not_online_of_sameside acL)).symm
-
-theorem neq_of_sameside' (bL: online b L) (acL: sameside c a L) : a ≠ b :=
-(neq_of_online_offline bL (not_online_of_sameside (sameside_symm acL))).symm
-
-theorem neq_of_bet (eL: online e L) (gL: online g L) (cL: ¬ online c L) (Bet: B e h g) : h≠ c :=
-  by sorry
-  /-begin
-  exact  neq_of_online_offline (online_2_of_B Bet eL gL) cL,
-end-/
-
-theorem angle_pos_of_not_colinear {a b c : point} {L : line} (ab : a ≠ b) (aL : online a L) (bL : online b L)
-  (cL : ¬online c L) : 0 < angle b a c :=
-  by sorry /-begin --can be simplified to one line probably
-  by_contra, push_neg at h, exact cL ((angle_zero_iff_online ab (neq_of_online_offline aL cL) aL bL).mpr (by linarith [angle_nonneg b a c])).1,
-end-/
-
-theorem angles_add_of_sameside {a b c d : point} {L M : line} (ab : a ≠ b) (ac : a ≠ c) (aL : online a L)
-  (bL : online b L) (aM : online a M) (cM : online c M) (bdM : sameside b d M)
-  (cdL : sameside c d L) :
-  angle b a c = angle b a d + angle d a c ∧ angle b a d < angle b a c ∧ angle d a c < angle b a c
-  ∧ 0 < angle b a d ∧ 0 < angle d a c :=
-  by sorry /-begin
-  have angsplit := (angle_add_iff_sameside ab ac aL bL aM cM (not_online_of_sameside (sameside_symm bdM)) (not_online_of_sameside (sameside_symm cdL))
-    (λ LM, (not_online_of_sameside cdL) (by rwa ← LM at cM))).mpr ⟨bdM, cdL⟩,
-  rcases line_of_pts a d with ⟨N, aN, dN⟩,
-  have ang1 := angle_pos_of_not_colinear ab aL bL (not_online_of_sameside (sameside_symm cdL)),
-  have ang2 := angle_pos_of_not_colinear (neq_of_sameside' aL cdL).symm aN dN (λ cN, (not_online_of_sameside (sameside_symm bdM))
-    (by rwa ← (line_unique_of_pts ac aM cM aN cN) at dN)),
-  exact ⟨angsplit, by linarith, by linarith, ang1, ang2⟩,
-end-/
-
-theorem angle_extension_of_B { b1 : point} (ac : a ≠ c) (Babb1 : B a b b1) : angle b a c = angle b1 a c :=
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩, rcases line_of_pts a c with ⟨M, aM, cM⟩,
-  refine angle_extension ((ne_12_of_B Babb1).symm) ((ne_13_of_B Babb1).symm) ac.symm
-    ac.symm aL bL (online_3_of_B Babb1 aL bL) aM cM cM  (not_B_of_B Babb1) (λ Bcac, (ne_13_of_B Bcac) rfl),
-end-/
-
-theorem angle_extension_of_ss {a b c b1 : point} {L M : line} (ac : a ≠ c) (bb1 : b ≠ b1) (aL : online a L)
-  (cL : online c L) (aM : online a M) (bM : online b M) (b1M : online b1 M)
-  (bb1L : sameside b b1 L) : angle b a c = angle b1 a c :=
-  by sorry /-begin
-  cases B_of_three_online_ne (neq_of_sameside aL bb1L).symm (neq_of_sameside' aL bb1L).symm bb1 aM bM b1M ,
-  exact angle_extension_of_B ac h, cases h, exfalso, exact (not_sameside13_of_B123_online2 h) aL bb1L, exact (angle_extension_of_B ac h).symm,
-end-/
-
-theorem area_add_iff_B_mp {a b c d : point} {L : line} (aL : online a L) (bL : online b L)
-  (cL : online c L) (dL : ¬online d L) (Bacb : B a c b) : area a c d + area d c b = area a d b
-  := (area_add_iff_B (ne_13_of_B Bacb) (ne_23_of_B Bacb).symm ((ne_12_of_B Bacb).symm) aL bL cL dL).mp Bacb
-
-theorem sss {a b c d e f : point} (lab : length a b = length d e) (lbc : length b c = length e f)
-  (lac : length a c = length d f)
-  : angle a b c = angle d e f ∧ angle b a c = angle e d f ∧ angle a c b = angle d f e
-  := ⟨(SAS_iff_SSS (len_symm2_of_len lab) lbc).2 lac, (SAS_iff_SSS lab lac).2 lbc, (SAS_iff_SSS (len_symm2_of_len lac) (len_symm2_of_len lbc)).2 lab⟩
-
-theorem sas {a b c d e f : point} (ab : length a b = length d e) (ac : length a c = length d f)
-  (Abac : angle b a c = angle e d f)
-  : length b c = length e f ∧ angle a b c = angle d e f ∧ angle a c b = angle d f e
-  := ⟨(SAS_iff_SSS ab ac).1 Abac, (sss ab ((SAS_iff_SSS ab ac).1 Abac) ac).1, (sss ab ((SAS_iff_SSS ab ac).1 Abac) ac).2.2⟩ --Euclid I.4
-
-lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
-  := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
-
-lemma B_of_length_leq {a b c : point} {L : line} (ab : a ≠ b) (bc : b ≠ c) (ac : a ≠ c) (aL : online a L)
-  (bL : online b L) (cL : online c L) (length : length a b + length b c ≤ length a c) : B a b c :=
-  by sorry /-begin
-  cases B_of_three_online_ne ab ac bc aL bL cL, assumption, cases h,
-  linarith [length_sum_of_B h, length_symm a b, len_pos_of_nq ab], linarith [length_sum_of_B h, length_symm c b, len_pos_of_nq bc],
-end-/
-
-theorem nq_of_nq_len {a b c : point} (ac : a ≠ c) (length : length a b = length b c) : a ≠ b
-  := by sorry --λ ab, by linarith [len_pos_of_nq (ne_of_eq_of_ne (eq.symm ab) ac), length_eq_zero_iff.mpr ab]
-
-theorem nq_of_center_circle {a b : point} {α β : circle} (acen : center_circle a α) (bcen : center_circle b β)
-  (ab : a ≠ b) : α ≠ β :=
-  by sorry /-begin
-  intro albet, rw albet at acen,
-  have := center_circle_unique acen bcen,
-  exact ab this,
-end-/
-
-def iseqtri (a b c : point) : Prop :=
-  length a b = length a c  ∧ length b c = length b a ∧ length c a = length c b ∧ a ≠ b ∧ b ≠ c ∧ c ≠ a
-
-theorem difsym {a b : point} {L : line} (nss : ¬sameside a b L) : ¬sameside b a L
-  := by sorry --λ nss2, nss (sameside_symm nss2)
-
-theorem sameside_of_diffside_diffside {a b c : point} {L : line} (dsab : diffside a b L) (dsac : diffside a c L) :
-  sameside b c L :=(or_iff_right dsac.2.2).mp
-  (sameside_or_of_diffside dsab.1 dsab.2.1 dsac.2.1 dsab.2.2)
-
-theorem difsamedif {a b c : point} {L : line} (ssab : sameside a b L) (dsac : diffside a c L) :
-  diffside b c L :=
-  by sorry /-begin
-  by_contra,
-  unfold diffside at h,
-  push_neg at h,
-  exact dsac.2.2 (sameside_trans (sameside_symm ssab) (h (not_online_of_sameside (sameside_symm ssab)) dsac.2.1)),
-end-/
-
-theorem difneq {a b : point} {L : line} (dsab : diffside a b L) : a ≠ b :=
-  by sorry /-begin
-  intro ab,
-  rw ab at dsab,
-  unfold diffside at dsab,
-  have := sameside_rfl_of_not_online dsab.1,
-  exact dsab.2.2 this,
-end-/
-
-theorem angeasy {a b c : point} {d : ℝ} (ab : a ≠ b) (ac : a ≠ c) (ang : d ≠ angle a b c) :
-  d ≠ angle c b a := by sorry --by rwa (angle_symm a b c) at ang
-
-def para (M N : line) : Prop :=  (∀  (e : point), ¬online e M ∨ ¬online e N)
-
-theorem para_symm {M N : line} (par: para M N) : para N M:= by sorry --λ a, or.swap (par a)
-
-theorem online_of_online_para {a : point} {M N: line}(aM: online a M)(par: para M N): ¬ online a N:=
-  by sorry /-begin
-  cases par a,exfalso,exact h aM,exact h,
-end-/
-
-theorem online_of_online_para' {a : point} {M N: line}(aN: online a N)(par: para M N): ¬ online a M:=
-  by sorry /-begin
-  cases par a,exact h,exfalso,exact h aN,
-end-/
-
-theorem sameside_of_online_online_para {a b : point} {M N: line} (aM: online a M) (bM: online b M)(par: para M N):
-sameside a b N:=
-  by sorry /-begin
-   by_contra abN, rcases pt_of_lines_inter (lines_inter_of_not_sameside aM bM abN) with ⟨z,zN,zM⟩,
-    cases par z, exact h zM, exact h zN,
-end-/
-
-theorem sameside_of_online_online_para' {a b : point} {M N: line} (aM: online a N) (bM: online b N)(par: para M N):
-sameside a b M:=
-  by sorry /-begin
-   by_contra abN, rcases pt_of_lines_inter (lines_inter_of_not_sameside aM bM abN) with ⟨z,zN,zM⟩,
-    cases par z, exact h zN, exact h zM,
-end-/
-
-theorem circint_of_lt_lt {a b c d : point} {α β : circle} (acen : center_circle a α)
-  (bcen : center_circle b β) (ccirc : on_circle c α) (dcirc : on_circle d β)
-  (cenbig : |length a c - length b d| < length a b)
-  (censmall : length a b < length a c + length b d) :
-  circles_inter α β :=
-  by sorry /-begin
-  have := abs_lt.mp cenbig,
-  have ab : a ≠ b := mt length_eq_zero_iff.mpr (by linarith : length a b ≠ 0),
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  rcases pts_of_line_circle_inter (line_circle_inter_of_inside_online aL
-    (inside_circle_of_center acen)) with ⟨c1, c2,c1c2, c1L, c2L, c1circ, c2circ⟩,
-  rcases pts_of_line_circle_inter (line_circle_inter_of_inside_online bL
-    (inside_circle_of_center bcen)) with ⟨d1, d2,d1d2, d1L, d2L, d1circ, d2circ⟩,
-  have Bc1ac2 := B_of_line_circle_inter c1c2 aL c1L c2L c1circ c2circ
-    (inside_circle_of_center acen),
-  have Bd1bd2 := B_of_line_circle_inter d1d2 bL d1L d2L d1circ d2circ
-    (inside_circle_of_center bcen),
-  have clen1 := (on_circle_iff_length_eq ccirc acen).mpr c1circ,
-  have clen2 := (on_circle_iff_length_eq ccirc acen).mpr c2circ,
-  have dlen1 := (on_circle_iff_length_eq dcirc bcen).mpr d1circ,
-  have dlen2 := (on_circle_iff_length_eq dcirc bcen).mpr d2circ,
-  have cin : in_circle c1 β ∨ in_circle c2 β,
-  { by_contra out, push_neg at out,
-    have ineq2 := mt (in_circlele_iff_length_lt d2circ bcen).mp out.1, push_neg at ineq2,
-    have ineq4 := mt (in_circlele_iff_length_lt d2circ bcen).mp out.2, push_neg at ineq4,
-    have bc1 : b ≠ c1 := nq_of_len_pos (by linarith [len_pos_of_nq (ab)] :
-      0 < length b c1),
-    have bc2 : b ≠ c2 := nq_of_len_pos (by linarith [len_pos_of_nq (ne_23_of_B Bd1bd2)] :
-      0 < length b c2),
-    cases B_of_three_online_ne (ne_23_of_B Bc1ac2) ab bc2.symm aL c2L bL  with Bac2b Bet,
-    linarith [length_sum_of_B Bac2b, length_symm b c2],
-    cases Bet with Bc2ab Babc2,
-    cases Bbcd_or_Bbdc_of_Babc_Babd bc1.symm (B_symm Bc1ac2) Bc2ab with Bac1b Babc1,
-    linarith [length_sum_of_B Bac1b, length_symm b c1],
-    linarith [length_sum_of_B Babc1],
-    linarith [length_sum_of_B Babc2], },
-  have din : in_circle d1 α ∨ in_circle d2 α,
-  { by_contra out, push_neg at out,
-    have := mt (in_circlele_iff_length_lt c2circ acen).mp out.1, push_neg at this,
-    have := mt (in_circlele_iff_length_lt c2circ acen).mp out.2, push_neg at this,
-    have ad1 : a ≠ d1 := nq_of_len_pos (by linarith [len_pos_of_nq (ne_23_of_B Bc1ac2)] :
-      0 < length a d1),
-    have ad2 : a ≠ d2 := nq_of_len_pos (by linarith [len_pos_of_nq (ne_23_of_B Bc1ac2)] :
-      0 < length a d2),
-    cases B_of_three_online_ne ab ad1 ((ne_12_of_B Bd1bd2).symm) aL bL d1L  with Babd1 Bet,
-    cases Bbcd_or_Bbdc_of_Babc_Babd ad2 (B_symm Babd1) Bd1bd2 with Bbad2 Bbd2a,
-    linarith [length_symm a b, length_sum_of_B Bbad2],
-    linarith [length_symm d2 a, length_symm a b, length_sum_of_B Bbd2a],
-    cases Bet with Bbad1 Bad1b,
-    linarith [length_symm a b, length_sum_of_B Bbad1],
-    linarith [length_symm d1 b, length_sum_of_B Bad1b], },
-  cases cin with c1bet c2bet,
-  cases din with d1alp d2alp,
-  exact circles_inter_of_inside_on_circle c1circ d1circ d1alp c1bet,
-  exact circles_inter_of_inside_on_circle c1circ d2circ d2alp c1bet,
-  cases din with d1alp d2alp,
-  exact circles_inter_of_inside_on_circle c2circ d1circ d1alp c2bet,
-  exact circles_inter_of_inside_on_circle c2circ d2circ d2alp c2bet,
-end-/
-
-theorem quadiag {a b c d : point} {L M N : line} (ab : a ≠ b) (cd : c ≠ d) (aL : online a L)
-  (bL : online b L) (cM : online c M) (dM : online d M) (bN : online b N) (dN : online d N)
-  (abM : sameside a b M) (cdL : sameside c d L) (acN : sameside a c N) :
-  ∃ (e : point) (O P : line), online a O ∧ online d O ∧ online b P ∧ online c P ∧  online e O ∧
-  online e P ∧ B b e c ∧ B d e a ∧ ¬online c O ∧ ¬online b O ∧ ¬online d P ∧ ¬online a P :=
-  by sorry /-begin
-  rcases line_of_pts a d with ⟨O, aO, dO⟩,
-  rcases line_of_pts c b with ⟨P, cP, bP⟩,
-  rcases line_of_pts a c with ⟨K, aK, cK⟩,
-  have OP : O ≠ P := λ OP, (not_online_of_sameside cdL (by rwa ←(line_unique_of_pts ab aL bL (by rwa OP at aO) bP) at cP)),
-  have bcO := not_sameside_of_sameside_sameside dN dO dM bN aO cM acN (sameside_symm abM),
-  rcases pt_of_lines_inter (lines_inter_of_not_sameside  bP cP bcO) with ⟨e, eO, eP⟩,
-  have be : b ≠ e := λ be, (not_online_of_sameside (sameside_symm cdL)) (by rwa ←(line_unique_of_pts ab aL bL aO (by rwa ← be at eO)) at dO),
-  have ce : c ≠ e := λ ce, (not_online_of_sameside abM) (by rwa line_unique_of_pts cd cM dM (by rwa ← ce at eO) dO),
-  have de : d ≠ e := λ de, (not_online_of_sameside (sameside_symm abM)) (by rwa ← line_unique_of_pts cd cM dM cP (by rwa ← de at eP) at bP),
-  have ae : a ≠ e := λ ae, (not_online_of_sameside cdL) (by rwa ← (line_unique_of_pts ab aL bL (by rwa ← ae at eP) bP) at cP),
-  have cO := λ cO, OP (line_unique_of_pts ce cO eO cP eP),
-  have bO := λ bO, OP (line_unique_of_pts be bO eO bP eP),
-  have dP := λ dP, OP (line_unique_of_pts de dO eO dP eP),
-  have aP := λ aP, OP (line_unique_of_pts ae aO eO aP eP),
-  have daP := not_sameside_of_sameside_sameside cK cP cM aK bP dM (sameside_of_sameside_not_sameside ab aL aO aK bL dO cK cO (sameside_symm cdL) bcO ) abM,
-  have Bbec := B_of_online_inter be ce.symm (neq_of_sameside bL cdL).symm OP.symm bP eP cP eO  bcO,
-  have Bdea := B_of_online_inter de ae.symm (neq_of_sameside dM abM).symm OP dO eO aO eP (difsym daP),
-  refine ⟨e, O, P, aO, dO, bP, cP, eO, eP, Bbec, Bdea, cO, bO, dP, aP⟩,
-end-/
-
-theorem quadarea_comm {a b c d : point} {L M N : line} (ab : a ≠ b) (cd : c ≠ d) (aL : online a L)
-  (bL : online b L) (cM : online c M) (dM : online d M) (bN : online b N) (dN : online d N)
-  (abM : sameside a b M) (cdL : sameside c d L) (acN : sameside a c N) :
-  area d b a + area d c a = area b d c + area b a c :=
-  by sorry /-begin
-  rcases quadiag ab cd aL bL cM dM bN dN abM cdL acN with
-    ⟨e, O, P, aO, dO, bP, cP, eO, eP, Bbec, Bdea, cO, bO, dP, aP⟩,
-  linarith [area_add_iff_B_mp dO aO eO cO Bdea, area_add_iff_B_mp dO aO eO bO Bdea, area_add_iff_B_mp bP cP eP aP Bbec,
-    area_add_iff_B_mp bP cP eP dP Bbec, area_invariant a e c, area_invariant c a e, area_invariant b e d, area_invariant d b e],
-end-/
-
-theorem quad_add_of_quad_quad {a b c d e f : point} {L M N : line} (aL : online a L) (cL : online c L)
-  (dM : online d M) (fM : online f M) (cN : online c N) (fN : online f N) (Babc : B a b c)
-  (Bdef : B d e f) (acM : sameside a c M) (dfL : sameside d f L) (adN : sameside a d N) :
-  area a b e + area d e a + area e b c + area e f c = area d a f + area f c a :=
-  by sorry /-begin
-  rcases quadiag (ne_13_of_B Babc) (ne_23_of_B Bdef) aL cL (online_2_of_B Bdef dM fM) fM cN fN acM
-    (sameside_trans (sameside12_of_B123_sameside13 Bdef dfL) dfL) (sameside_symm (sameside_trans (sameside_symm (sameside23_of_B123_online1_not_online2 (B_symm Bdef) fN (λ eN, (not_online_of_sameside (sameside_symm acM))
-    (by rwa (line_unique_of_pts (ne_23_of_B Bdef) eN fN (online_2_of_B Bdef dM fM) fM) at cN)))) (sameside_symm adN))) with
-    ⟨h, O, P, aO, fO, cP, eP, hO, hP, Bche, Bfha, eO, cO, fP, aP⟩,
-  linarith [area_add_iff_B_mp aL cL (online_2_of_B Babc aL cL) (not_online_of_sameside (sameside_symm (sameside12_of_B123_sameside13 Bdef dfL))) Babc, area_add_iff_B_mp eP cP
-    (online_2_of_B Bche cP eP) aP (B_symm Bche), area_add_iff_B_mp eP cP (online_2_of_B Bche cP eP) fP (B_symm Bche),
-    area_add_iff_B_mp fO aO (online_2_of_B Bfha fO aO) cO Bfha, area_add_iff_B_mp fO aO (online_2_of_B Bfha fO aO) eO Bfha,
-    area_add_iff_B_mp dM fM (online_2_of_B Bdef dM fM) (not_online_of_sameside acM) Bdef, area_invariant e a c, area_invariant e c a, area_invariant f e a, area_invariant a f e,
-    area_invariant f h e, area_invariant e f h, area_invariant c h a, area_invariant a c h],
-end-/
-
-def square (a b d e: point) : Prop :=
-a≠ b ∧ a≠ e ∧ length a b = length d e ∧ length a b = length a d ∧ length a b = length b e ∧
-angle d a b = angle a b e ∧ angle d a b = angle a d e ∧ angle d a b = angle d e b
-
-def square_strong (a b d e : point) (L M N O : line) : Prop :=
-online a M ∧ online d M ∧ online b O ∧ online e O ∧
-online a L ∧ online b L ∧ online d N ∧ online e N ∧
-length a b = length d e ∧ length a b = length a d ∧
-  length a b = length b e ∧ angle d a b = rightangle ∧ angle a b e = rightangle ∧
-  angle a d e = rightangle ∧ angle d e b = rightangle ∧ para M O ∧ para L N
-
-lemma online_1_1_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online a L := sq.2.2.2.2.1
-lemma online_1_2_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online a M := sq.1
-lemma online_2_1_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online b L := sq.2.2.2.2.2.1
-lemma online_2_4_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online b O := sq.2.2.1
-lemma online_3_2_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online d M := sq.2.1
-lemma online_3_3_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online d N := sq.2.2.2.2.2.2.1
-lemma online_4_4_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online e O := sq.2.2.2.1
-lemma online_4_3_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : online e N := sq.2.2.2.2.2.2.2.1
-lemma para_2_4_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : para M O := sq.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-lemma para_1_3_of_square {a b d e : point} {L M N O : line}  (sq: square_strong a b d e L M N O) : para L N := sq.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2
-
-
--------------------------------------------------- Book I --------------------------------------------
+⟨on_circle_of_oncircle_length aα bα (by linarith), incircle_of_on_circle_length aα bα (by linarith)⟩
+--2023/4/5
+theorem sss (ab_de : length a b = length d e) (bc_ef : length b c = length e f) 
+(ac_df : length a c = length d f) : angle a b c = angle d e f ∧ angle b a c = angle e d f 
+  ∧ angle a c b = angle d f e := 
+⟨(SAS_iff_SSS (by rwa [length_symm d e, length_symm a b] at ab_de) bc_ef).mpr ac_df, 
+(SAS_iff_SSS ab_de ac_df).mpr bc_ef, (SAS_iff_SSS (by rwa [length_symm a c, length_symm d f] 
+at ac_df) (by rwa [length_symm b c, length_symm e f] at bc_ef)).mpr ab_de⟩
+--2023/4/5
+theorem sas (ab_de : length a b = length d e) (ac_df : length a c = length d f) 
+(Abac : angle b a c = angle e d f) : length b c = length e f ∧ angle a b c = angle d e f ∧ 
+  angle a c b = angle d f e := 
+⟨(SAS_iff_SSS ab_de ac_df).1 Abac, (sss ab_de ((SAS_iff_SSS ab_de ac_df).1 Abac) ac_df).1, 
+(sss ab_de ((SAS_iff_SSS ab_de ac_df).1 Abac) ac_df).2.2⟩ --Euclid I.4
+---------------------------------------- Book I Refactored --------------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
   online b L ∧ diffside c d L ∧ eq_tri a b c ∧ eq_tri a b d := by
-  
-  rcases circle_of_ne ab with ⟨α, aα, bα⟩
-  rcases circle_of_ne (Ne.symm ab) with ⟨β, bβ, aβ⟩
-  rcases diffside_of_circles_inter aα bβ  (circles_inter_of_inside_on_circle bα aβ
-    (inside_circle_of_center aα) (inside_circle_of_center bβ)) with
-    ⟨c, d, L, aL, bL, cα, cβ, dα, dβ, cdL⟩
-  have ab_ac := (on_circle_iff_length_eq aα bα).mpr cα
-  have bc_ba := (on_circle_iff_length_eq bβ cβ).mpr aβ
-  have ab_ad := (on_circle_iff_length_eq aα bα).mpr dα
-  have bd_ba := (on_circle_iff_length_eq bβ dβ).mpr aβ
-  exact ⟨c, d, L, aL, bL, cdL, eq_tri_of_length_online ab aL bL cdL.1 ab_ac bc_ba,
-    eq_tri_of_length_online ab aL bL cdL.2.1 ab_ad bd_ba⟩
+rcases circle_of_ne ab with ⟨α, aα, bα⟩
+rcases circle_of_ne (Ne.symm ab) with ⟨β, bβ, aβ⟩
+rcases diffside_of_circles_inter aα bβ  (circles_inter_of_inside_on_circle bα aβ
+  (inside_circle_of_center aα) (inside_circle_of_center bβ)) with 
+  ⟨c, d, L, aL, bL, cα, cβ, dα, dβ, cdL⟩
+have ab_ac := (on_circle_iff_length_eq aα bα).mpr cα
+have bc_ba := (on_circle_iff_length_eq bβ cβ).mpr aβ
+have ab_ad := (on_circle_iff_length_eq aα bα).mpr dα
+have bd_ba := (on_circle_iff_length_eq bβ dβ).mpr aβ
+exact ⟨c, d, L, aL, bL, cdL, eq_tri_of_length_online ab aL bL cdL.1 ab_ac bc_ba,
+  eq_tri_of_length_online ab aL bL cdL.2.1 ab_ad bd_ba⟩
+              /-- Euclid I.1, construction of a single equilateral triangle -/
+theorem iseqtri_of_ne (ab : a ≠ b) : ∃ (c : point), eq_tri a b c :=
+  by rcases iseqtri_iseqtri_diffside_of_ne ab with ⟨c, -, -, -, -, -, eqtri, -⟩; exact ⟨c, eqtri⟩
+                          /-- Euclid I.2, collapsing compass -/
+theorem length_eq_of_ne (a : point) (bc : b ≠ c) : ∃ (f : point), length a f = length b c := by
+  by_cases ab : a = b; rw [ab]; exact ⟨c, rfl⟩ --degenerate case
+  rcases iseqtri_of_ne ab with ⟨d, eqtri⟩
+  rcases B_circ_of_ne (ne_32_of_tri eqtri.1) bc with ⟨e, α, Bdbe, bα, cα, eα⟩
+  rcases B_circ_out_of_B (ne_31_of_tri eqtri.1) Bdbe eqtri.2.2.2 with ⟨f, β, Bdaf, dβ, eβ, fβ⟩
+  have be_bc := (length_eq_of_oncircle bα cα eα).symm
+  have de_df := length_eq_of_oncircle dβ eβ fβ
+  have af_be := length_eq_of_B_B Bdbe Bdaf eqtri.2.2.2 de_df
+  exact ⟨f, af_be.trans be_bc⟩ --calc block?
 
-lemma makeeqtriaux {a b c : point} (hab : a ≠ b) (h1 : length a b = length a c)
-  (h2 : length b c = length b a) : b ≠ c ∧ c ≠ a := ⟨fun bc => hab (length_eq_zero_iff.mp (by sorry)).symm,
-  fun ca => hab (length_eq_zero_iff.mp (by sorry))⟩
-
-theorem iseqtri_of_ne {a b : point} (hab : a ≠ b) : ∃ (c : point), iseqtri a b c := --Euclid 1.1
-  by sorry /-begin
-  rcases circle_of_ne hab with ⟨α, bcirc, acen⟩,
-  rcases circle_of_ne (ne.symm hab) with ⟨β, acirc, bcen⟩,
-  rcases pts_of_circles_inter (circles_inter_of_inside_on_circle bcirc acirc (inside_circle_of_center acen) (inside_circle_of_center bcen)) with ⟨c,-, -, cona, conb, -, -⟩,
-  have abeqac := (on_circle_iff_length_eq bcirc acen).2 cona,
-  have bceqba := (on_circle_iff_length_eq conb bcen).mpr acirc,
-  have caeqcb : length c a = length c b :=
-    len_symm_of_len ((rfl.congr (eq.symm (len_symm2_of_len bceqba))).mp (eq.symm abeqac)),
-  refine ⟨c, abeqac, bceqba, caeqcb, hab, makeeqtriaux hab abeqac bceqba⟩,
-end-/
-
-theorem iseqtri_iseqtri_ne_of_ne {a b : point} (hab : a ≠ b) : ∃ (c d : point), ∃ (L : line), iseqtri a b c ∧
-  iseqtri a b d ∧ online a L ∧ online b L ∧ ¬sameside c d L ∧ c ≠ d := --Euclid 1.1
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  rcases circle_of_ne hab with ⟨α, bcirc, acen⟩,
-  rcases circle_of_ne (ne.symm hab) with ⟨β, acirc, bcen⟩,
-  rcases pts_of_circles_inter (circles_inter_of_inside_on_circle bcirc acirc (inside_circle_of_center acen) (inside_circle_of_center bcen)) with ⟨c, d, cd,cona, conb, dona, donb⟩,
-  have nss := not_sameside_of_circle_inter cd (nq_of_center_circle acen bcen hab) aL bL cona conb dona donb acen bcen
-    (circles_inter_of_inside_on_circle bcirc acirc (inside_circle_of_center acen) (inside_circle_of_center bcen)),
-  have abeqac := (on_circle_iff_length_eq bcirc acen).2 cona,
-  have abeqad := (on_circle_iff_length_eq bcirc acen).2 dona,
-  have bceqba := (on_circle_iff_length_eq conb bcen).mpr acirc,
-  have bdeqba := (on_circle_iff_length_eq donb bcen).mpr acirc,
-  have caeqcb := len_symm_of_len ((rfl.congr (eq.symm (len_symm2_of_len bceqba))).mp (eq.symm abeqac)),
-  have daeqdb := len_symm_of_len ((rfl.congr (eq.symm (len_symm2_of_len bdeqba))).mp (eq.symm abeqad)),
-  refine ⟨c, d, L, ⟨abeqac, bceqba, caeqcb, hab, makeeqtriaux hab abeqac bceqba⟩,
-    ⟨abeqad, bdeqba, daeqdb, hab, makeeqtriaux hab abeqad bdeqba⟩, aL, bL, nss, cd⟩,
-end-/
-
-theorem same_length_of_ne {a b c : point} {L : line} (hbc : b ≠ c) (aL : online a L) : ∃ (d : point),
-  online d L ∧ length a d = length b c := --Euclid I.2, I.3 (generalizations and corrollaries)
-  by sorry /-begin
-    by_cases hab : a = b,
-    { rcases circle_of_ne hbc with ⟨α, ccirc, bcen⟩,
-      rcases pts_of_line_circle_inter (line_circle_inter_of_inside_online (by rwa hab at aL) (inside_circle_of_center bcen)) with
-        ⟨d, -,-, dL, -, dalpha, -⟩,
-      refine ⟨d, dL, by rwa hab; linarith [(on_circle_iff_length_eq dalpha bcen).mpr ccirc]⟩, },
-    rcases iseqtri_of_ne hab with ⟨d, len1, len2, len3, hab, hbd, hda⟩,
-    rcases line_of_pts d a with ⟨M, dM, aM⟩,
-    rcases line_of_pts b d with ⟨N, dN, bN⟩,
-    rcases circle_of_ne hbc with ⟨α, ccirc, bcen⟩,
-    rcases pt_on_circle_of_inside_ne hbd (inside_circle_of_center bcen)  with ⟨g, Bgbd,gcirc⟩,
-    have hyp : length d g = length b a + length b g := by linarith [length_sum_of_B (B_symm Bgbd), length_symm d b],
-    have hyp2 : length d a < length d g,
-    { by_contra  h, -- by_contra and then push_neg?
-      exact ((ne_12_of_B Bgbd).symm) (length_eq_zero_iff.mp (by linarith [length_nonneg b g, len_symm2_of_len len3, length_symm a d])), },
-    rcases circle_of_ne ((ne_13_of_B Bgbd).symm) with ⟨β, gcirc2, dcen⟩,
-    rcases pt_on_circle_of_inside_ne hda.symm ((in_circlele_iff_length_lt gcirc2 dcen).1 hyp2)  with ⟨f, Bfad,fcirc⟩,
-    have key : length b c = length f a := by linarith [length_sum_of_B Bfad, (on_circle_iff_length_eq fcirc dcen).2 gcirc2, length_symm d f,
-      len_symm2_of_len len3, (on_circle_iff_length_eq ccirc bcen).2 gcirc],
-    rcases circle_of_ne ((ne_12_of_B Bfad).symm) with ⟨γ, fcirc3, acen2⟩,
-    rcases pts_of_line_circle_inter (line_circle_inter_of_inside_online aL (inside_circle_of_center acen2)) with ⟨h, -,-, hL, -, hcirc, -⟩,
-    refine ⟨h, hL, by linarith [length_symm a f, (on_circle_iff_length_eq fcirc3 acen2).2 hcirc]⟩,
-end-/
-
-theorem same_length_B_of_ne {a b c : point} (hab : a ≠ b) (hbc : b ≠ c) :
-  ∃ (p : point), B a b p ∧ length b p = length c b :=
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  rcases circle_of_ne hbc with ⟨α, ccirc, bcirc⟩,
-  rcases pt_on_circle_of_inside_ne hab.symm (inside_circle_of_center bcirc) with ⟨p, Bpba, pcirc⟩ ,
-  refine ⟨p, B_symm Bpba, by rwa [length_symm c b, ((on_circle_iff_length_eq pcirc bcirc).2 ccirc)]⟩,
-end-/
-
-theorem same_length_B_of_ne_four {a b c d : point} (hab : a ≠ b) (hcd : c ≠ d) :
-  ∃ (p : point), B a b p ∧ length b p = length c d :=
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  rcases same_length_of_ne hcd bL with ⟨p1, p1L, len⟩,
-  by_cases b = p1, { exfalso, refine hcd (length_eq_zero_iff.mp (eq.trans (length_eq_zero_iff.mpr h).symm len).symm), },
-  by_cases hap1 : a = p1,
-  { rcases circle_of_ne (ne.symm hab) with ⟨α, acirc, bcen⟩,
-    rcases pts_of_line_circle_inter (line_circle_inter_of_inside_online bL (inside_circle_of_center bcen)) with ⟨e, f, hef,eL, fL, ecirc, fcirc⟩ ,
-    by_cases hyp : a = e,
-    { use f, split,
-      { -- refine later
-        exact B_of_line_circle_inter (λ haf, hef (eq.trans hyp.symm haf)) bL aL fL acirc fcirc (inside_circle_of_center bcen)  , },--again
-      rw ← hap1 at len,
-      linarith [(on_circle_iff_length_eq acirc bcen).2 fcirc], },
-    refine ⟨e, B_of_line_circle_inter hyp bL aL eL acirc ecirc (inside_circle_of_center bcen) , _⟩,
-    rw ← ((on_circle_iff_length_eq acirc bcen).2 ecirc),
-    rwa ← hap1 at len, }, --again
-    rcases same_length_B_of_ne hab h with ⟨p, hypp⟩,
-  refine ⟨p, hypp.1, by linarith [hypp.2, length_symm b p1]⟩,
-end-/
-
-theorem same_length_B_of_ne_le {a b c d : point} (cd : c ≠ d) (big : length c d < length a b) :
-  ∃ (p : point), B a p b ∧ length a p = length c d := --can use for I.11
-  by sorry /-begin
-  rcases line_of_pts a b with ⟨L, aL, bL⟩,
-  rcases pt_extension_of_ne (nq_of_len_pos (by linarith [length_nonneg c d]) : a ≠ b).symm with ⟨q, Bbaq⟩,
-  by_cases ad : a = d,
-  { by_cases ac : a = c, { exfalso, rw [← ac, ← ad] at cd, exact cd rfl, },
-    rcases circle_of_ne ac with ⟨α, ccirc, acen⟩,
-    rw ← ad at big,
-    have noin := mt (in_circlele_iff_length_lt ccirc acen).mpr (by linarith [length_symm a c] : ¬(length a b < length a c)),
-    have := mt (on_circle_iff_length_eq ccirc acen).mpr ((by linarith [length_symm a c]) : length a c ≠ length a b),
-    rcases pt_on_circle_of_inside_outside this (inside_circle_of_center acen) noin with ⟨p,Bapb , pcirc⟩,
-    have := (on_circle_iff_length_eq ccirc acen).mpr pcirc,
-    rw ← ad, --optimize?
-    refine ⟨p, Bapb, by linarith [length_symm a c]⟩, },
-  rcases same_length_B_of_ne (ne_23_of_B Bbaq).symm ad with ⟨p, Bqap, len⟩,
-  by_cases a = c,
-  have bp : b ≠ p, { intro bp, rw [bp, h.symm] at big, linarith [length_symm a d], },
-  rw [h.symm, (len_symm_of_len len.symm)] at big,
-  cases (B_of_three_online_ne ((ne_12_of_B Bbaq).symm) (ne_23_of_B Bqap) bp aL bL (online_3_of_B Bqap (online_3_of_B Bbaq bL aL) aL) ),
-  --- **** BAD don't use auto-generated `h_1`
-  linarith [length_sum_of_B h_1, len_pos_of_nq (ne_23_of_B h_1)],
-  cases h_1,
-  exfalso,
-  exact not_B324_of_B123_B124 Bbaq h_1 Bqap, --exfalso + exact?
-  refine ⟨p, h_1, _⟩,symmetry,
-   rw [len_symm_of_len],symmetry, rwa h.symm,
-  rcases same_length_B_of_ne_four (ne_23_of_B Bbaq).symm cd with ⟨p, Bqap, len⟩, --same as above but with a ≠ c
-  have bp : b ≠ p, { intro bp, rw bp at big, linarith, }, --again
-  cases B_of_three_online_ne ((ne_12_of_B Bbaq).symm) (ne_23_of_B Bqap) bp aL bL (online_3_of_B Bqap (online_3_of_B Bbaq bL aL) aL) ,
-  linarith [length_sum_of_B h_1, len_pos_of_nq (ne_23_of_B h_1)], cases h_1, exfalso,
-  exact not_B324_of_B123_B124 Bbaq h_1 Bqap,
-  refine ⟨p, h_1, len⟩,
-end-/
-
---- Euclid I.5 (part 1)
-theorem eq_angle_of_eq_length {a b c : point} (ab : a ≠ b) (bc : b ≠ c) (labac : length a b = length a c) :
-  angle a b c = angle a c b  := (sas labac labac.symm (angle_symm b a c)).2.2.symm
-
+  theorem length_eq_of_ne' (a : point) (bc : b ≠ c) : ∃ (f : point), length a f = length b c := by
+by_cases ab : a = b; rw [ab]; exact ⟨c, rfl⟩ --degenerate case
+rcases iseqtri_of_ne ab with ⟨d, eqtri⟩
+rcases B_circ_of_ne (ne_32_of_tri eqtri.1) bc with ⟨e, α, Bdbe, bα, cα, eα⟩
+rcases B_circ_out_of_B (ne_31_of_tri eqtri.1) Bdbe eqtri.2.2.2 with ⟨f, β, Bdaf, dβ, eβ, fβ⟩
+use f
+calc length a f = length b e := length_eq_of_B_B Bdbe Bdaf eqtri.2.2.2 
+                                (length_eq_of_oncircle dβ eβ fβ)
+     length b e = length b c := (length_eq_of_oncircle bα cα eα).symm
+                          /-- Euclid I.2, generalization -/
+theorem length_eq_B_of_ne (ab : a ≠ b) (bc : b ≠ c) :
+  ∃ (d : point), B a b d ∧ length b c = length b d := by 
+rcases B_circ_of_ne ab bc with ⟨d, α, Babd, bα, cα, dα⟩;
+  exact ⟨d, Babd, length_eq_of_oncircle bα cα dα⟩
+                          /-- Euclid I.2, generalization -/
+theorem length_eq_B_of_ne_four (ab : a ≠ b) (cd : c ≠ d) :
+  ∃ (f : point), B a b f ∧ length c d = length b f := by
+rcases length_eq_of_ne b cd with ⟨e, be_cd⟩
+rcases length_eq_B_of_ne ab (ne_of_ne_len' cd be_cd) with ⟨f, Babf, be_bf⟩
+exact ⟨f, Babf, by linarith⟩
+                /-- Euclid I.3, Moving a smaller segment on top of a larger one -/
+theorem B_length_eq_of_ne_lt (cd : c ≠ d) (cd_lt_ab : length c d < length a b) :
+  ∃ (f : point), B a f b ∧ length a f = length c d := by
+rcases length_eq_of_ne a cd with ⟨e, ae_cd⟩
+rcases circle_of_ne (ne_of_ne_len' cd ae_cd) with ⟨α, aα, eα⟩ --combine into one line?
+rcases B_oncircle_of_inside_outside (inside_circle_of_center aα) 
+  (out_circle_of_lt aα eα (by rwa [← ae_cd] at cd_lt_ab)) with ⟨f, Bafb, fα⟩
+have ae_af := length_eq_of_oncircle aα eα fα
+exact ⟨f, Bafb, by linarith⟩
+                      /-- Euclid I.5, (part 1), isosceles triangles have equal angles -/
+theorem angle_eq_of_iso (iso_abc : iso_tri a b c) : angle a b c = angle a c b :=
+  (sas (iso_abc).2 (iso_abc).2.symm (angle_symm b a c)).2.2.symm
+-------------------------------------------- Book I Old--------------------------------------------
 theorem isosidelem {a b c : point} {L : line} (ab : a ≠ b) (bc : b ≠ c) (ca : c ≠ a)
   (aL : online a L) (bL : online b L) (ang : angle a b c = angle a c b) (Bbac : ¬B b a c) :
   ¬online c L :=
@@ -1282,6 +876,8 @@ theorem asa {a b c d e f : point} {L : line} (ef : e ≠ f) (eL : online e L) (f
     (sameside_symm (sameside23_of_B123_online1_not_online2 (B_symm Begd) dN gN)),
   linarith [angle_symm b c a, angle_symm e f g],
 end-/
+
+def para (M N : line) : Prop :=  (∀  (e : point), ¬online e M ∨ ¬online e N)
 
 --Euclid I.27
 theorem angeqpar {a e f d : point} {L M N : line} (ae : a ≠ e) (ef : e ≠ f) (fd : f ≠ d)
@@ -1816,9 +1412,20 @@ end-/
 theorem paratri {a d b c e : point} {L M N K : line} (eL : online e L)
 (aL: online a L) (dL: online d L) (bM: online b M) (cM: online c M)
 (aN: online a N) (bN: online b N) (dK: online d K) (cK: online c K)
-(par1 : para L M) (par2 : para N K) : area a d c + area a b c = 2 * area b e c :=
-by linarith [parasianar dK cK aN bN dL aL cM bM (para_symm par2) par1,
-triarea aL eL bM cM par1,  area_invariant a b c, area_invariant c a b, area_invariant e b c, area_invariant e c b]
+(par1 : para L M) (par2 : para N K) : area a d c + area a b c = 2 * area b e c := sorry
+--by linarith [parasianar dK cK aN bN dL aL cM bM (para_symm par2) par1,
+--triarea aL eL bM cM par1,  area_invariant a b c, area_invariant c a b, area_invariant e b c, area_invariant e c b]
+
+def square (a b d e: point) : Prop :=
+a≠ b ∧ a≠ e ∧ length a b = length d e ∧ length a b = length a d ∧ length a b = length b e ∧
+angle d a b = angle a b e ∧ angle d a b = angle a d e ∧ angle d a b = angle d e b
+
+def square_strong (a b d e : point) (L M N O : line) : Prop :=
+online a M ∧ online d M ∧ online b O ∧ online e O ∧
+online a L ∧ online b L ∧ online d N ∧ online e N ∧
+length a b = length d e ∧ length a b = length a d ∧
+  length a b = length b e ∧ angle d a b = rightangle ∧ angle a b e = rightangle ∧
+  angle a d e = rightangle ∧ angle d e b = rightangle ∧ para M O ∧ para L N
 
 theorem square_strong_of_square {a b c d : point} (sq: square a b c d) : ∃ L M N O, square_strong a b c d L M N O :=
   by sorry /-begin
@@ -2086,7 +1693,6 @@ theorem pythlem {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL 
   refine ⟨m, ang2, ang3, Bbmc⟩,
 end-/
 
-
 --Euclid I.47
 theorem pythagoras {a b c f g h k d e : point} {L M N O P Q R S T U V W : line} (bc : b ≠ c)
   (aL : ¬online a L) (ang : angle c a b = rightangle) (sq1 : square_strong b a f g N W V U)
@@ -2311,4 +1917,34 @@ theorem pythagorean_theorem {a b c : point} (ang : angle c a b = rightangle) :
   (length a b)^2 + (length a c)^2 = (length b c)^2  :=
   by sorry /-begin
   by sorry,
+end-/
+
+------------------------------------------- old API ------------------------------------------------
+
+theorem angle_extension_of_B { b1 : point} (ac : a ≠ c) (Babb1 : B a b b1) : angle b a c = angle b1 a c :=
+  by sorry /-begin
+  rcases line_of_pts a b with ⟨L, aL, bL⟩, rcases line_of_pts a c with ⟨M, aM, cM⟩,
+  refine angle_extension ((ne_12_of_B Babb1).symm) ((ne_13_of_B Babb1).symm) ac.symm
+    ac.symm aL bL (online_3_of_B Babb1 aL bL) aM cM cM  (not_B_of_B Babb1) (λ Bcac, (ne_13_of_B Bcac) rfl),
+  end-/
+
+lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
+  := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
+
+theorem sameside_of_diffside_diffside {a b c : point} {L : line} (dsab : diffside a b L) (dsac : diffside a c L) :
+  sameside b c L :=(or_iff_right dsac.2.2).mp
+  (sameside_or_of_diffside dsab.1 dsab.2.1 dsac.2.1 dsab.2.2)
+
+theorem para_symm {M N : line} (par: para M N) : para N M:= by sorry --λ a, or.swap (par a)
+
+theorem online_of_online_para {a : point} {M N: line}(aM: online a M)(par: para M N): ¬ online a N:=
+  by sorry /-begin
+  cases par a,exfalso,exact h aM,exact h,
+end-/
+
+theorem sameside_of_online_online_para {a b : point} {M N: line} (aM: online a M) (bM: online b M)(par: para M N):
+sameside a b N:=
+  by sorry /-begin
+   by_contra abN, rcases pt_of_lines_inter (lines_inter_of_not_sameside aM bM abN) with ⟨z,zN,zM⟩,
+    cases par z, exact h zM, exact h zN,
 end-/
