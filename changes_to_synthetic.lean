@@ -1,6 +1,25 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/4/8
+Made an attempt to refactor I.6
+
+Changed
+  area_add_iff_B : ∀ {a b c d : point}, ∀ {L : line}, a ≠ b → b ≠ c → c ≠ a → online a L → online b L →
+  online c L → ¬online d L → (B a c b ↔ area a c d + area d c b = area a d b)
+to
+  area_add_iff_B : ∀ {a b c d : point}, ∀ {L : line}, a ≠ b → b ≠ c → c ≠ a → online a L → online b L →
+  online c L → ¬online d L → (B a b c ↔ area d a b + area d c b = area d a c)
+
+Changed
+  area_eq_of_SSS : ∀ {a b c a1 b1 c1 : point}, length a b = length a1 b1 → length b c = length b1 c1 →
+    length c a = length c1 a1 → area a b c = area a1 b1 c1
+to
+  area_eq_of_SSS : ∀ {a b c a1 b1 c1 : point}, length a b = length a1 b1 →
+  length a c = length a1 c1 → length b c = length b1 c1 → area a b c = area a1 b1 c1
+
+Desorrified online_ne_of_line
+
 --2023/4/5
 
 Changed 
