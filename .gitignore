@@ -2,3 +2,4 @@ lake-packages
 lake-manifest.json
 lean-toolchain
 build
+.history
