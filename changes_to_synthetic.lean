@@ -1,6 +1,11 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/4/14
+Changed sameside23_of_B123_online1_not_online2 to sameside_of_B_not_online_2
+
+Refactored I.9-10
+
 --2023/4/8
 Made an attempt to refactor I.6
 
