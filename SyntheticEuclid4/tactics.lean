@@ -106,4 +106,3 @@ macro_rules
   | `(tactic| perm [$a, $b]) => `(tactic| perm [$a]; perm [$b])
   | `(tactic| perm [$a, $b] at $h) => `(tactic| perm [$a] at $h; perm [$b] at $h)
   | `(tactic| perm [$a, $b, $c] at $h) => `(tactic| perm [$a] at $h; perm [$b] at $h; perm [$c] at $h)
-  
