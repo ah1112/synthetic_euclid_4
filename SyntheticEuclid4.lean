@@ -421,6 +421,9 @@ theorem online_of_B_online (Babc : B a b c) (aL : online a L) (cL : ¬online c L
 --2023/4/14
 theorem sameside_of_B_online_3 (Babc : B a b c) (aL : online a L) (cL : ¬online c L) :
     sameside b c L := sameside_of_B_not_online_2 Babc aL $ online_of_B_online Babc aL cL
+--2023/4/18
+theorem ne_of_sameside (bL : online b L) (acL : sameside a c L) : a ≠ b :=
+  (ne_of_online bL (not_online_of_sameside acL)).symm
 --2023/4/14
 theorem ne_of_sameside' (cL : online c L) (abL : sameside a b L) : c ≠ a := 
   ne_of_online cL $ not_online_of_sameside abL 
@@ -430,12 +433,6 @@ theorem tri_of_B_B_tri (Babd : B a b d) (Bace : B a c e) (tri_abc : triangle a b
   tri_143_of_tri_col (ne_13_of_B Babd) tri_abc $ col_of_B Babd) $ col_of_B Bace
 --2023/4/17
 theorem ne_21_of_B (Babc : B a b c) : b ≠ a := Ne.symm $ ne_12_of_B Babc
-
-theorem ne_of_B_B (Babc : B a b c) (Bbcd : B b c d) : a ≠ d := 
-  ne_13_of_B $ B124_of_B123_B234 Babc Bbcd
-
-theorem ne_of_B_B_B (Babc : B a b c) (Bbcd : B b c d) (Bcde : B c d e) : a ≠ e :=
-  ne_13_of_B $ B124_of_B123_B234 Babc (B124_of_B123_B234 Bbcd Bcde)
 
 theorem sameside_or_of_diffside' (cL : ¬online c L) (abL : diffside a b L) : 
     sameside a c L ∨ sameside b c L := sameside_or_of_diffside abL.1 abL.2.1 cL abL.2.2
@@ -454,6 +451,19 @@ theorem pts_line_circle_of_not_sameside (aα : center_circle a α) (bα : on_cir
     online c L ∧ online d L ∧ on_circle c α ∧ on_circle d α :=
   pts_of_line_circle_inter $ line_circle_inter_of_not_sameside abL 
   (by right; exact inside_circle_of_center aα) $ by left; exact bα
+--2023/4/18 -- Can be compressed with Or.rec and such
+theorem B_or_B_of_B_B (cd : c ≠ d) (Babc : B a b c) (Babd : B a b d) :
+    B b c d ∨ B b d c := by
+  rcases line_of_pts a b with ⟨L, aL, bL⟩
+  rcases B_of_three_online_ne (ne_23_of_B Babc) (ne_23_of_B Babd) cd bL 
+    (online_3_of_B Babc aL bL) (online_3_of_B Babd aL bL) with Bet | Bet | Bet
+  left; exact Bet; exfalso; exact (not_B324_of_B123_B124 Babc Babd) Bet; right; exact Bet
+-- same comment as previous
+theorem angle_extension_of_B_B (be : b ≠ e) (Babc : B a b c) (Babd : B a b d) 
+    : angle e b d = angle e b c := by
+  by_cases cd : c = d; rw [cd]
+  rcases B_or_B_of_B_B cd Babc Babd with Bet | Bet; symm
+  repeat exact ang_654321_of_ang $ angle_extension_of_B be Bet
  ---------------------------------------- Book I Refactored --------------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -568,31 +578,18 @@ theorem bisect_angle (aL : online a L) (bL : online b L) (aM : online a M) (cM :
     sameside_trans (sameside_symm feL) $ sameside_symm $ sameside_of_B_not_online_2 Bace aL 
     (online_3_of_triangle aL bL tri_abc)⟩
 
-lemma B_B_eq_of_B (Babc : B a b c) : ∃ d e, B b c d ∧ B b a e ∧ length b d = length b e := by
-  rcases length_eq_B_of_ne_four (ne_23_of_B Babc) (ne_12_of_B Babc) with ⟨d, Bbcd, ab_cd⟩
-  rcases length_eq_B_of_ne_four (ne_21_of_B Babc) (ne_23_of_B Babc) with ⟨e, Bbae, bc_ae⟩
-  refine ⟨d, e, Bbcd, Bbae, by linarith[length_sum_of_B Bbcd, length_sum_perm_of_B Bbae]⟩
-
-lemma B_B_eq_of_B_I11 (Babc : B a b c) (aL : online a L) (cL : online c L) : 
-    ∃ d e, e ≠ d ∧ B b c d ∧ B b a e ∧ online b L ∧ online e L ∧ online d L 
-    ∧ length b d = length b e := by
-  rcases B_B_eq_of_B Babc with ⟨d, e, Bbcd, Bbae, bd_be⟩
-  have bL := online_2_of_B Babc aL cL
-  exact ⟨d, e, ne_of_B_B_B (B_symm Bbae) Babc Bbcd, Bbcd, Bbae, bL, 
-    online_3_of_B Bbae bL aL, online_3_of_B Bbcd bL cL, bd_be⟩
-  
 /-- Euclid I.11, Obtaining perpendicular angles from a point on a line -/
-theorem perpendicular_of_online (Babc : B a b c) (aL : online a L) (cL : online c L) 
-    (gL : ¬online g L) : 
-    ∃ f, sameside f g L ∧ angle f b a = rightangle ∧ angle f b c = rightangle := by
-  rcases B_B_eq_of_B_I11 Babc aL cL with ⟨d, e, ed, Bbcd, Bbae, bL, eL, dL, bd_be⟩
-  rcases iseqtri_sameside_of_ne ed eL dL gL with ⟨f, fL, fgL, eqtri⟩
-  have fbe_fbd : angle f b e = angle f b d := (sss rfl eqtri.2.2.2 bd_be.symm).2.1
-  have rightangles : angle f b a = rightangle ∧ angle f b c = rightangle := 
-    rightangle_of_angle_eq Babc aL cL fL $ by linarith
-      [ang_654321_of_ang $ angle_extension_of_B (ne_of_online bL fL) Bbcd, 
-       ang_654321_of_ang $ angle_extension_of_B (ne_of_online bL fL) Bbae]
-  refine ⟨f, fgL, rightangles⟩ 
+theorem perpendicular_of_online (Babc : B a b c) (aL : online a L) (bL : online b L) 
+    (fL : ¬online f L) : 
+    ∃ e, sameside e f L ∧ angle e b a = rightangle ∧ angle e b c = rightangle := by
+  rcases length_eq_B_of_ne (ne_12_of_B Babc) (ne_21_of_B Babc) with ⟨d, Babd, ba_bd⟩
+  rcases iseqtri_sameside_of_ne (ne_13_of_B Babd) aL (online_3_of_B Babd aL bL) fL 
+    with ⟨e, eL, efL, eqtri⟩
+  have eba_ebd : angle e b a = angle e b d := (sss rfl eqtri.2.2.2 ba_bd).2.1
+  have rightangles : angle e b a = rightangle ∧ angle e b c = rightangle := 
+    rightangle_of_angle_eq Babc aL (online_3_of_B Babc aL bL) eL $ eba_ebd.trans 
+    $ angle_extension_of_B_B (ne_of_online bL eL) Babc Babd
+  refine ⟨e, efL, rightangles⟩
 
 /-- Euclid I.12, Obtaining perpendicular angles from a point off a line -/
 theorem perpendicular_of_not_online (aL : ¬online a L) : ∃ c d e, B c e d ∧ online c L ∧ online d L 
@@ -2000,4 +1997,19 @@ use f
 calc length a f = length b e := length_eq_of_B_B Bdbe Bdaf eqtri.2.2.2 
                                 (length_eq_of_oncircle dβ eβ fβ)
      length b e = length b c := (length_eq_of_oncircle bα cα eα).symm
+
+--2023/4/18 --look into, probably there is a better proof
+theorem angle_extension_of_ss (ac : a ≠ c) (bb1 : b ≠ b1) (aL : online a L) (cL : online c L)
+    (aM : online a M) (bM : online b M) (b1M : online b1 M) (bb1L : sameside b b1 L) :
+    angle b a c = angle b1 a c := 
+  Or.rec (fun h => (angle_extension_of_B ac h).symm) (fun h =>
+  angle_extension_of_B ac h) ((or_iff_right (fun h => (not_sameside13_of_B123_online2 h) 
+  aL bb1L)).mp (or_assoc.mp (Or.rec Or.inr Or.inl (B_of_three_online_ne 
+  (ne_of_sameside aL bb1L).symm (ne_of_sameside' aL (sameside_symm bb1L)) bb1 aM bM b1M))))
+
+  theorem ne_of_B_B (Babc : B a b c) (Bbcd : B b c d) : a ≠ d := 
+  ne_13_of_B $ B124_of_B123_B234 Babc Bbcd
+
+theorem ne_of_B_B_B (Babc : B a b c) (Bbcd : B b c d) (Bcde : B c d e) : a ≠ e :=
+  ne_13_of_B $ B124_of_B123_B234 Babc (B124_of_B123_B234 Bbcd Bcde)
 -/
