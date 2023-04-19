@@ -606,23 +606,6 @@ theorem perpendicular_of_not_online (aL : ¬online a L) : ∃ c d e, B c e d ∧
     rightangle_of_angle_eq Bced cL dL aL aec_aed
   refine ⟨c, d, e, Bced, cL, dL, online_2_of_B Bced cL dL, rightangles⟩
     -------------------------------------------- Book I Old--------------------------------------------
---Euclid I.12
-theorem perppointnon { c : point} {O : line} (cO : ¬online c O) : ∃ (e h g : point), online e O ∧
-  online h O ∧ online g O ∧ B e h g ∧ angle c h e = rightangle ∧ angle c h g = rightangle :=
-  by sorry /-begin
-  rcases diffside_of_not_online cO with ⟨d, dO, dcO⟩,
-  rcases circle_of_ne (λ cd, (by rwa cd at dcO : ¬sameside d d O) (sameside_rfl_of_not_online dO) 
-    : c ≠ d) with ⟨α, dcirc, ccen⟩,
-  rcases pts_of_line_circle_inter (line_circle_inter_of_not_sameside dcO (by left; exact dcirc) 
-    (by right; exact (inside_circle_of_center ccen))) with ⟨e, g,eg, eO, gO, ecirc, gcirc⟩,
-  rcases bisline eg with ⟨h, Behg, len⟩,
-  have := (sss ((on_circle_iff_length_eq ecirc ccen).mpr gcirc) 
-    (len_symm_of_len len.symm).symm rfl).2.2,
-  have := angle_symm c h e,
-  have := (angle_eq_iff_rightangle eO gO cO Behg).mp (by linarith),
-  refine ⟨e, h, g, eO, (online_2_of_B Behg eO gO), gO, Behg, by linarith, by linarith⟩,
-end-/
-
 --Euclid I.13
 theorem flatsumright {a b c d : point} {L : line} (dL : online d L) (cL : online c L)
   (aL : ¬online a L) (Bdbc : B d b c) : angle a b c + angle a b d = 2 * rightangle :=
