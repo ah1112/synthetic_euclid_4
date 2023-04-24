@@ -220,6 +220,10 @@ theorem diffside_of_sameside_diffside (abL : sameside a b L) (acL : diffside a c
   diffside b c L := by 
 by_contra h; unfold diffside at h; push_neg at h; exact acL.2.2
  (sameside_trans (sameside_symm abL) (h (not_online_of_sameside (sameside_symm abL)) acL.2.1))
+--2023/4/23
+theorem sameside_of_diffside_diffside (abL : diffside a b L) (acL : diffside a c L) :
+  sameside b c L := (or_iff_right acL.2.2).mp 
+  (sameside_or_of_diffside abL.1 abL.2.1 acL.2.1 abL.2.2)
 
 theorem diffside_of_circles_inter (aα : center_circle a α) (bβ : center_circle b β)
   (αβ : circles_inter α β) : ∃ (c d : point) (L : line), online a L ∧ online b L ∧ on_circle c α ∧
@@ -434,6 +438,9 @@ theorem tri_of_B_B_tri (Babd : B a b d) (Bace : B a c e) (tri_abc : triangle a b
 --2023/4/17
 theorem ne_21_of_B (Babc : B a b c) : b ≠ a := Ne.symm $ ne_12_of_B Babc
 
+--2023/4/24
+theorem ne_32_of_B (Babc : B a b c) : c ≠ b := Ne.symm $ ne_23_of_B Babc
+
 theorem sameside_or_of_diffside' (cL : ¬online c L) (abL : diffside a b L) : 
     sameside a c L ∨ sameside b c L := sameside_or_of_diffside abL.1 abL.2.1 cL abL.2.2
 
@@ -464,6 +471,61 @@ theorem angle_extension_of_B_B (be : b ≠ e) (Babc : B a b c) (Babd : B a b d)
   by_cases cd : c = d; rw [cd]
   rcases B_or_B_of_B_B cd Babc Babd with Bet | Bet; symm
   repeat exact ang_654321_of_ang $ angle_extension_of_B be Bet
+--2023/4/23 --fix
+theorem online_of_sameside_inter (ab : a ≠ b) (aL : online a L) (aM : online a M) (bL : online b L)
+    (cM : online c M) (cdL : sameside c d L) : ¬online b M := by
+  intro bM
+  rw [line_unique_of_pts ab aM bM aL bL] at cM
+  exact (not_online_of_sameside cdL) cM
+--2023/4/23
+theorem diffside_of_sameside_sameside (aL : online a L) (aM : online a M) (aN : online a N)
+    (bL : online b L) (cM : online c M) (dN : online d N) (dcL : sameside d c L) 
+    (bcN : sameside b c N) : diffside b d M := 
+  ⟨online_of_sameside_inter (ne_of_sameside' aN bcN) aL aM bL cM $ sameside_symm dcL, 
+  online_of_sameside_inter (ne_of_sameside' aL dcL) aN aM dN cM $ sameside_symm bcN, 
+  not_sameside_of_sameside_sameside aL aM aN bL cM dN (sameside_symm dcL) bcN⟩
+--2023/4/23
+theorem angle_add_of_sameside (aL : online a L) (bL : online b L) (aM : online a M) 
+    (cM : online c M) (cdL : sameside c d L) (bdM : sameside b d M) : 
+    angle b a c = angle d a b + angle d a c := by
+  linarith[angle_symm b a d, (angle_add_iff_sameside (ne_of_sameside' aM bdM) (ne_of_sameside' 
+    aL cdL) aL bL aM cM (not_online_of_sameside $ sameside_symm bdM) (not_online_of_sameside $ 
+    sameside_symm cdL) $ ne_line_of_online aL cM $ not_online_of_sameside cdL).mpr ⟨bdM, cdL⟩]
+
+theorem offline_of_B_offline (Babc : B a b c) (aL : online a L) (bL : online b L) (bN : online b N)
+    (dN : online d N) (dL : ¬online d L) : ¬online a N := 
+  online_3_of_triangle bN dN (tri231_of_tri123 $ triangle_of_ne_online (ne_12_of_B Babc) aL bL dL)
+
+theorem diffside_of_B_offline (Babc : B a b c) (aL : online a L) (bL : online b L) (bN : online b N)
+    (dN : online d N) (dL : ¬online d L) : diffside a c N := 
+  ⟨offline_of_B_offline Babc aL bL bN dN dL, offline_of_B_offline (B_symm Babc) 
+  (online_3_of_B Babc aL bL) bL bN dN dL, not_sameside13_of_B123_online2 Babc bN⟩
+
+theorem sameside_of_B_sameside_sameside (Babc : B a b c) (bL : online b L) (bM : online b M)
+    (bN : online b N) (aL : online a L) (eM : online e M) (dN : online d N) (edL : sameside e d L)
+    (cdM : sameside c d M) : sameside a e N := 
+  sameside_of_diffside_diffside (diffside_symm $ diffside_of_B_offline Babc aL bL bN dN $ 
+  not_online_of_sameside $ sameside_symm edL) (diffside_of_sameside_sameside bL bN bM 
+  (online_3_of_B Babc aL bL) dN eM edL cdM) 
+--fix
+theorem B_or_B_of_sameside (bc : b ≠ c) (aL : online a L) (col : colinear a b c) 
+    (bcL : sameside b c L) : B a b c ∨ B a c b := by
+  rcases B_of_three_col_ne (ne_of_sameside' aL bcL) (ne_of_sameside' aL $ sameside_symm bcL) 
+    bc col with Bet | Bet | Bet
+  left; exact Bet; exfalso; exact not_sameside13_of_B123_online2 Bet aL $ bcL; right; exact Bet
+
+theorem angle_extension_of_sameside (ab : a ≠ b) (aL : online a L) (bL : online b L) 
+    (col : colinear b c d) (cdL : sameside c d L) : angle c b a = angle d b a := by
+  by_cases cd : c = d; rw [cd]
+  rcases B_or_B_of_sameside cd bL col cdL with Bet | Bet; symm
+  repeat exact symm $ angle_extension_of_B (Ne.symm ab) Bet
+
+theorem sameside_of_B_diffside_sameside (Babc : B a b c) (aL : online a L) (bL : online b L)
+    (bM : online b M) (eM : online e M) (dM : ¬online d M) (edL : sameside e d L) 
+    (cdM : ¬sameside c d M) : sameside a d M := by
+  refine sameside_symm $ sameside_of_diffside_diffside ⟨offline_of_B_offline 
+    (B_symm Babc) (online_3_of_B Babc aL bL) bL bM eM $ not_online_of_sameside edL, dM, cdM⟩ $
+    diffside_symm $ diffside_of_B_offline Babc aL bL bM eM $ not_online_of_sameside edL
  ---------------------------------------- Book I Refactored --------------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -602,61 +664,25 @@ theorem perpendicular_of_not_online (aL : ¬online a L) : ∃ c d e, B c e d ∧
   have rightangles : angle a e c = rightangle ∧ angle a e d = rightangle := 
     rightangle_of_angle_eq Bced cL dL aL aec_aed
   refine ⟨c, d, e, Bced, cL, dL, online_2_of_B Bced cL dL, rightangles⟩
-    -------------------------------------------- Book I Old--------------------------------------------
---Euclid I.13
-theorem flatsumright {a b c d : point} {L : line} (dL : online d L) (cL : online c L)
-  (aL : ¬online a L) (Bdbc : B d b c) : angle a b c + angle a b d = 2 * rightangle :=
-  by sorry /-begin
-  --have := bet_nq2 dL cL aL Bdbc,
-  have ab : a≠ b:= (neq_of_bet dL cL aL Bdbc).symm,
-  rcases line_of_pts a b with ⟨N, aN, bN⟩,
-  by_cases (angle a b c = angle a b d),
-  { linarith [(angle_eq_iff_rightangle dL cL aL Bdbc).mp ((angle_symm_of_angle h.symm)), (angle_symm_of_angle  h.symm)], },
-  rcases perplinecor cL dL aL (B_symm Bdbc) with ⟨e, a1, a2, eaL⟩,
-  have eb := (neq_of_online_offline (online_2_of_B Bdbc dL cL) (not_online_of_sameside eaL)).symm,
-  rcases line_of_pts e b with ⟨M, eM, bM⟩,
-  have ra : angle e b c = angle e b d := by linarith [angle_symm c b e, angle_symm d b e],
-  have aM : ¬online a M,
-  { intro aM,
-    have ae : a ≠ e := λ ae, (by rwa ae at h : (¬(angle e b c = angle e b d))) ra,
-    cases B_of_three_online_ne (neq_of_online_offline (online_2_of_B Bdbc dL cL) aL).symm ae eb.symm aM bM eM ,
-    --- *** BAD don't use `h_1`
-    { exact (not_sameside13_of_B123_online2 h_1 (online_2_of_B Bdbc dL cL)) (sameside_symm eaL), },
-    cases h_1,
-    exact (by rwa [angle_extension_of_B (ne_23_of_B Bdbc) h_1,
-      angle_extension_of_B ((ne_12_of_B Bdbc).symm) h_1] at h : (¬(angle e b c = angle e b d))) ra,
-    exact (by rwa [←(angle_extension_of_B (ne_23_of_B Bdbc) (B_symm h_1)),
-      ←(angle_extension_of_B ((ne_12_of_B Bdbc).symm) (B_symm h_1))] at h : (¬(angle e b c = angle e b d))) ra, },
-  -- wlog acM : (sameside a c M) using [c d, d c],
-  -- { by_cases h1 : sameside a c M,
-  --   { left, assumption, },
-  --   right,
-  --   have cM : ¬online c M := λ cM, (not_online_of_sameside eaL)
-  --     (by rwa (line_unique_of_pts (ne_23_of_B Bdbc) bM cM (online_2_of_B Bdbc dL cL) cL) at eM),
-  --   have dM : ¬online d M := λ dM, (not_online_of_sameside eaL)
-  --     (by rwa (line_unique_of_pts ((ne_12_of_B Bdbc).symm) bM dM (online_2_of_B Bdbc dL cL) dL) at eM),
-  --   exact sameside_of_diffside_diffside ⟨cM, aM, difsym h1⟩ ⟨cM, dM, difsym (not_sameside13_of_B123_online2 Bdbc bM)⟩, },
-  --   --end of proof of wlog; not worth it?
-  -- { have splitcbe := (angle_add_iff_sameside (ne_23_of_B Bdbc) eb.symm (online_2_of_B Bdbc dL cL) cL bM eM  aM aL (λ LM, (not_online_of_sameside eaL)
-  --     (by rwa ← LM at eM))).mpr ⟨sameside_symm acM, eaL⟩,
-  --   have eNL : ¬online e N ∧ ¬online e L := ⟨(λ eN, (by rwa (line_unique_of_pts eb eM bM eN bN) at aM :
-  --     ¬online a N) aN), (λ eL, (not_online_of_sameside eaL) eL)⟩,
-  --   have deN : sameside d e N,
-  --   { have cN : ¬online c N := λ cN,
-  --       aL (by rwa (line_unique_of_pts (ne_23_of_B Bdbc) bN cN (online_2_of_B Bdbc dL cL) cL) at aN),
-  --     have dN : ¬online d N  := λ dN,
-  --       aL (by rwa (line_unique_of_pts ((ne_12_of_B Bdbc).symm) bN dN (online_2_of_B Bdbc dL cL) dL) at aN),
-  --     exact sameside_symm (sameside_of_diffside_diffside ⟨cN, eNL.1, difsym (not_sameside_of_sameside_sameside bM bN (online_2_of_B Bdbc dL cL) eM aN cL acM eaL)⟩
-  --       ⟨cN, dN, difsym (not_sameside13_of_B123_online2 Bdbc bN)⟩), },
-  --   have splitabd := (angle_add_iff_sameside ab.symm ((ne_12_of_B Bdbc).symm) bN aN (online_2_of_B Bdbc dL cL) dL  eNL.2 eNL.1
-  --     (λ NL, aL (by rwa NL at aN))).mpr ⟨sameside_symm eaL, deN⟩,
-  --   have flipcbe := angle_symm c b e,
-  --   have flipabc := angle_symm a b c,
-  --   linarith [(angle_eq_iff_rightangle dL cL eNL.2 Bdbc).mp (by linarith)], },
-  -- linarith [this cL dL (B_symm Bdbc) (λ hh, h hh.symm) a2 a1 ra.symm],
-  by sorry,
-end-/
 
+/-- Euclid I.13, A generalization of I.11. Instead of requiring the angles to be perpendicular,
+  they can be arbitrary -/
+theorem two_right_of_flat_angle (Babc : B a b c) (aL : online a L) (bL : online b L) 
+    (dL : ¬online d L) : angle d b a + angle d b c = 2 * rightangle := by
+  rcases line_of_pts b d with ⟨N, bN, dN⟩
+  rcases perpendicular_of_online Babc aL bL dL with ⟨e, edL, eba_ra, ebc_ra⟩
+  rcases line_of_pts e b with ⟨M, eM, bM⟩
+  by_cases dM : online d M; linarith[angle_extension_of_sameside (ne_12_of_B Babc) aL bL 
+    ⟨M, bM, eM, dM⟩ edL, angle_extension_of_sameside (ne_32_of_B Babc) (online_3_of_B Babc aL bL) 
+    bL ⟨M, bM, eM, dM⟩ edL]
+  wlog cdM : sameside c d M; linarith[this (B_symm Babc) (online_3_of_B Babc aL bL) bL dL N bN dN 
+    e edL ebc_ra eba_ra M eM bM dM $ sameside_of_B_diffside_sameside Babc aL bL bM eM dM edL cdM]
+  have ebc_add : angle d b c = angle e b c - angle d b e := 
+    by linarith[angle_add_of_sameside bM eM bL (online_3_of_B Babc aL bL) cdM edL]
+  have dba_add : angle d b a = angle e b d + angle e b a := angle_add_of_sameside bN dN bL aL 
+    (sameside_of_B_sameside_sameside Babc bL bM bN aL eM dN edL cdM) (sameside_symm edL)
+  linarith[angle_symm d b e]
+    -------------------------------------------- Book I Old--------------------------------------------
 -- Euclid I.14
 theorem rightimpflat {a b c d : point} {N : line} (ab : a ≠ b) (aN : online a N) (bN : online b N)
   (cdN : diffside c d N) (ang : angle a b c + angle a b d = 2 * rightangle) : B c b d :=
@@ -1969,10 +1995,6 @@ end-/
 ------------------------------------------- old API ------------------------------------------------
 lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
   := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
-
-theorem sameside_of_diffside_diffside {a b c : point} {L : line} (dsab : diffside a b L) (dsac : diffside a c L) :
-  sameside b c L :=(or_iff_right dsac.2.2).mp
-  (sameside_or_of_diffside dsab.1 dsab.2.1 dsac.2.1 dsab.2.2)
 
 theorem para_symm {M N : line} (par: para M N) : para N M:= by sorry --λ a, or.swap (par a)
 
