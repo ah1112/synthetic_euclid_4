@@ -52,42 +52,5 @@ Usage:
  -/
 syntax "perm" ("at" ident)? : tactic
 macro_rules
-  | `(tactic| perm) => `(tactic|
-  {
-    conv =>
-      lhs
-      args
-      all_goals perm_nf
-
-    conv =>
-      rhs
-      args
-      all_goals perm_nf
-  })
-
-  | `(tactic| perm at $h) => `(tactic|
-  {
-    conv at $h =>
-      lhs
-      args
-      all_goals perm_nf
-    
-    conv at $h =>
-      rhs
-      args
-      all_goals perm_nf
-  })
-
-syntax "perm'" ("at" ident)? : tactic
-macro_rules
-  | `(tactic| perm') => `(tactic|
-    conv =>
-      args
-      all_goals try {perm_nf}
-  )
-
-  | `(tactic| perm' at $h) => `(tactic|
-    conv at $h =>
-      args
-      all_goals try {perm_nf}
-  )
+  | `(tactic| perm) => `(tactic| conv in (occs := *) area _ _ _ => all_goals perm_nf)
+  | `(tactic| perm at $h) => `(tactic| conv at $h in (occs := *) area _ _ _ => all_goals perm_nf)
