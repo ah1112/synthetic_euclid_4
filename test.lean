@@ -29,3 +29,19 @@ lemma test_perm4 {a b c: point} :
       all_goals try {perm_nf}
     ring
   }
+
+lemma test_perm5 {a b c d e f: point} (H: area a c b = area f d e)
+  : (area c a b = area e d f) := by
+  sorry
+
+lemma test_perm6 {a b c d e f: point} (H: area a c b = 0)
+  : (area c a b + area e d f = area f d e) := by
+  sorry
+
+lemma test_perm7 {a b c d e f g h i: point} (H: area a c b + area f e d = 0)
+  : (area c a b + area e d f + area h i g = area i g h) := by
+  sorry
+
+lemma test_perm8 {a b c d e f g h i: point} (H: area c b a + area d f e = area i h g)
+  : (area e d f + area c a b = area h i g) := by
+  sorry
