@@ -65,18 +65,40 @@ macro_rules
       lhs
       args
       all_goals perm_nf
-    
+
     conv =>
       rhs
       args
       all_goals perm_nf
   })
 
-syntax "perm'" : tactic
+  | `(tactic| perm at $h) => `(tactic|
+  {
+    conv at $h =>
+      lhs
+      args
+      all_goals perm_nf
+    
+    conv at $h =>
+      rhs
+      args
+      all_goals perm_nf
+  })
+
+-- TODO: ← apply to all goals and hypotheses by default
+
+syntax "perm'" ("at" ident)? : tactic
 macro_rules
   | `(tactic| perm') => `(tactic|
   {
     conv =>
+      args
+      all_goals try {perm_nf}
+  })
+
+  | `(tactic| perm' at $h) => `(tactic|
+  {
+    conv at $h =>
       args
       all_goals try {perm_nf}
   })
