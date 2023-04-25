@@ -2,15 +2,30 @@ import SyntheticEuclid4.tactics
 open incidence_geometry
 variable [i: incidence_geometry]
 
-lemma test_perm {a b c d e f u v w x y z: point} (h: area u v w + area x y z = 1)
-  : (area a c c = area c c a) ∧ (area a b c + area e d f = area a c b + area d f e) ∧ (area a b c + area c b a = area a b c * 2) ∧ (area b a c + area c b a = area a b c * 2) ∧ (area b a c + area a b c = area a b c * 2) := by
-  have := h
-  constructor
+-- TODO: unify both cases
+lemma test_perm1 {a b : point} : (area a b b = area b b a):= by
+  perm'
+
+lemma test_perm2 {a b c d e f: point} :
+ (area a b c + area e d f = area a c b + area d f e) := by
   perm
-  constructor
-  perm 2
-  constructor
-  perm then ring_nf
-  constructor
-  perm then {perm then ring_nf}
-  perm then {perm then ring_nf}
+
+lemma test_perm3 {a b c d e f: point} :
+ (area a b c + area e d f = area a c b + area d f e) := by
+  perm
+
+-- TODO: take care of brackets
+lemma test_perm4 {a b c: point} :
+ (area b a c + area c b a = area a b c * 2) := by
+  {
+    conv =>
+      lhs
+      args
+      all_goals try {perm_nf}
+    
+    conv =>
+      rhs
+      args
+      all_goals try {perm_nf}
+    ring
+  }
