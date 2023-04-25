@@ -32,10 +32,13 @@ lemma test_perm4 {a b c: point} :
 
 lemma test_perm5 {a b c d e f: point} (H: area a c b = area f d e)
   : (area c a b = area e d f) := by
-  sorry
+  perm' at H
+  perm'
+  exact H
 
 lemma test_perm6 {a b c d e f: point} (H: area a c b = 0)
   : (area c a b + area e d f = area f d e) := by
+  perm' at H
   sorry
 
 lemma test_perm7 {a b c d e f g h i: point} (H: area a c b + area f e d = 0)

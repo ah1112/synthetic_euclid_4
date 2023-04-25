@@ -81,15 +81,13 @@ macro_rules
 syntax "perm'" ("at" ident)? : tactic
 macro_rules
   | `(tactic| perm') => `(tactic|
-  {
     conv =>
       args
       all_goals try {perm_nf}
-  })
+  )
 
   | `(tactic| perm' at $h) => `(tactic|
-  {
     conv at $h =>
       args
       all_goals try {perm_nf}
-  })
+  )
