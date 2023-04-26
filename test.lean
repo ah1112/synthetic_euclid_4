@@ -13,7 +13,6 @@ lemma test_perm3 {a b c d e f: point} :
  (area a b c + area e d f = area a c b + area d f e) := by
   perm
 
--- TODO: take care of brackets
 lemma test_perm4 {a b c: point} :
  (area b a c + area c b a = area a b c * 2) := by
   perm
@@ -42,3 +41,13 @@ lemma test_perm8 {a b c d e f g h i: point} (H: area c b a + area d f e = area i
   perm at H
   perm
   linarith
+
+lemma test_perm9 {a b c d: point} {L: line} (h: colinear b c a) (h2: triangle b d c) (h3: length d c = 1) (h4: sameside b a L) (h5: diffside d c L):
+(angle a c b = angle b c a) := by
+  perm at h
+  perm at h2
+  perm at h3
+  perm at h4
+  perm at h5
+  perm at h6
+  perm
