@@ -1,4 +1,4 @@
-import SyntheticEuclid4
+import SyntheticEuclid4.axioms
 open incidence_geometry
 variable [i: incidence_geometry]
 
