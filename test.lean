@@ -49,5 +49,4 @@ lemma test_perm9 {a b c d: point} {L: line} (h: colinear b c a) (h2: triangle b 
   perm at h3
   perm at h4
   perm at h5
-  perm at h6
   perm

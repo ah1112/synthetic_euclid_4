@@ -32,19 +32,19 @@ lemma col132 : colinear a b c ↔ colinear a c b := by conv => rhs; rw [col213];
 lemma col312 : colinear a b c ↔ colinear c a b := by conv => lhs; rw [← col231]
 lemma col321 : colinear a b c ↔ colinear c b a := by conv => rhs; rw [col231]; rw [col213]
 
-lemma tri132 {a b c : point} : triangle a b c ↔ triangle a c b := by
+lemma tr132 {a b c : point} : triangle a b c ↔ triangle a c b := by
   constructor; all_goals dsimp [triangle]; rw [col132]; tauto
-lemma tri213 {a b c : point} : triangle a b c ↔ triangle b a c := by
+lemma tr213 {a b c : point} : triangle a b c ↔ triangle b a c := by
   constructor; all_goals dsimp [triangle]; rw [col213]; tauto
-lemma tri231 {a b c : point} : triangle a b c ↔ triangle b c a := by
+lemma tr231 {a b c : point} : triangle a b c ↔ triangle b c a := by
   constructor; all_goals dsimp [triangle]
   rw [col231]; tauto
   rw [← col231]; tauto
-lemma tri312 {a b c : point} : triangle a b c ↔ triangle c a b := by
+lemma tr312 {a b c : point} : triangle a b c ↔ triangle c a b := by
   constructor; all_goals dsimp [triangle]
   rw [col312]; tauto
   rw [← col312]; tauto
-lemma tri321 {a b c : point} : triangle a b c ↔ triangle c b a := by
+lemma tr321 {a b c : point} : triangle a b c ↔ triangle c b a := by
   constructor; all_goals dsimp [triangle]; rw [col321]; tauto
 
 lemma ss21 {a b : point} {L : line}: sameside a b L ↔ sameside b a L := by
@@ -126,15 +126,15 @@ elab_rules : conv
       if lte arg1 arg2 && lte arg2 arg3 then
         evalTactic (← `(tactic| skip )) -- abc
       else if lte arg1 arg3 && lte arg3 arg2 then
-        evalTactic (← `(tactic| rw [@tri132 _ _ _] )) -- acb
+        evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
       else if lte arg2 arg1 && lte arg1 arg3 then
-        evalTactic (← `(tactic| rw [@tri213 _ _ _] )) -- bac
+        evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
       else if lte arg3 arg1 && lte arg1 arg2 then
-        evalTactic (← `(tactic| rw [@tri312 _ _ _] )) -- bca
+        evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
       else if lte arg2 arg3 && lte arg3 arg1 then
-        evalTactic (← `(tactic| rw [@tri231 _ _ _] )) -- cab
+        evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
       else if lte arg3 arg2 && lte arg2 arg1 then
-        evalTactic (← `(tactic| rw [@tri321 _ _ _] )) -- cba
+        evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `length_nf`
 A conv tactic for permuting the variables in an `length` expression. A building block for the `perm` tactic.
