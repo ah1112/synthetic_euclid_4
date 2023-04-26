@@ -1,6 +1,11 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/4/24
+Got rid of pt_extension_of_ne since it can be deduced from length_eq_B_of_ne
+
+Refactored I.11-14
+
 --2023/4/14
 Changed sameside23_of_B123_online1_not_online2 to sameside_of_B_not_online_2
 
