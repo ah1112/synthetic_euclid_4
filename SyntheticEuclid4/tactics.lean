@@ -30,7 +30,7 @@ elab_rules : conv
       let arg2 := Lean.Expr.getArg! tgt 2
       let arg3 := Lean.Expr.getArg! tgt 3
       if lte arg1 arg2 && lte arg2 arg3 then
-        evalTactic (← `(tactic| try rfl )) -- abc
+        evalTactic (← `(tactic| skip )) -- abc
       else if lte arg1 arg3 && lte arg3 arg2 then
         evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
       else if lte arg2 arg1 && lte arg1 arg3 then
