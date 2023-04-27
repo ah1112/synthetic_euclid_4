@@ -476,12 +476,10 @@ theorem angle_extension_of_B_B (be : b ≠ e) (Babc : B a b c) (Babd : B a b d)
   by_cases cd : c = d; rw [cd]
   rcases B_or_B_of_B_B cd Babc Babd with Bet | Bet; symm
   repeat exact ang_654321_of_ang $ angle_extension_of_B be Bet
---2023/4/23 --fix
+--2023/4/23
 theorem online_of_sameside_inter (ab : a ≠ b) (aL : online a L) (aM : online a M) (bL : online b L)
-    (cM : online c M) (cdL : sameside c d L) : ¬online b M := by
-  intro bM
-  rw [line_unique_of_pts ab aM bM aL bL] at cM
-  exact (not_online_of_sameside cdL) cM
+    (cM : online c M) (cdL : sameside c d L) : ¬online b M := 
+  fun bM => (not_online_of_sameside cdL) (by rwa [line_unique_of_pts ab aM bM aL bL] at cM)
 --2023/4/23
 theorem diffside_of_sameside_sameside (aL : online a L) (aM : online a M) (aN : online a N)
     (bL : online b L) (cM : online c M) (dN : online d N) (dcL : sameside d c L) 
