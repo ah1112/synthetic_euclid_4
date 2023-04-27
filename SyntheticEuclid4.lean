@@ -604,21 +604,17 @@ theorem flat_of_two_right_angle (bd : b ≠ d) (bL : online b L) (dL : online d 
   have cN := online_of_angle_zero (ne_23_of_B Babe) (ne_of_online bL acL.2.1) 
       bN (online_3_of_B Babe aN bN) ebc_0
   exact B_of_col_diffside ⟨N, aN, bN, cN.1⟩ bL acL
-    -------------------------------------------- Book I Old--------------------------------------------
---Euclid I.15
-theorem vertang {a b c d e : point} {L : line} (cL : online c L) (dL : online d L)
-  (aL : ¬online a L) (Bced : B c e d) (Baeb : B a e b) : angle b e c = angle d e a :=
-  by sorry /-begin
-  rcases line_of_B Baeb with ⟨N, aN, eN, bN, -,nq,-⟩,
-  have dN : ¬online d N := λ dN,
-    ((by rwa (line_unique_of_pts (ne_23_of_B Bced) (online_2_of_B Bced cL dL) dL eN dN) at aL) : ¬online a N) aN,
-  have bL : ¬online b L := λ bL,
-    (by rwa line_unique_of_pts nq (online_2_of_B Bced cL dL) bL eN bN at aL : ¬online a N) aN,
-  have := flatsumright cL dL bL Bced,
-  have := flatsumright aN bN dN Baeb,
-  linarith [angle_symm a e d, angle_symm b e d],
-end-/
 
+/-- Euclid I.15, vertical angles are equal-/
+theorem vertical_angle (Babc : B a b c) (Bdbe : B d b e) (aL : online a L) (bL : online b L)
+    (dL : ¬online d L) : angle a b d = angle c b e := by
+  rcases line_of_pts d b with ⟨M, dM, bM⟩ 
+  have dba_dbc := two_right_of_flat_angle Babc aL bL dL
+  have cbd_cbe := two_right_of_flat_angle Bdbe dM bM $ offline_of_online_offline (ne_23_of_B Babc) 
+    dM bM bL (online_3_of_B Babc aL bL) dL
+  linarith[angle_symm d b c, angle_symm d b a]
+
+    -------------------------------------------- Book I Old--------------------------------------------
 --Euclid I.16 (Elliptic geometry fails)
 theorem extang {a b c d : point} {L : line} (aL : ¬online a L) (bL : online b L) (dL : online d L)
   (Bbcd : B b c d) : angle b a c < angle a c d :=
