@@ -1,6 +1,19 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/4/27
+
+Replaced 
+
+theorem vertang {a b c d e : point} {L : line} (cL : online c L) (dL : online d L)
+  (aL : ¬online a L) (Bced : B c e d) (Baeb : B a e b) : angle b e c = angle d e a
+
+with
+
+theorem vertical_angle (Babc : B a b c) (Bdbe : B d b e) (aL : online a L) (bL : online b L)
+    (dL : ¬online d L) : angle a b d = angle c b e
+
+
 --2023/4/24
 Got rid of pt_extension_of_ne since it can be deduced from length_eq_B_of_ne
 
