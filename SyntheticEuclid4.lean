@@ -22,7 +22,7 @@ synthetic geometry, Euclid elements
 variable [i : incidence_geometry]
 open incidence_geometry
 
--------------------------------------------------- new  API --------------------------------------------'
+-------------------------------------------------- new  API ----------------------------------------
   theorem online_of_line (L : line) : ∃ (a : point), online a L := by 
 rcases more_pts ∅ Set.finite_empty with ⟨a, -⟩; exact Classical.by_cases 
  (fun aL => by use a; exact aL) (fun aL => 
@@ -223,6 +223,9 @@ theorem col_132_of_col (col_123 : colinear a b c) : colinear a c b := by
 --2023/4/14
 theorem col_213_of_col (col_123 : colinear a b c) : colinear b a c := by
   rcases col_123 with ⟨L, aL, bL, cL⟩; exact ⟨L, bL, aL, cL⟩ 
+--2023/4/27
+theorem col_312 (col : colinear a b c) : colinear c a b := by
+  rcases col with ⟨L, aL, bL, cL⟩; exact ⟨L, cL, aL, bL⟩ 
 --2023/4/8
 theorem col_134_of_col_123_col_124 (ab : a ≠ b) (col_123 : colinear a b c) 
   (col_124 : colinear a b d) : colinear a c d := by
@@ -435,7 +438,43 @@ lemma angle_zero_of_lt_eq (ab : a ≠ b) (aL : online a L) (bL : online b L) (dc
       aM cM dM (B_of_col_sameside ⟨M, cM, aM, dM⟩ aL $ sameside_symm dcL)
   . linarith[angle_symm b a d, angle_add_of_sameside aL bL aN cN (sameside_symm dcL) $ 
       sameside_of_sameside_not_sameside ab aL aM aN bL dM cN cM dcL bcM, angle_symm d a c]
- ---------------------------------------- Book I Refactored --------------------------------------------
+--2023/4/27
+theorem ne_of_col_tri (col_abc : colinear a b c) (tri_acd : triangle d a c) : d ≠ b := by
+  rcases col_abc with ⟨L, aL, bL, cL⟩; exact ne_of_online' bL $ online_1_of_triangle aL cL tri_acd
+
+theorem ne_of_col_tri' (col_abc : colinear a b c) (tri_acd : triangle d a c) : b ≠ d := 
+  Ne.symm $ ne_of_col_tri col_abc tri_acd
+
+theorem tri_of_B_tri (Babc : B a b c) (tri_acd : triangle d a c) : triangle d b c := 
+  tri321 $ tri_143_of_tri_col (ne_32_of_B Babc) (tri321 tri_acd) $ col_312 $ col_of_B Babc
+
+theorem diffside_of_B_offline' (Babc : B a b c) (bL : online b L) (aL : ¬online a L) : 
+    diffside a c L := 
+  ⟨aL, fun cL => aL $ online_3_of_B (B_symm Babc) cL bL, not_sameside13_of_B123_online2 Babc bL⟩
+
+theorem tri_of_B_B_base_tri (Bade : B a d e) (Bbdc : B b d c) (tri_abc : triangle a b c) :
+    triangle a e b := 
+  tri_143_of_tri_col (ne_13_of_B Bade) (tri_of_B_tri (B_symm Bbdc) $ tri132_of_tri123 tri_abc) 
+    (col_of_B Bade)
+
+theorem offline_of_B_B_tri (Bade : B a d e) (Bbdc : B b d c) (aL : online a L) (bL : online b L)
+    (tri_abc : triangle a b c) : ¬online e L := 
+  fun eL => tri_of_B_B_base_tri Bade Bbdc tri_abc $ ⟨L, aL, eL, bL⟩ 
+
+theorem nonzero_angle_of_offline (ab : a ≠ b) (aL : online a L) (bL : online b L) 
+    (cL : ¬online c L) : angle c a b ≠ 0 := 
+  fun bac_0 => cL ((angle_zero_iff_online ab (ne_of_online aL cL) aL bL).mpr (ang_321_of_ang 
+    bac_0)).1
+
+theorem zero_lt_angle_of_offline (ab : a ≠ b) (aL : online a L) (bL : online b L) 
+    (cL : ¬online c L) : 0 < angle c a b :=
+  lt_of_le_of_ne (angle_nonneg c a b) $ Ne.symm $ nonzero_angle_of_offline ab aL bL cL
+
+theorem sameside_of_B_B (Babc : B a b c) (Bade : B a d e) (bL : online b L) (dL : online d L)
+    (aL : ¬online a L) : sameside c e L := 
+   sameside_of_diffside_diffside (diffside_of_B_offline' Babc bL aL) $ diffside_of_B_offline' 
+    Bade dL aL
+ ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
   online b L ∧ diffside c d L ∧ eq_tri a b c ∧ eq_tri a b d := by
@@ -609,60 +648,44 @@ theorem flat_of_two_right_angle (bd : b ≠ d) (bL : online b L) (dL : online d 
 theorem vertical_angle (Babc : B a b c) (Bdbe : B d b e) (aL : online a L) (bL : online b L)
     (dL : ¬online d L) : angle a b d = angle c b e := by
   rcases line_of_pts d b with ⟨M, dM, bM⟩ 
-  have dba_dbc := two_right_of_flat_angle Babc aL bL dL
-  have cbd_cbe := two_right_of_flat_angle Bdbe dM bM $ offline_of_online_offline (ne_23_of_B Babc) 
-    dM bM bL (online_3_of_B Babc aL bL) dL
+  have dba_dbc : angle d b a + angle d b c = 2 * rightangle := two_right_of_flat_angle Babc aL bL dL
+  have cbd_cbe : angle c b d + angle c b e = 2 * rightangle := two_right_of_flat_angle Bdbe dM bM $ 
+    offline_of_online_offline (ne_23_of_B Babc) dM bM bL (online_3_of_B Babc aL bL) dL
   linarith[angle_symm d b c, angle_symm d b a]
 
-    -------------------------------------------- Book I Old--------------------------------------------
---Euclid I.16 (Elliptic geometry fails)
-theorem extang {a b c d : point} {L : line} (aL : ¬online a L) (bL : online b L) (dL : online d L)
-  (Bbcd : B b c d) : angle b a c < angle a c d :=
-  by sorry /-begin
-  have cL := online_2_of_B Bbcd bL dL,
-  have ca := neq_of_online_offline cL aL,
-  have ba := neq_of_online_offline bL aL,
-  rcases bisline ca with ⟨e, Bcea, len⟩,
-  have be : b ≠ e := λ be, aL (online_3_of_B Bcea cL (by rwa be at bL)),
-  rcases same_length_B_of_ne be be.symm with ⟨f, Bbef, len2⟩,
-  have cf : c ≠ f := λ cf, aL (online_3_of_B Bcea cL (online_2_of_B Bbef bL (by rwa cf at cL))),
-  have afL := sameside_trans (sameside_of_B_not_online_2 Bcea cL (λ eL, aL ((online_3_of_B Bcea) cL eL)))
-    (sameside_of_B_not_online_2 Bbef bL (λ eL, aL ((online_3_of_B Bcea) cL eL))),
-  rcases line_of_B Bbef with ⟨M, bM, eM, fM, -⟩,
-  have cM : ¬online c M := λ cM,
-    ((by rwa ← (line_unique_of_pts (ne_12_of_B Bbcd) bM cM bL cL) at aL) : ¬online a M) (online_3_of_B Bcea cM eM),
-  have ang := vertang bM fM cM Bbef Bcea,
-  have ang2 := (sas (len_symm_of_len len2.symm).symm (len_symm_of_len len) (by linarith [angle_symm b e a])).2.2,
-  rcases line_of_B Bcea with ⟨N, cN, eN, aN, -,-,nq⟩,
-  have fN : ¬online f N := λ fN,
-    aL (by rwa (line_unique_of_pts (ne_12_of_B Bbcd) (online_3_of_B (B_symm Bbef) fN eN) cN bL cL) at aN),
-  have bN : ¬online b N := λ bN, fN (online_3_of_B Bbef bN eN),
-  have dfN := sameside_symm (sameside_of_diffside_diffside ⟨bN, fN, not_sameside13_of_B123_online2 Bbef eN⟩ ⟨bN, (λ dN, bN (online_3_of_B (B_symm Bbcd) dN cN)),
-    not_sameside13_of_B123_online2 Bbcd cN⟩),
-  have NL : N ≠ L := λ NL, bN (by rwa ←NL at bL), --start of pf below, API above
-  have splitang := (angle_add_iff_sameside nq.symm (ne_23_of_B Bbcd) cN aN cL dL (not_online_of_sameside (sameside_symm afL))
-    (not_online_of_sameside (sameside_symm dfN)) NL).mpr ⟨afL, dfN⟩,
-  rcases line_of_pts c f with ⟨P, cP, fP⟩,
-  have geq := lt_of_le_of_ne (angle_nonneg f c d) (ne_comm.mp (mt (angle_zero_iff_online cf (ne_23_of_B Bbcd) cP fP).mpr _)),--better way to deal with or?
-  have geq2 := lt_of_le_of_ne (angle_nonneg b a c) (angeasy ca ((ne_12_of_B Bbcd).symm)
-    (ne_comm.mp (mt (angle_zero_iff_online ca.symm ba.symm aN cN).mpr _))),
-  linarith [angle_symm c a b, angle_extension_of_B ba.symm (B_symm Bcea), angle_extension_of_B cf Bcea],
-  exact λ bN, NL (line_unique_of_pts (ne_12_of_B Bbcd) bN.1 cN bL cL),
-  exact λ dP, not_online_of_sameside (sameside_symm (by rwa ←(line_unique_of_pts (ne_23_of_B Bbcd) cP dP.1 cL dL) at afL)) fP,
-end-/
+/-- Euclid I.15, vertical angles are equal-/
+theorem vertical_angle' (Babc : B a b c) (Bdbe : B d b e) (col_abd : ¬colinear a b d) : 
+    angle a b d = angle c b e := by
+  rcases line_of_pts a b with ⟨L, aL, bL⟩
+  exact vertical_angle Babc Bdbe aL bL $ online_3_of_triangle aL bL col_abd
 
---Euclid I.16 (Elliptic geometry fails)
-theorem extangcor {a b c d : point} {L : line} (aL : ¬online a L) (bL : online b L)
-  (dL : online d L) (Bbcd : B b c d) : angle a b c < angle a c d :=
-  by sorry /-begin
-  rcases same_length_B_of_ne (neq_of_online_offline (online_2_of_B Bbcd bL dL) aL).symm (neq_of_online_offline (online_2_of_B Bbcd bL dL) aL) with ⟨g, Bacg, len3⟩,
-  have gb : g ≠ b := λ gb, aL (online_3_of_B (B_symm Bacg) (by rwa ← gb at bL) (online_2_of_B Bbcd bL dL)),
-  have := angle_symm2_of_angle (ne_23_of_B Bacg).symm gb (ne_23_of_B Bbcd).symm (neq_of_online_offline dL aL)
-    (vertang bL dL aL Bbcd Bacg),
-  rcases line_of_B Bacg with ⟨N, aN, cN, gN, nq⟩,
-  linarith [extang (λ bN, aL (by rwa line_unique_of_pts (ne_12_of_B Bbcd) bN cN bL (online_2_of_B Bbcd bL dL) at aN)) aN gN Bacg],
-end-/
+/-- Euclid I.16, external angles are greater than interior angles-/
+theorem internal_lt_external (Babc : B a b c) (tri_abd : triangle a b d) : 
+    angle b d a < angle d b c := by
+  rcases bisect_segment (ne_23_of_tri tri_abd) with ⟨e, Bbed, be_de⟩
+  rcases col_of_B Bbed with ⟨L, bL, eL, dL⟩
+  rcases col_of_B Babc with ⟨M, aM, bM, cM⟩
+  rcases length_eq_B_of_ne (ne_of_col_tri ⟨L, bL, eL, dL⟩ tri_abd) (ne_of_col_tri' ⟨L, bL, eL, dL⟩ 
+    tri_abd) with ⟨f, Baef, ea_ef⟩ 
+  have aed_feb : angle a e d = angle f e b := vertical_angle' Baef (B_symm Bbed) $ tri_of_B_tri
+    Bbed tri_abd
+  have eda_ebf : angle e d a = angle e b f := (sas ea_ef (by perm; exact be_de.symm) aed_feb).2.2
+  have ebc_split : angle e b c = angle f b e + angle f b c := angle_add_of_sameside bL eL bM cM 
+    (sameside_of_B_B Babc Baef bL eL $ online_1_of_triangle bL dL tri_abd) $ sameside_of_B_online_3 
+    Baef aM $ offline_of_B_B_tri Baef Bbed aM bM tri_abd  
+  linarith[zero_lt_angle_of_offline (ne_23_of_B Babc) bM cM $ offline_of_B_B_tri Baef Bbed aM bM
+    tri_abd, angle_extension_of_B (ne_23_of_B Babc) Bbed, angle_extension_of_B (ne_31_of_tri 
+    tri_abd) (B_symm Bbed), angle_symm f b e]
 
+/-- Euclid I.16, external angles are greater than interior angles-/
+theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) : 
+    angle b a d < angle d b c := by
+  rcases length_eq_B_of_ne (ne_32_of_tri tri_abd) (ne_23_of_tri tri_abd) with ⟨e, Bdbe, -⟩
+  have : angle b a d < angle a b e := internal_lt_external Bdbe $ tri321 tri_abd
+  have : angle e b a = angle d b c := vertical_angle' (B_symm Bdbe) Babc $ tri213 $ 
+    tri_143_of_tri_col (ne_23_of_B Bdbe) (tri231_of_tri123 tri_abd) $ col_213_of_col $ col_of_B Bdbe
+  linarith[angle_symm a b e]
+    -------------------------------------------- Book I Old-----------------------------------------
  --Euclid I.18
  theorem sidebigang {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
   (aL : ¬online a L) (length : length a b < length a c) : angle b c a < angle a b c :=
