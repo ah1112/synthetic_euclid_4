@@ -715,40 +715,27 @@ theorem len_lt_of_ang_lt (tri_abc : triangle a b c) (ang_lt : angle c b a < angl
   by_cases cb_ca : length c b = length c a
   . linarith[angle_eq_of_iso ⟨tri312 $ tri_abc, cb_ca.symm⟩]
   linarith[ang_lt_of_len_lt (tri213 tri_abc) $ lt_of_le_of_ne cb_le_ca cb_ca]
+
+/--Euclid I.20, a triangle inequality-/
+theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + length b c := by
+  rcases length_eq_B_of_ne_four (ne_13_of_tri tri_abc) (ne_23_of_tri tri_abc) with ⟨d, Bacd, bc_cd⟩
+  have : angle d b c < angle d b a := angle_lt_of_B_tri (B_symm Bacd) $ tri312 $ tri_143_of_tri_col
+    (ne_13_of_B Bacd) (tri132_of_tri123 tri_abc) $ col_of_B Bacd
+  have : angle c d b = angle c b d := angle_eq_of_iso ⟨tri_143_of_tri_col (ne_23_of_B Bacd) (tri312 
+    tri_abc) $ col_213_of_col $ col_of_B Bacd, len_43_of_len bc_cd.symm⟩
+  have : length a b < length a d := len_lt_of_ang_lt (tri321 $ tri_143_of_tri_col (ne_13_of_B Bacd) 
+    (tri132_of_tri123 tri_abc) $ col_of_B Bacd) $ 
+    by linarith[angle_symm c b d, angle_symm d b a, angle_extension_of_B (ne_of_col_tri' 
+    (col_132_of_col $ col_of_B Bacd) $ tri213 tri_abc) $ B_symm Bacd]
+  have : length a c + length c d = length a d := length_sum_of_B Bacd
+  linarith
+
+/--Euclid I.20, the triangle inequalities-/
+theorem len_lt_of_tri (tri_abc : triangle a b c) : length a b < length a c + length b c ∧ 
+    length b c < length b a + length c a ∧ length c a < length c b + length a b := 
+  ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ tri231_of_tri123 tri_abc, len_lt_of_tri' $ tri312 
+    tri_abc⟩ 
     -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.20
-theorem triineq {a b c : point} {L : line} (ab : a ≠ b) (aL : online a L) (bL : online b L)
-  (cL : ¬online c L) : length b c < length a b + length a c :=
-  by sorry /-begin
-  have bc := neq_of_online_offline bL cL,
-  rcases same_length_B_of_ne ab.symm (neq_of_online_offline aL cL) with ⟨d, Bbad, len⟩,
-  have dc := neq_of_online_offline (online_3_of_B Bbad bL aL) cL,
-  have ang := eq_angle_of_eq_length (ne_23_of_B Bbad) dc (len_symm_of_len len.symm).symm,
-  rcases line_of_pts b c with ⟨M, bM, cM⟩,
-  rcases line_of_pts d c with ⟨N, dN, cN⟩,
-  have aN : ¬online a N := λ aN,
-    cL (by rwa ← (line_unique_of_pts (ne_23_of_B Bbad) aL (online_3_of_B Bbad bL aL) aN dN) at cN),
-  have adM := sameside_of_B_not_online_2 Bbad bM (λ aM, cL (by rwa (line_unique_of_pts ab aM bM aL bL) at cM)),
-  have abN := sameside_of_B_not_online_2 (B_symm Bbad) dN aN,
-  have angsplit := angles_add_of_sameside dc.symm bc.symm cN dN cM bM (sameside_symm adM) (sameside_symm (sameside_of_B_not_online_2 (B_symm Bbad) dN aN)),
-  have bigside := angbigside dc.symm cN dN (not_online_of_sameside (sameside_symm abN)) (by linarith [angle_extension_of_B dc (B_symm Bbad),
-    angle_symm d c b, angle_symm d c a, angle_symm c d b]),
-  linarith [length_symm b a, length_symm c a, length_sum_of_B Bbad],
-end-/
-
---Euclid I.20
-theorem triineqcor {a b c : point} {L : line} (ab : a ≠ b) (aL : online a L) (bL : online b L)
-  (cL : ¬online c L) : length b c < length a b + length a c ∧ length a c < length a b + length b c ∧
-  length a b < length a c + length b c :=
-  by sorry /-begin
-  rcases line_of_pts b c with ⟨M, bM, cM⟩,
-  rcases line_of_pts a c with ⟨N, aN, cN⟩,
-  have aM : ¬online a M := λ aM, cL (by rwa ← (line_unique_of_pts ab aL bL aM bM) at cM),
-  have bN : ¬online b N := λ bN, cL (by rwa (line_unique_of_pts ab aN bN aL bL) at cN),
-  exact ⟨triineq ab aL bL cL, by linarith [length_symm a b, length_symm a c, triineq (neq_of_online_offline bL cL) bM cM aM],
-    by linarith [length_symm a c, length_symm b c, triineq (neq_of_online_offline aL cL).symm cN aN bN]⟩,
-end-/
-
 --Euclid I.22
 theorem trimake {a1 a2 b1 b2 c1 c2 d f g : point} {L : line} (dL : online d L) (fL : online f L)
   (gL : ¬online g L) (ab : length c1 c2 < length a1 a2 + length b1 b2)
