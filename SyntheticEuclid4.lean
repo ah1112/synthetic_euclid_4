@@ -707,19 +707,15 @@ theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < lengt
     cd_ca.symm⟩
   have : angle c a d < angle c a b := angle_lt_of_B_tri Bcdb tri_abc
   linarith[angle_extension_of_B (ne_21_of_tri tri_abc) $ B_symm Bcdb, angle_symm c d a]
-    -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.19 -- Probably can be turned into one line
-theorem angbigside {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
-  (aL : ¬online a L) (ang : angle b c a < angle a b c) : length a b < length a c :=
-  by sorry /-begin
-  by_cases len : length a b = length a c,
-  { linarith [angle_symm b c a, eq_angle_of_eq_length (neq_of_online_offline bL aL).symm bc len], },
-  by_cases len2 : length a c < length a b,
-  { linarith [sidebigang bc.symm cL bL aL len2, angle_symm c b a, angle_symm b c a], },
-  push_neg at len2,
-  exact (ne.le_iff_lt len).mp len2,
-end-/
 
+/--Euclid I.19, larger angles correspond to larger opposide sides in a triangle-/
+theorem len_lt_of_ang_lt (tri_abc : triangle a b c) (ang_lt : angle c b a < angle c a b) :
+    length c a < length c b := by
+  by_contra cb_le_ca; push_neg at cb_le_ca
+  by_cases cb_ca : length c b = length c a
+  . linarith[angle_eq_of_iso ⟨tri312 $ tri_abc, cb_ca.symm⟩]
+  linarith[ang_lt_of_len_lt (tri213 tri_abc) $ lt_of_le_of_ne cb_le_ca cb_ca]
+    -------------------------------------------- Book I Old-----------------------------------------
 --Euclid I.20
 theorem triineq {a b c : point} {L : line} (ab : a ≠ b) (aL : online a L) (bL : online b L)
   (cL : ¬online c L) : length b c < length a b + length a c :=
