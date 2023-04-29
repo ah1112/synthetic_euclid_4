@@ -129,6 +129,8 @@ theorem online_of_eq' (ab : a = b) (bL : online b L) : online a L := by rwa [ab.
 --2023/4/7
 theorem ne_12_of_tri (tri: triangle a b c) : a ≠ b :=
   fun ac => by rcases line_of_pts a c with ⟨L, aL, cL⟩; exact tri ⟨L, aL, online_of_eq ac aL, cL⟩
+--2023/4/28
+theorem ne_21_of_tri (tri : triangle a b c) : b ≠ a := Ne.symm $ ne_12_of_tri tri
 
 theorem ne_23_of_tri (tri: triangle a b c) : b ≠ c :=
   fun bc => by rcases line_of_pts a b with ⟨L, aL, bL⟩; exact tri ⟨L, aL, bL, online_of_eq bc bL⟩
@@ -474,6 +476,15 @@ theorem sameside_of_B_B (Babc : B a b c) (Bade : B a d e) (bL : online b L) (dL 
     (aL : ¬online a L) : sameside c e L := 
    sameside_of_diffside_diffside (diffside_of_B_offline' Babc bL aL) $ diffside_of_B_offline' 
     Bade dL aL
+--2023/4/28
+theorem angle_lt_of_B_tri (Bcdb : B c d b) (tri_abc : triangle a b c) : 
+    angle c a d < angle c a b := by
+  rcases line_of_pts a b with ⟨L, aL, bL⟩; rcases line_of_pts a c with ⟨M, aM, cM⟩ 
+  have ang_split := angle_add_of_sameside aM cM aL bL (sameside_symm $ sameside_of_B_online_3 Bcdb 
+    cM (online_2_of_triangle aM cM tri_abc)) $ sameside_symm $ sameside_of_B_online_3 (B_symm Bcdb)
+    bL $ online_3_of_triangle aL bL tri_abc
+  linarith[angle_symm d a c, zero_lt_angle_of_offline (ne_12_of_tri tri_abc) aL bL (fun dL => 
+    (online_3_of_triangle aL bL tri_abc) $ online_3_of_B (B_symm Bcdb) bL dL)]
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -685,6 +696,17 @@ theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) :
   have : angle e b a = angle d b c := vertical_angle' (B_symm Bdbe) Babc $ tri213 $ 
     tri_143_of_tri_col (ne_23_of_B Bdbe) (tri231_of_tri123 tri_abd) $ col_213_of_col $ col_of_B Bdbe
   linarith[angle_symm a b e]
+  
+/-- Euclid I.18, Opposite larger sides you have larger angles in a triangle-/
+theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < length c b) :
+    angle c b a < angle c a b := by
+  rcases B_length_eq_of_ne_lt (ne_31_of_tri tri_abc) len_lt with ⟨d, Bcdb, cd_ca⟩
+  have : angle d b a < angle a d c := internal_lt_external' (B_symm Bcdb) $ tri321 $ tri_of_B_tri 
+    Bcdb $ tri132_of_tri123 tri_abc 
+  have : angle c a d = angle c d a := angle_eq_of_iso ⟨tri312 $ tri_of_B_tri (B_symm Bcdb) tri_abc, 
+    cd_ca.symm⟩
+  have : angle c a d < angle c a b := angle_lt_of_B_tri Bcdb tri_abc
+  linarith[angle_extension_of_B (ne_21_of_tri tri_abc) $ B_symm Bcdb, angle_symm c d a]
     -------------------------------------------- Book I Old-----------------------------------------
  --Euclid I.18
  theorem sidebigang {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
