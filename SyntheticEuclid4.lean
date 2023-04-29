@@ -708,28 +708,6 @@ theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < lengt
   have : angle c a d < angle c a b := angle_lt_of_B_tri Bcdb tri_abc
   linarith[angle_extension_of_B (ne_21_of_tri tri_abc) $ B_symm Bcdb, angle_symm c d a]
     -------------------------------------------- Book I Old-----------------------------------------
- --Euclid I.18
- theorem sidebigang {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
-  (aL : ¬online a L) (length : length a b < length a c) : angle b c a < angle a b c :=
-  by sorry /-begin
-  rcases same_length_B_of_ne_le (neq_of_online_offline bL aL).symm length with ⟨d, Badc, len2⟩,
-  rcases line_of_B Badc with ⟨M, aM, dM, cM, nq0,nq1,nq2⟩,
-  have ang := extangcor (λ bM, aL (by rwa line_unique_of_pts bc bM cM bL cL at aM)) cM aM (B_symm Badc),
-  have db : d ≠ b := neq_of_online_offline dM (λ bM, aL (by rwa line_unique_of_pts bc bM cM bL cL at aM)),
-  have LM : L ≠ M := λ LM, aL (by rwa LM.symm at aM),
-  rcases line_of_pts b a with ⟨N, bN, aN⟩,
-  have adL : sameside a d L, {by_contra adL, exact not_B_symm (not_B_of_B (B_symm Badc))
-    (B_of_online_inter nq2.symm nq1.symm (ne_12_of_B Badc) LM.symm aM cM dM cL  adL), },
-  rcases line_of_pts d b with ⟨P, dP, bP⟩,
-  have aP : ¬online a P := λ aP, LM (line_unique_of_pts bc bL cL (by rwa (line_unique_of_pts nq0 aP dP aM dM) at bP) cM),
-  have cdN := sameside_of_sameside_not_sameside bc bL bP bN cL dP aN aP (sameside_symm adL) (not_sameside13_of_B123_online2 (B_symm Badc) dP),
-  have splitang := (angle_add_iff_sameside bc (neq_of_online_offline bL aL) bL cL bN aN (not_online_of_sameside (sameside_symm cdN)) (not_online_of_sameside (sameside_symm adL))
-    (λ LN, aL (by rwa ← LN at aN))).mpr ⟨cdN, adL⟩,
-  have := eq_angle_of_eq_length (ne_12_of_B Badc) db len2,
-  linarith [angle_symm c b a, angle_symm d b a, angle_symm a d b, (angle_nonneg c b d),
-    angle_extension_of_B bc.symm (B_symm Badc), angle_symm b c d, angle_symm b c a],
-end-/
-
 --Euclid I.19 -- Probably can be turned into one line
 theorem angbigside {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
   (aL : ¬online a L) (ang : angle b c a < angle a b c) : length a b < length a c :=
