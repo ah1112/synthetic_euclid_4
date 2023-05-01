@@ -203,6 +203,7 @@ Usage:
 - `perm` permutes the variables in the goal
 - `perm at h` permutes the variables in hypothesis h
 - `perm at *` permutes the variables in the goal and all hypotheses
+All of these variants also internally try to use `assumption` or `exact h`.
  -/
 syntax "perm" ("at" ident)? ("at *")? : tactic
 macro_rules
@@ -215,6 +216,7 @@ macro_rules
       try conv in (occs := *) angle _ _ _ => all_goals angle_nf
       try conv in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try assumption
     ))
   | `(tactic| perm at $h) => `(tactic|
     (
@@ -225,6 +227,7 @@ macro_rules
       try conv at $h in (occs := *) angle _ _ _ => all_goals angle_nf
       try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try exact $h
     ))
 
 elab_rules: tactic
