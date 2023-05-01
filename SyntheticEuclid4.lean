@@ -485,6 +485,34 @@ theorem angle_lt_of_B_tri (Bcdb : B c d b) (tri_abc : triangle a b c) :
     bL $ online_3_of_triangle aL bL tri_abc
   linarith[angle_symm d a c, zero_lt_angle_of_offline (ne_12_of_tri tri_abc) aL bL (fun dL => 
     (online_3_of_triangle aL bL tri_abc) $ online_3_of_B (B_symm Bcdb) bL dL)]
+--2023/4/29
+theorem ne_of_oncircle (aα : on_circle a α) (bα : ¬on_circle b α) : a ≠ b := 
+  fun ab => bα $ by rwa [ab] at aα
+
+theorem B_or_B_of_circ_pt (ab : a ≠ b) (aα : center_circle a α) (bα : ¬on_circle b α): 
+    ∃ c, (B a c b ∨ B a b c) ∧ on_circle c α := by
+  rcases pt_oncircle_of_inside_ne ab.symm $ inside_circle_of_center aα with ⟨d, Bbad, -⟩
+  rcases pt_oncircle_of_inside_ne (ne_32_of_B Bbad) $ inside_circle_of_center aα with ⟨c, Bdac, cα⟩
+  exact ⟨c, B_or_B_of_B_B (ne_of_oncircle cα bα) Bdac $ B_symm Bbad, cα⟩ 
+
+theorem in_circle_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β) 
+    (cα : on_circle c α) (dβ : on_circle d β) (lt_cen : |length a c - length b d| < length a b)
+    (cen_lt : length a b < length a c + length b d) : ∃ e, on_circle e α ∧ in_circle e β := by
+  by_cases bα : on_circle b α; exact ⟨b, bα, inside_circle_of_center bβ⟩
+  rcases B_or_B_of_circ_pt (mt length_eq_zero_iff.mpr $ by linarith[abs_lt.mp lt_cen]) aα bα with
+   ⟨e, Bet, eα⟩
+  rcases Bet with Bet | Bet
+  repeat exact 
+    ⟨e, eα, incirc_of_lt bβ dβ $ by linarith[length_sum_of_B Bet, length_eq_of_oncircle aα cα eα,
+                            abs_lt.mp lt_cen, length_symm e b]⟩
+
+theorem circint_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β) 
+    (cα : on_circle c α) (dβ : on_circle d β) (lt_cen : |length a c - length b d| < length a b)
+    (cen_lt : length a b < length a c + length b d) : circles_inter α β := by
+  rcases in_circle_of_lt_lt aα bβ cα dβ lt_cen cen_lt with ⟨e, eα, eβ⟩
+  rcases in_circle_of_lt_lt bβ aα dβ cα (by rw[abs_lt]; constructor; repeat 
+    linarith[length_symm a b, abs_lt.mp lt_cen]) (by linarith[length_symm a b]) with ⟨f, fβ, fα⟩
+  exact circles_inter_of_inside_on_circle eα fβ fα eβ
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -735,33 +763,25 @@ theorem len_lt_of_tri (tri_abc : triangle a b c) : length a b < length a c + len
     length b c < length b a + length c a ∧ length c a < length c b + length a b := 
   ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ tri231_of_tri123 tri_abc, len_lt_of_tri' $ tri312 
     tri_abc⟩ 
-    -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.22
-theorem trimake {a1 a2 b1 b2 c1 c2 d f g : point} {L : line} (dL : online d L) (fL : online f L)
-  (gL : ¬online g L) (ab : length c1 c2 < length a1 a2 + length b1 b2)
-  (bc : length a1 a2 < length b1 b2 + length c1 c2) (ac : length b1 b2  < length a1 a2 + length c1 c2)
-  (len : length d f = length a1 a2) :
-  ∃ (k : point), length d k = length b1 b2 ∧ length f k = length c1 c2 ∧ sameside g k L :=
-  by sorry /-begin
-  have df : d ≠ f := nq_of_len_pos (by linarith),
-  have b1b2 : b1 ≠ b2,
-  { intro b1b2, rw b1b2 at ab; rw b1b2 at bc, linarith [length_eq_zero_iff.mpr (rfl : b2 = b2)], },--????
-  have c1c2 : c1 ≠ c2,
-  { intro c1c2, rw c1c2 at ac; rw c1c2 at bc, linarith [length_eq_zero_iff.mpr (rfl : c2 = c2)], },
-  rcases same_length_B_of_ne_four df.symm b1b2 with ⟨k1, Bfdk1, lenb⟩,
-  rcases same_length_B_of_ne_four df c1c2 with ⟨k2, Bdfk2, lenc⟩,
-  rcases circle_of_ne (ne_23_of_B Bdfk2) with ⟨α, k2circ, fcen⟩,
-  rcases circle_of_ne (ne_23_of_B Bfdk1) with ⟨β, k1circ, dcen⟩,
-  rcases pt_sameside_of_circles_inter fL dL gL fcen dcen (circint_of_lt_lt fcen dcen k2circ k1circ _ (by linarith [length_symm d f])) with
-    ⟨k, kgL,kalph, kbet⟩,
-  refine ⟨k, by linarith [(on_circle_iff_length_eq k1circ dcen).mpr kbet], by linarith [(on_circle_iff_length_eq k2circ fcen).mpr kalph],
-    sameside_symm kgL⟩,
-  apply abs_lt.mpr,
-  exact ⟨by linarith [length_symm f d], by linarith [length_symm f d]⟩,
-  exact ordered_add_comm_monoid.to_covariant_class_left ℝ,
-  exact covariant_swap_add_le_of_covariant_add_le ℝ, --why do we have to do this?
-end-/
 
+/--Euclid I.22, making a triangle with prescribed lengths-/
+theorem triangle_of_ineq (aL : online a L) (bL : online b L) (fL : ¬online f L) 
+    (ab_lt_a1a2_b1b2 : length a b < length a1 a2 + length b1 b2) 
+    (a1a2_lt_ab_b1b2 : length a1 a2 < length a b + length b1 b2) 
+    (b1b2_lt_a1a2_ab : length b1 b2 < length a1 a2 + length a b) : 
+    ∃ e, length a e = length a1 a2 ∧ length b e = length b1 b2 ∧ sameside e f L := by 
+  rcases length_eq_B_of_ne_four (Ne.symm (fun n => by linarith[length_zero_of_eq n] : a ≠ b)) 
+    ((fun n => by linarith[length_zero_of_eq n] : a1 ≠ a2)) with ⟨c, Bbac, a1a2_ac⟩
+  rcases length_eq_B_of_ne_four (fun n => by linarith[length_zero_of_eq n] : a ≠ b) 
+    ((fun n => by linarith[length_zero_of_eq n] : b1 ≠ b2)) with ⟨d, Babd, b1b2_bd⟩
+  rcases circle_of_ne $ ne_23_of_B Bbac with ⟨α, aα, cα⟩ 
+  rcases circle_of_ne $ ne_23_of_B Babd with ⟨β, bβ, dβ⟩  
+  rcases pt_sameside_of_circles_inter aL bL fL aα bβ $ circint_of_lt_lt aα bβ cα dβ 
+    (by apply abs_lt.mpr; exact ⟨by linarith, by linarith⟩) $ by linarith with ⟨e, efL, eα, eβ⟩
+  have : length a c = length a e := length_eq_of_oncircle aα cα eα
+  have : length b d = length b e := length_eq_of_oncircle bβ dβ eβ 
+  exact ⟨e, by linarith, by linarith, efL⟩
+    -------------------------------------------- Book I Old-----------------------------------------
 --Euclid I.23
 theorem angcopy {a b c d e h : point} {L M : line} (ab : a ≠ b) (ce : c ≠ e) (cL : online c L)
   (eL : online e L) (dL : ¬online d L) (aM : online a M) (bM : online b M) (hM : ¬online h M) :
