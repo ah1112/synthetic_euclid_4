@@ -306,9 +306,9 @@ elab_rules: tactic
     withMainContext do
       for ldecl in ← getLCtx do
         let name := mkIdent ldecl.userName
-        if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm at $name))
+        if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm at $name))
   | `(tactic| perm only [$perm_type] at *) => do
     evalTactic (← `(tactic| perm only [$perm_type]))
     for ldecl in ← getLCtx do
       let name := mkIdent ldecl.userName
-      if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm only [$perm_type] at $name))
+      if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
