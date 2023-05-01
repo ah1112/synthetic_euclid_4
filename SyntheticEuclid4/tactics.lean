@@ -197,14 +197,14 @@ elab_rules : conv
         evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
 /-- ## Tactic perm
-A custom experimental tactic for permuting the variables in geometric primitives. The ordering is the one in which the variables are introduced, so it is not necessarily lexigraphic in general. Currently only working for triangle areas.
+A custom experimental tactic for permuting the variables in geometric primitives. The ordering is the one in which the variables are introduced, so it is not necessarily lexigraphic in general.
 
 Usage:
 - `perm` permutes the variables in the goal
 - `perm at h` permutes the variables in hypothesis h
-- `perm at *` TODO: permutes the variables in the goal and all hypotheses
+- `perm at *` permutes the variables in the goal and all hypotheses
  -/
-syntax "perm" ("at" ident)? ("*")? : tactic
+syntax "perm" ("at" ident)? ("at *")? : tactic
 macro_rules
   | `(tactic| perm) => `(tactic|
     (
@@ -226,3 +226,10 @@ macro_rules
       try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
     ))
+
+elab_rules: tactic
+  | `(tactic| perm at *) => do
+    evalTactic (← `(tactic| perm))
+    for ldecl in ← getLCtx do
+      let name := mkIdent ldecl.userName
+      if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm at $name))
