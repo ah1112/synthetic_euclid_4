@@ -57,7 +57,7 @@ theorem length_sum_perm_of_B (Babc : B a b c) : 0 < length a b ∧ 0 < length b 
 -- length_symm a b, length_symm a c, length_symm b c]}⟩
 
 theorem length_perm_of_3pts (a b c : point) : length a b = length b a ∧ length a c = length c a ∧
-  length b c = length c b := ⟨length_symm a b, length_symm a c, length_symm b c⟩
+  length b c = length c b := by perm; tauto
 
 theorem not_online_of_line (L : line) : ∃ (a : point), ¬online a L := by sorry
   -- by rcases online_ne_of_line L with ⟨b, c, bc, bL, cL⟩; rcases circle_of_ne bc with ⟨α, bα, cα⟩;
@@ -177,9 +177,8 @@ theorem out_circle_of_lt (aα : center_circle a α) (bα : on_circle b α)
 theorem sss (ab_de : length a b = length d e) (bc_ef : length b c = length e f) 
 (ac_df : length a c = length d f) : angle a b c = angle d e f ∧ angle b a c = angle e d f 
   ∧ angle a c b = angle d f e := 
-⟨(SAS_iff_SSS (by rwa [length_symm d e, length_symm a b] at ab_de) bc_ef).mpr ac_df, 
-(SAS_iff_SSS ab_de ac_df).mpr bc_ef, (SAS_iff_SSS (by rwa [length_symm a c, length_symm d f] 
-at ac_df) (by rwa [length_symm b c, length_symm e f] at bc_ef)).mpr ab_de⟩
+⟨(SAS_iff_SSS (by perm) bc_ef).mpr ac_df, 
+(SAS_iff_SSS ab_de ac_df).mpr bc_ef, (SAS_iff_SSS (by perm) (by perm)).mpr ab_de⟩
 --2023/4/5
 theorem sas (ab_de : length a b = length d e) (ac_df : length a c = length d f) 
 (Abac : angle b a c = angle e d f) : length b c = length e f ∧ angle a b c = angle d e f ∧ 
@@ -271,7 +270,7 @@ theorem B_of_three_col_ne (ab : a ≠ b) (ac : a ≠ c) (bc : b ≠ c) (col_abc 
 --2023/4/13
 theorem B_of_length_eq_col (ab : a ≠ b) (ac : a ≠ c) (col_abc : colinear a b c) 
     (ab_cb : length a b = length c b) : B a b c := by
-  rcases B_of_three_col_ne ab ac (ne_of_ne_len ab $ by rwa [length_symm b c]) col_abc 
+  rcases B_of_three_col_ne ab ac (ne_of_ne_len ab $ by perm at *) col_abc 
     with Babc | Bet | Bet; exact Babc; repeat {linarith [length_sum_perm_of_B Bet]}
 --2023/4/13
 theorem length_zero_of_eq (ab : a = b) : length a b = 0 := (length_eq_zero_iff).mpr ab
@@ -282,19 +281,18 @@ theorem ne_of_triangle_length_eq (tri_abc : triangle a b c) (bd_cd : length b d 
     b ≠ d := fun bd => ne_23_of_tri tri_abc $ bd.trans (eq_of_length_zero $ bd_cd.symm.trans $ 
       length_zero_of_eq bd).symm
 --2023/4/14
-theorem len_21_of_len (ab_r : length a b = r) : length b a = r := by rwa [length_symm b a]
+theorem len_21_of_len (ab_r : length a b = r) : length b a = r := by perm
 --2023/4/14
-theorem len_43_of_len (ab_r : r = length a b) : r = length b a := by rwa [length_symm b a]
+theorem len_43_of_len (ab_r : r = length a b) : r = length b a := by perm
 --2023/4/14
-theorem len_2143_of_len (ab_cd : length a b = length c d) : length b a = length d c := 
-  by rwa [length_symm b a, length_symm d c]
+theorem len_2143_of_len (ab_cd : length a b = length c d) : length b a = length d c := by perm
 --2023/4/14
-theorem ang_321_of_ang (abc_r : angle a b c = r) : angle c b a = r := by rwa [angle_symm c b a]
+theorem ang_321_of_ang (abc_r : angle a b c = r) : angle c b a = r := by perm
 --2023/4/14
-theorem ang_654_of_ang (abc_r : r = angle a b c) : r = angle c b a := by rwa [angle_symm c b a]
+theorem ang_654_of_ang (abc_r : r = angle a b c) : r = angle c b a := by perm
 --2023/4/14
 theorem ang_654321_of_ang (abc_def : angle a b c = angle d e f) : angle c b a = angle f e d := 
-  by rwa [angle_symm c b a, angle_symm f e d]
+  by perm
 --2023/4/14
 theorem online_of_B_online (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : ¬online b L :=
   fun bL => cL (online_3_of_B Babc aL bL)
@@ -396,8 +394,8 @@ theorem angle_extension_of_sameside (ab : a ≠ b) (aL : online a L) (bL : onlin
 
 theorem sameside_of_B_diffside_sameside (Babc : B a b c) (aL : online a L) (bL : online b L)
     (bM : online b M) (eM : online e M) (dM : ¬online d M) (edL : sameside e d L) 
-    (cdM : ¬sameside c d M) : sameside a d M := by
-  refine sameside_symm $ sameside_of_diffside_diffside ⟨offline_of_B_offline 
+    (cdM : ¬sameside c d M) : sameside a d M := 
+   sameside_symm $ sameside_of_diffside_diffside ⟨offline_of_B_offline 
     (B_symm Babc) (online_3_of_B Babc aL bL) bL bM eM $ not_online_of_sameside edL, dM, cdM⟩ $
     diffside_symm $ diffside_of_B_offline Babc aL bL bM eM $ not_online_of_sameside edL
 --2023/4/25
@@ -511,7 +509,7 @@ theorem circint_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β)
     (cen_lt : length a b < length a c + length b d) : circles_inter α β := by
   rcases in_circle_of_lt_lt aα bβ cα dβ lt_cen cen_lt with ⟨e, eα, eβ⟩
   rcases in_circle_of_lt_lt bβ aα dβ cα (by rw[abs_lt]; constructor; repeat 
-    linarith[length_symm a b, abs_lt.mp lt_cen]) (by linarith[length_symm a b]) with ⟨f, fβ, fα⟩
+    linarith[length_symm a b, abs_lt.mp lt_cen]) $ by perm; linarith with ⟨f, fβ, fα⟩
   exact circles_inter_of_inside_on_circle eα fβ fα eβ
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
@@ -573,23 +571,21 @@ have ae_af := length_eq_of_oncircle aα eα fα
 exact ⟨f, Bafb, by linarith⟩
                       /-- Euclid I.5, (part 1), isosceles triangles have equal angles -/
 theorem angle_eq_of_iso (iso_abc : iso_tri a b c) : angle a b c = angle a c b :=
-  (sas (iso_abc).2 (iso_abc).2.symm (angle_symm b a c)).2.2.symm
+  (sas (iso_abc).2 (iso_abc).2.symm $ by perm).2.2.symm
                       /-- Euclid I.6, a triangle with equal angles is isosceles -/
 theorem iso_of_angle_eq (tri_abc : triangle a b c) (abc_eq_acb : angle a b c = angle a c b) :
   length a b = length a c := by
 by_contra ab_ac
-wlog ab_le_ac : length a b ≤ length a c; exact this (tri132_of_tri123 tri_abc) abc_eq_acb.symm 
+wlog ab_le_ac : length a b ≤ length a c; exact this (by perm) abc_eq_acb.symm 
   (Ne.symm ab_ac) $ by linarith
 rcases B_length_eq_of_ne_lt (ne_12_of_tri tri_abc) 
-  (by rw [length_symm c a] at *; exact Ne.lt_of_le ab_ac ab_le_ac) with ⟨d, Bcda, cd_ab⟩
-have ar_cdb_eq_bac := area_eq_of_sas (by rwa [length_symm b a]) (length_symm c b) $
+  (by perm at *; exact Ne.lt_of_le ab_ac ab_le_ac) with ⟨d, Bcda, cd_ab⟩
+have ar_cdb_eq_bac := area_eq_of_sas (by perm) (by perm) $
   (angle_extension_of_B (ne_32_of_tri tri_abc) Bcda).trans abc_eq_acb.symm
 have split_ar_bca := area_add_of_B Bcda (tri231_of_tri123 tri_abc)
-have ar_abd_zero : area a b d = 0 := by 
-  linarith [area_invariant b d a, area_invariant b a c, area_invariant c d b]
+have ar_abd_zero : area a b d = 0 := by perm at *; linarith
 have col_abd := col_132_of_col $ col_of_area_zero_ne (ne_12_of_tri tri_abc) ar_abd_zero
-exact tri_abc $ col_134_of_col_123_col_124 (Ne.symm $ ne_23_of_B Bcda) 
-  col_abd (col_of_B $ B_symm Bcda)
+exact tri_abc $ col_134_of_col_123_col_124 (ne_32_of_B Bcda) col_abd (col_of_B $ B_symm Bcda)
   
 /-- Euclid I.10, bisecting a segment -/
 theorem bisect_segment (ab : a ≠ b) : ∃ (e : point), B a e b ∧ length a e = length b e := by
@@ -668,7 +664,7 @@ theorem two_right_of_flat_angle (Babc : B a b c) (aL : online a L) (bL : online 
     by linarith[angle_add_of_sameside bM eM bL (online_3_of_B Babc aL bL) cdM edL]
   have dba_add : angle d b a = angle e b d + angle e b a := angle_add_of_sameside bN dN bL aL 
     (sameside_of_B_sameside_sameside Babc bL bM bN aL eM dN edL cdM) (sameside_symm edL)
-  linarith[angle_symm d b e]
+  perm at *; linarith
 
 /-- Euclid I.14, the converse of I.13. If angles add to two right angles then you have betweeness-/
 theorem flat_of_two_right_angle (bd : b ≠ d) (bL : online b L) (dL : online d L) 
@@ -690,7 +686,7 @@ theorem vertical_angle (Babc : B a b c) (Bdbe : B d b e) (aL : online a L) (bL :
   have dba_dbc : angle d b a + angle d b c = 2 * rightangle := two_right_of_flat_angle Babc aL bL dL
   have cbd_cbe : angle c b d + angle c b e = 2 * rightangle := two_right_of_flat_angle Bdbe dM bM $ 
     offline_of_online_offline (ne_23_of_B Babc) dM bM bL (online_3_of_B Babc aL bL) dL
-  linarith[angle_symm d b c, angle_symm d b a]
+  perm at *; linarith
 
 /-- Euclid I.15, vertical angles are equal-/
 theorem vertical_angle' (Babc : B a b c) (Bdbe : B d b e) (col_abd : ¬colinear a b d) : 
@@ -720,10 +716,10 @@ theorem internal_lt_external (Babc : B a b c) (tri_abd : triangle a b d) :
 theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) : 
     angle b a d < angle d b c := by
   rcases length_eq_B_of_ne (ne_32_of_tri tri_abd) (ne_23_of_tri tri_abd) with ⟨e, Bdbe, -⟩
-  have : angle b a d < angle a b e := internal_lt_external Bdbe $ tri321 tri_abd
+  have : angle b a d < angle a b e := internal_lt_external Bdbe $ by perm
   have : angle e b a = angle d b c := vertical_angle' (B_symm Bdbe) Babc $ tri213 $ 
-    tri_143_of_tri_col (ne_23_of_B Bdbe) (tri231_of_tri123 tri_abd) $ col_213_of_col $ col_of_B Bdbe
-  linarith[angle_symm a b e]
+    tri_143_of_tri_col (ne_23_of_B Bdbe) (by perm) $ col_213_of_col $ col_of_B Bdbe
+  perm at *; linarith
   
 /-- Euclid I.18, Opposite larger sides you have larger angles in a triangle-/
 theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < length c b) :
@@ -741,16 +737,16 @@ theorem len_lt_of_ang_lt (tri_abc : triangle a b c) (ang_lt : angle c b a < angl
     length c a < length c b := by
   by_contra cb_le_ca; push_neg at cb_le_ca
   by_cases cb_ca : length c b = length c a
-  . linarith[angle_eq_of_iso ⟨tri312 $ tri_abc, cb_ca.symm⟩]
-  linarith[ang_lt_of_len_lt (tri213 tri_abc) $ lt_of_le_of_ne cb_le_ca cb_ca]
+  . linarith[angle_eq_of_iso ⟨by perm, cb_ca.symm⟩]
+  linarith[ang_lt_of_len_lt (by perm) $ lt_of_le_of_ne cb_le_ca cb_ca]
 
 /--Euclid I.20, a triangle inequality-/
 theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + length b c := by
   rcases length_eq_B_of_ne_four (ne_13_of_tri tri_abc) (ne_23_of_tri tri_abc) with ⟨d, Bacd, bc_cd⟩
   have : angle d b c < angle d b a := angle_lt_of_B_tri (B_symm Bacd) $ tri312 $ tri_143_of_tri_col
-    (ne_13_of_B Bacd) (tri132_of_tri123 tri_abc) $ col_of_B Bacd
-  have : angle c d b = angle c b d := angle_eq_of_iso ⟨tri_143_of_tri_col (ne_23_of_B Bacd) (tri312 
-    tri_abc) $ col_213_of_col $ col_of_B Bacd, len_43_of_len bc_cd.symm⟩
+    (ne_13_of_B Bacd) (by perm) $ col_of_B Bacd
+  have : angle c d b = angle c b d := angle_eq_of_iso ⟨tri_143_of_tri_col (ne_23_of_B Bacd) 
+    (by perm) $ col_213_of_col $ col_of_B Bacd, len_43_of_len bc_cd.symm⟩
   have : length a b < length a d := len_lt_of_ang_lt (tri321 $ tri_143_of_tri_col (ne_13_of_B Bacd) 
     (tri132_of_tri123 tri_abc) $ col_of_B Bacd) $ 
     by linarith[angle_symm c b d, angle_symm d b a, angle_extension_of_B (ne_of_col_tri' 
@@ -761,8 +757,7 @@ theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + le
 /--Euclid I.20, the triangle inequalities-/
 theorem len_lt_of_tri (tri_abc : triangle a b c) : length a b < length a c + length b c ∧ 
     length b c < length b a + length c a ∧ length c a < length c b + length a b := 
-  ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ tri231_of_tri123 tri_abc, len_lt_of_tri' $ tri312 
-    tri_abc⟩ 
+  ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ by perm, len_lt_of_tri' $ by perm⟩ 
 
 /--Euclid I.22, making a triangle with prescribed lengths-/
 theorem triangle_of_ineq (aL : online a L) (bL : online b L) (fL : ¬online f L) 
