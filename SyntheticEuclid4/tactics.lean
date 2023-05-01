@@ -205,7 +205,7 @@ Usage:
 - `perm at *` permutes the variables in the goal and all hypotheses
 All of these variants also internally try to use `assumption` or `exact h`.
  -/
-syntax "perm" ("at" ident)? ("at *")? : tactic
+syntax "perm" ("only [" ident "]")? ("at" ident)? ("at *")? : tactic
 macro_rules
   | `(tactic| perm) => `(tactic|
     (
@@ -215,6 +215,41 @@ macro_rules
       try conv in (occs := *) length _ _ => all_goals length_nf
       try conv in (occs := *) angle _ _ _ => all_goals angle_nf
       try conv in (occs := *) sameside _ _ _ => all_goals sameside_nf
+      try conv in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try assumption
+    ))
+  | `(tactic| perm only [area]) => `(tactic|
+    (
+      try conv in (occs := *) area _ _ _ => all_goals area_nf
+      try assumption
+    ))
+  | `(tactic| perm only [colinear]) => `(tactic|
+    (
+      try conv in (occs := *) colinear _ _ _ => all_goals colinear_nf
+      try assumption
+    ))
+  | `(tactic| perm only [triangle]) => `(tactic|
+    (
+      try conv in (occs := *) triangle _ _ _ => all_goals triangle_nf
+      try assumption
+    ))
+  | `(tactic| perm only [length]) => `(tactic|
+    (
+      try conv in (occs := *) length _ _ => all_goals length_nf
+      try assumption
+    ))
+  | `(tactic| perm only [angle]) => `(tactic|
+    (
+      try conv in (occs := *) angle _ _ _ => all_goals angle_nf
+      try assumption
+    ))
+  | `(tactic| perm only [sameside]) => `(tactic|
+    (
+      try conv in (occs := *) sameside _ _ _ => all_goals sameside_nf
+      try assumption
+    ))
+  | `(tactic| perm only [diffside]) => `(tactic|
+    (
       try conv in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try assumption
     ))
@@ -229,6 +264,41 @@ macro_rules
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try exact $h
     ))
+  | `(tactic| perm only [area] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) area _ _ _ => all_goals area_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [colinear] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) colinear _ _ _ => all_goals colinear_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [triangle] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) triangle _ _ _ => all_goals triangle_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [length] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) length _ _ _ => all_goals length_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [angle] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) angle _ _ _ => all_goals angle_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [sameside] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
+      try exact $h
+    ))
+  | `(tactic| perm only [diffside] at $h) => `(tactic|
+    (
+      try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try exact $h
+    ))
 
 elab_rules: tactic
   | `(tactic| perm at *) => do
@@ -236,3 +306,8 @@ elab_rules: tactic
     for ldecl in ← getLCtx do
       let name := mkIdent ldecl.userName
       if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm at $name))
+  | `(tactic| perm only [$perm_type] at *) => do
+    evalTactic (← `(tactic| perm only [$perm_type]))
+    for ldecl in ← getLCtx do
+      let name := mkIdent ldecl.userName
+      if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm only [$perm_type] at $name))
