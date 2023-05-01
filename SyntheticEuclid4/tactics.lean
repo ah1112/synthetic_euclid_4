@@ -303,9 +303,10 @@ macro_rules
 elab_rules: tactic
   | `(tactic| perm at *) => do
     evalTactic (← `(tactic| perm))
-    for ldecl in ← getLCtx do
-      let name := mkIdent ldecl.userName
-      if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm at $name))
+    withMainContext do
+      for ldecl in ← getLCtx do
+        let name := mkIdent ldecl.userName
+        if !ldecl.isAuxDecl then evalTactic (← `(tactic| perm at $name))
   | `(tactic| perm only [$perm_type] at *) => do
     evalTactic (← `(tactic| perm only [$perm_type]))
     for ldecl in ← getLCtx do
