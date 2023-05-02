@@ -312,3 +312,9 @@ elab_rules: tactic
       for ldecl in ← getLCtx do
         let name := mkIdent ldecl.userName
         if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
+
+macro "split_all" : tactic => `(tactic|
+  (
+    repeat (constructor; rotate_left)
+    rotate_left
+  ))
