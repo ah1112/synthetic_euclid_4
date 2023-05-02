@@ -256,41 +256,49 @@ macro_rules
       try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [area] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) area _ _ _ => all_goals area_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [colinear] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) colinear _ _ _ => all_goals colinear_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [triangle] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) triangle _ _ _ => all_goals triangle_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [length] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) length _ _ => all_goals length_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [angle] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) angle _ _ _ => all_goals angle_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [sameside] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try exact $h
+      try exact Eq.symm $h
     ))
   | `(tactic| perm only [diffside] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try exact $h
+      try exact Eq.symm $h
     ))
 
 elab_rules: tactic
