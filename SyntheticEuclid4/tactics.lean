@@ -69,8 +69,7 @@ A conv tactic for permuting the variables in an `area` expression. A building bl
  -/
 syntax "area_nf" : conv
 elab_rules : conv
-  |`(conv| area_nf) => do
-    withMainContext do
+  |`(conv| area_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -93,8 +92,7 @@ A conv tactic for permuting the variables in an `colinear` expression. A buildin
  -/
 syntax "colinear_nf" : conv
 elab_rules : conv
-  |`(conv| colinear_nf) => do
-    withMainContext do
+  |`(conv| colinear_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -117,8 +115,7 @@ A conv tactic for permuting the variables in an `triangle` expression. A buildin
  -/
 syntax "triangle_nf" : conv
 elab_rules : conv
-  |`(conv| triangle_nf) => do
-    withMainContext do
+  |`(conv| triangle_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -141,8 +138,7 @@ A conv tactic for permuting the variables in an `length` expression. A building 
  -/
 syntax "length_nf" : conv
 elab_rules : conv
-  |`(conv| length_nf) => do
-    withMainContext do
+  |`(conv| length_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -156,8 +152,7 @@ A conv tactic for permuting the variables in an `angle` expression. A building b
  -/
 syntax "angle_nf" : conv
 elab_rules : conv
-  |`(conv| angle_nf) => do
-    withMainContext do
+  |`(conv| angle_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg3 := Lean.Expr.getArg! tgt 3
@@ -171,8 +166,7 @@ A conv tactic for permuting the variables in an `sameside` expression. A buildin
  -/
 syntax "sameside_nf" : conv
 elab_rules : conv
-  |`(conv| sameside_nf) => do
-    withMainContext do
+  |`(conv| sameside_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -186,8 +180,7 @@ A conv tactic for permuting the variables in an `diffside` expression. A buildin
  -/
 syntax "diffside_nf" : conv
 elab_rules : conv
-  |`(conv| diffside_nf) => do
-    withMainContext do
+  |`(conv| diffside_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
       let arg1 := Lean.Expr.getArg! tgt 1
       let arg2 := Lean.Expr.getArg! tgt 2
@@ -281,7 +274,7 @@ macro_rules
     ))
   | `(tactic| perm only [length] at $h) => `(tactic|
     (
-      try conv at $h in (occs := *) length _ _ _ => all_goals length_nf
+      try conv at $h in (occs := *) length _ _ => all_goals length_nf
       try exact $h
     ))
   | `(tactic| perm only [angle] at $h) => `(tactic|
@@ -301,14 +294,13 @@ macro_rules
     ))
 
 elab_rules: tactic
-  | `(tactic| perm at *) => do
-    evalTactic (← `(tactic| perm))
-    withMainContext do
+  | `(tactic| perm at *) => withMainContext do
+      evalTactic (← `(tactic| perm))
       for ldecl in ← getLCtx do
         let name := mkIdent ldecl.userName
         if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm at $name))
-  | `(tactic| perm only [$perm_type] at *) => do
-    evalTactic (← `(tactic| perm only [$perm_type]))
-    for ldecl in ← getLCtx do
-      let name := mkIdent ldecl.userName
-      if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
+  | `(tactic| perm only [$perm_type] at *) => withMainContext do
+      evalTactic (← `(tactic| perm only [$perm_type]))
+      for ldecl in ← getLCtx do
+        let name := mkIdent ldecl.userName
+        if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
