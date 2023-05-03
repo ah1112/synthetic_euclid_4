@@ -39,34 +39,35 @@ lemma len_pos_of_nq (ab : a ≠ b) : 0 < length a b :=
   (Ne.symm (not_imp_not.mpr length_eq_zero_iff.mp ab)).le_iff_lt.mp (length_nonneg a b)
 
 theorem ne_of_ne_len (ab : a ≠ b) (ab_cd : length a b = length c d) : c ≠ d :=
-  fun ac => by sorry --linarith[length_eq_zero_iff.mpr ac, len_pos_of_nq ab]
+  fun ac => by linarith[length_eq_zero_iff.mpr ac, len_pos_of_nq ab]
 
 theorem ne_of_ne_len' (cd : c ≠ d) (ab_cd : length a b = length c d) : a ≠ b := --3/28/23
   ne_of_ne_len cd (ab_cd.symm)
 
 theorem length_sum_perm_of_B (Babc : B a b c) : 0 < length a b ∧ 0 < length b a ∧ 0 < length b c
-  ∧ 0 < length c b ∧ 0 < length a c ∧ 0 < length c a ∧ length a b + length b c = length a c ∧
-  length b a + length b c = length a c ∧ length b a + length c b = length a c ∧
-  length b a + length b c = length c a ∧ length b a + length c b = length c a ∧
-  length a b + length c b = length a c ∧ length a b + length b c = length c a ∧
-  length a b + length c b = length c a := by sorry
--- ⟨len_pos_of_nq (ne_12_of_B Babc), by linarith[length_symm a b,
--- len_pos_of_nq (ne_12_of_B Babc)], len_pos_of_nq (ne_23_of_B Babc), by linarith[length_symm b c,
--- len_pos_of_nq (ne_23_of_B Babc)], len_pos_of_nq (ne_13_of_B Babc), by linarith[length_symm a c,
--- len_pos_of_nq (ne_13_of_B Babc)], by repeat {split}; repeat {linarith[length_sum_of_B Babc,
--- length_symm a b, length_symm a c, length_symm b c]}⟩
+    ∧ 0 < length c b ∧ 0 < length a c ∧ 0 < length c a ∧ length a b + length b c = length a c ∧
+    length b a + length b c = length a c ∧ length b a + length c b = length a c ∧
+    length b a + length b c = length c a ∧ length b a + length c b = length c a ∧
+    length a b + length c b = length a c ∧ length a b + length b c = length c a ∧
+    length a b + length c b = length c a := by
+  perm; split_all; repeat exact len_pos_of_nq $ ne_12_of_B Babc
+  repeat exact len_pos_of_nq $ ne_23_of_B Babc; repeat exact len_pos_of_nq $ ne_13_of_B Babc
+  repeat exact length_sum_of_B Babc
 
 theorem length_perm_of_3pts (a b c : point) : length a b = length b a ∧ length a c = length c a ∧
   length b c = length c b := by perm; tauto
 
-theorem not_online_of_line (L : line) : ∃ (a : point), ¬online a L := by sorry
-  -- by rcases online_ne_of_line L with ⟨b, c, bc, bL, cL⟩; rcases circle_of_ne bc with ⟨α, bα, cα⟩;
-  -- rcases circle_of_ne bc.symm with ⟨β, cβ, bβ⟩; rcases pts_of_circles_inter
-  -- (circles_inter_of_inside_on_circle cα bβ (inside_circle_of_center bα) (inside_circle_of_center
-  -- cβ)) with ⟨a, -, -, aα, aβ, -, -⟩; have bc_ba := (on_circle_iff_length_eq bα cα).mpr aα;
-  -- have cb_ca := (on_circle_iff_length_eq cβ bβ).mpr aβ; exact ⟨a, λ aL, ((by push_neg; repeat
-  -- {split}; repeat {exact (λ Bet, by linarith[length_sum_perm_of_B Bet])}) : ¬ (B b c a ∨ B c b a ∨
-  -- B b a c)) (B_of_three_online_ne bc (ne_of_ne_len bc bc_ba)(ne_of_ne_len bc.symm cb_ca) bL cL aL)⟩
+theorem not_online_of_line (L : line) : ∃ (a : point), ¬online a L := by
+  rcases online_ne_of_line L with ⟨b, c, bc, bL, cL⟩ 
+  rcases circle_of_ne bc with ⟨α, bα, cα⟩ 
+  rcases circle_of_ne bc.symm with ⟨β, cβ, bβ⟩ 
+  rcases pts_of_circles_inter (circles_inter_of_inside_on_circle cα bβ (inside_circle_of_center
+     bα) (inside_circle_of_center cβ)) with ⟨a, -, -, aα, aβ, -, -⟩
+  have bc_ba := (on_circle_iff_length_eq bα cα).mpr aα
+  have cb_ca := (on_circle_iff_length_eq cβ bβ).mpr aβ 
+  refine ⟨a, fun aL => (by push_neg; split_all; all_goals exact (fun Bet => 
+    by linarith[length_sum_perm_of_B Bet]) : ¬ (B b c a ∨ B c b a ∨ B b a c)) $ 
+    B_of_three_online_ne bc (ne_of_ne_len bc bc_ba) (ne_of_ne_len bc.symm cb_ca) bL cL aL⟩
 
 theorem online_of_circles_inter (aα : center_circle a α) (bβ : center_circle b β)
   (αβ : circles_inter α β) : ∃ (c : point) (L : line), online a L ∧ online b L ∧ on_circle c α ∧
@@ -115,8 +116,9 @@ theorem online_2_of_triangle (aL : online a L) (cL : online c L) (tri_abc : tria
   ¬online b L := fun bL => tri_abc ⟨L, aL, bL, cL⟩ 
 
 theorem eq_tri_of_length_online (ab : a ≠ b) (aL : online a L) (bL : online b L) (cL : ¬online c L)
-  (ab_ac : length a b = length a c) (bc_ba : length b c = length b a) : eq_tri a b c :=
-⟨triangle_of_ne_online ab aL bL cL, by repeat {constructor}; sorry⟩ -- linarith[length_perm_of_3pts a b c]⟩
+  (ab_ac : length a b = length a c) (bc_ba : length b c = length b a) : eq_tri a b c := 
+⟨triangle_of_ne_online ab aL bL cL, by perm, by perm at *, by perm at *; linarith⟩
+
 --3/23/23
 theorem B_circ_of_ne (ab : a ≠ b) (bc : b ≠ c) : ∃ (d : point) (α : circle), B a b d ∧
   center_circle b α ∧ on_circle c α ∧ on_circle d α := by
@@ -293,6 +295,9 @@ theorem ang_654_of_ang (abc_r : r = angle a b c) : r = angle c b a := by perm
 --2023/4/14
 theorem ang_654321_of_ang (abc_def : angle a b c = angle d e f) : angle c b a = angle f e d := 
   by perm
+--2023/5/2
+theorem angle_extension_of_B' (ac : a ≠ c) (Babb1 : B a b b1) : angle c a b = angle c a b1 :=
+  ang_654321_of_ang $ angle_extension_of_B ac Babb1
 --2023/4/14
 theorem online_of_B_online (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : ¬online b L :=
   fun bL => cL (online_3_of_B Babc aL bL)
@@ -776,21 +781,21 @@ theorem triangle_of_ineq (aL : online a L) (bL : online b L) (fL : ¬online f L)
   have : length a c = length a e := length_eq_of_oncircle aα cα eα
   have : length b d = length b e := length_eq_of_oncircle bβ dβ eβ 
   exact ⟨e, by linarith, by linarith, efL⟩
-    -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.23
-theorem angcopy {a b c d e h : point} {L M : line} (ab : a ≠ b) (ce : c ≠ e) (cL : online c L)
-  (eL : online e L) (dL : ¬online d L) (aM : online a M) (bM : online b M) (hM : ¬online h M) :
-  ∃ (f : point), angle b a f = angle e c d ∧ sameside f h M :=
-  by sorry /-begin
-  rcases same_length_B_of_ne_four ce ab with ⟨e1, Bcee1, len⟩,
-  rcases same_length_B_of_ne_four ab ce with ⟨b1, Babb1, len2⟩,
-  have ineqs := triineqcor (ne_13_of_B Bcee1) cL (online_3_of_B Bcee1 cL eL) dL,
-  have l3 : length a b1 = length c e1 := by linarith [length_sum_of_B Bcee1, length_sum_of_B Babb1],
-  rcases trimake aM (online_3_of_B Babb1 aM bM) hM ineqs.1 ineqs.2.2 ineqs.2.1 l3 with ⟨f, l1, l2, hfM⟩,
-  refine ⟨f, by linarith [(sss l3 l2 l1).2.1, angle_extension_of_B (neq_of_online_offline cL dL) Bcee1,
-    angle_extension_of_B (neq_of_online_offline aM (not_online_of_sameside (sameside_symm hfM))) Babb1], sameside_symm hfM⟩,
-end-/
 
+/--Euclid I.23, copying an angle-/
+theorem angle_copy (ab : a ≠ b) (aL : online a L) (bL : online b L) (jL : ¬online j L) 
+    (tri_cde : triangle c d e) : ∃ h, angle h a b = angle e c d ∧ sameside h j L := by
+  rcases length_eq_B_of_ne_four ab (ne_12_of_tri tri_cde) with ⟨g, Babg, cd_bg⟩
+  rcases length_eq_B_of_ne_four (ne_12_of_tri tri_cde) ab with ⟨f, Bcdf, ab_df⟩ 
+  have cf_ag : length c f = length a g := by linarith[length_sum_of_B Babg, length_sum_of_B Bcdf] 
+  have ⟨cf_lt_ce_ef, ef_lt_cf_ce, ce_lt_ef_cf⟩ := len_lt_of_tri $ tri_143_of_tri_col (ne_13_of_B 
+    Bcdf) tri_cde $ col_of_B Bcdf; perm only [length] at *
+  rcases triangle_of_ineq aL (online_3_of_B Babg aL bL) jL (by rwa [cf_ag] at cf_lt_ce_ef) (by 
+    linarith) $ by linarith with ⟨h, ah_ce, gh_ef, hjL⟩ 
+  have : angle h a g = angle e c f := (sss ah_ce (len_21_of_len gh_ef) cf_ag.symm).2.1
+  exact ⟨h, by linarith[angle_extension_of_B' (ne_of_sameside' aL hjL) Babg, angle_extension_of_B' 
+                (ne_13_of_tri tri_cde) Bcdf], hjL⟩
+    -------------------------------------------- Book I Old-----------------------------------------
 --Euclid I.26 part 1
 theorem asa {a b c d e f : point} {L : line} (ef : e ≠ f) (eL : online e L) (fL : online f L)
   (dL : ¬online d L) (side : length b c = length e f) (ang1 : angle c b a = angle f e d)
