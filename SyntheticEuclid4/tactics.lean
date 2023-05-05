@@ -313,6 +313,29 @@ elab_rules: tactic
         let name := mkIdent ldecl.userName
         if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
 
+open Lean Meta in
+def haveExpr (n:Name) (h:Expr) :=
+    withMainContext do
+      let t ← inferType h
+      liftMetaTactic fun mvarId => do
+        let mvarIdNew ← Lean.MVarId.assert mvarId n t h
+        let (_, mvarIdNew) ← Lean.MVarId.intro1P mvarIdNew
+        return [mvarIdNew]
+
+open Parser Tactic Syntax
+
+syntax "havePerms" (" [" term,* "]")? : tactic
+elab_rules : tactic
+  | `(tactic| havePerms $[[$args,*]]?) => withMainContext do
+      let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
+      for h in hyps do
+        haveExpr "this" h
+        evalTactic (← `(tactic| perm at $(mkIdent "this")))
+
+syntax "linperm" "only"? (" [" term,* "]")? : tactic
+macro_rules
+  | `(tactic| linperm $[[$args,*]]? ) => `(tactic| havePerms $[[$args,*]]?; perm at *; linarith)
+
 macro "split_all" : tactic => `(tactic|
   (
     repeat (constructor; rotate_left)
