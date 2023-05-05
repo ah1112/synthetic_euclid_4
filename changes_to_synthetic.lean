@@ -1,6 +1,22 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/5/4
+Replaced
+
+  theorem asa {a b c d e f : point} {L : line} (ef : e ≠ f) (eL : online e L) (fL : online f L)
+    (dL : ¬online d L) (side : length b c = length e f) (ang1 : angle c b a = angle f e d)
+    (ang2 : angle a c b = angle d f e) :
+    length a b = length d e ∧ length a c = length d f ∧ angle b a c = angle e d f
+
+for
+
+  theorem asa (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e)
+      (bac_edf : angle b a c = angle e d f) (abc_def : angle a b c = angle d e f) : 
+      length a c = length d f ∧ length b c = length e f ∧ angle a c b = angle d f e := 
+
+To get one triangle from the line data, you can use triangle_of_ne_online. For the other you have to work much harder. Don't use this version of synthetic yet, Ian
+
 --2023/4/27
 
 Replaced 

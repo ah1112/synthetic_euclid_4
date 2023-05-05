@@ -443,6 +443,11 @@ lemma angle_zero_of_lt_eq (ab : a ≠ b) (aL : online a L) (bL : online b L) (dc
       aM cM dM (B_of_col_sameside ⟨M, cM, aM, dM⟩ aL $ sameside_symm dcL)
   . linarith[angle_symm b a d, angle_add_of_sameside aL bL aN cN (sameside_symm dcL) $ 
       sameside_of_sameside_not_sameside ab aL aM aN bL dM cN cM dcL bcM, angle_symm d a c]
+--2023/5/4
+theorem angle_zero_of_lt_eq_B (ab : a ≠ b) (Bbcd : B b c d) (tri_bad : triangle b a d)
+    (bad_bac : angle b a d = angle b a c) : angle c a d = 0 := by
+  rcases line_of_pts a b with ⟨L, aL, bL⟩; exact angle_zero_of_lt_eq ab aL bL (sameside_symm $ 
+    sameside_of_B_online_3 Bbcd bL (online_3_of_triangle bL aL tri_bad)) bad_bac 
 --2023/4/27
 theorem ne_of_col_tri (col_abc : colinear a b c) (tri_acd : triangle d a c) : d ≠ b := by
   rcases col_abc with ⟨L, aL, bL, cL⟩; exact ne_of_online' bL $ online_1_of_triangle aL cL tri_acd
@@ -516,6 +521,10 @@ theorem circint_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β)
   rcases in_circle_of_lt_lt bβ aα dβ cα (by rw[abs_lt]; constructor; repeat 
     linarith[length_symm a b, abs_lt.mp lt_cen]) $ by perm; linarith with ⟨f, fβ, fα⟩
   exact circles_inter_of_inside_on_circle eα fβ fα eβ
+--2023/5/4
+theorem ang_2_nonzero_of_tri (tri_abc : triangle a b c) : angle b a c ≠ 0 := by
+  rcases line_of_pts a b with ⟨L, aL, bL⟩; linarith[zero_lt_angle_of_offline (ne_12_of_tri 
+    tri_abc) aL bL (online_3_of_triangle aL bL tri_abc), angle_symm b a c]
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -795,72 +804,22 @@ theorem angle_copy (ab : a ≠ b) (aL : online a L) (bL : online b L) (jL : ¬on
   have : angle h a g = angle e c f := (sss ah_ce (len_21_of_len gh_ef) cf_ag.symm).2.1
   exact ⟨h, by linarith[angle_extension_of_B' (ne_of_sameside' aL hjL) Babg, angle_extension_of_B' 
                 (ne_13_of_tri tri_cde) Bcdf], hjL⟩
-    -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.26 part 1
-theorem asa {a b c d e f : point} {L : line} (ef : e ≠ f) (eL : online e L) (fL : online f L)
-  (dL : ¬online d L) (side : length b c = length e f) (ang1 : angle c b a = angle f e d)
-  (ang2 : angle a c b = angle d f e) :
-  length a b = length d e ∧ length a c = length d f ∧ angle b a c = angle e d f :=
-  by sorry /-begin
-  have bc : b ≠ c := λ bc, by linarith [len_pos_of_nq ef, length_eq_zero_iff.mpr bc],
-  rcases line_of_pts b c with ⟨M, bM, cM⟩,
-  by_cases len : length a b = length d e,
-  { have congr := sas side (len_symm2_of_len len) ang1,
-    exact ⟨len, len_symm2_of_len congr.1, congr.2.2⟩, },
-  by_cases len1 : length d e < length a b,
-  { exfalso,
-    rcases same_length_B_of_ne_le (neq_of_online_offline eL dL).symm (by linarith [length_symm a b] : length d e < length b a) with
-      ⟨g, Bbga, len2⟩,
-    have ac : a ≠ c, --why was this so hard to do?
-    { intro ac,
-      have := mt (angle_zero_iff_online bc (ne_13_of_B Bbga) bM cM).mp (by linarith [angle_pos_of_not_colinear ef eL fL dL]),
-      push_neg at this,
-      by_cases online a M,
-      exact (ne_13_of_B (this h)).symm ac,
-      exact (neq_of_online_offline cM h).symm ac, },
-    have aext := angle_extension_of_B bc Bbga,
-    have := angle_symm c b a,
-    have gc : g ≠ c,--can be oneliner
-    { intro gc,
-      rw gc at *,
-      linarith [len_pos_of_nq (neq_of_online_offline fL dL), length_eq_zero_iff.mpr (rfl : c = c), (sas side (len_symm_of_len len2.symm).symm
-        (by linarith)).1], },
-    have := angle_symm c b g,
-    have sasc := sas side (len_symm_of_len len2.symm).symm (by linarith),
-    rcases line_of_pts a c with ⟨N, aN, cN⟩,
-    have gM : ¬online g M,--oneliner?
-    { intro gM,
-      have := (area_zero_iff_online bc bM cM).mpr gM,
-      exact (mt (area_zero_iff_online ef eL fL).mp dL) (by rwa (area_eq_of_SSS side sasc.1 (len_symm_of_len len2)) at this), },
-    rcases line_of_B Bbga with ⟨O, bO, gO, aO, -,nq,-⟩,
-    have gN : ¬online g N := λ gN, (lines_neq_of_online_offline gN gM) (line_unique_of_pts bc (by rwa (line_unique_of_pts nq gO aO gN aN) at
-      bO : online b N) cN bM cM),
-    have key := angles_add_of_sameside ac.symm bc.symm cN aN cM bM (sameside_symm (sameside_of_B_not_online_2 Bbga bM gM))
-      (sameside_symm (sameside_of_B_not_online_2 (B_symm Bbga) aN gN)),
-    linarith [angle_symm e f d, angle_symm g c b], },
-  have ab : a ≠ b,--oneliner?
-  { intro ab,
-    rw ← ab at *,
-    linarith [angle_symm e f d, angle_pos_of_not_colinear ef.symm fL eL dL, (angle_zero_iff_online bc.symm bc.symm cM bM).mp
-      ⟨bM, (λ Bcac, (ne_13_of_B Bcac) rfl)⟩], },
-  push_neg at len1,
-  rcases same_length_B_of_ne_le ab (by linarith [((ne.le_iff_lt len).mp len1), length_symm d e] : length a b < length e d) with
-    ⟨g, Begd, len2⟩,
-  have := angle_extension_of_B ef Begd,
-  have := angle_symm f e d,
-  rcases line_of_pts e d with ⟨M, eM, dM⟩,
-  rcases line_of_pts f d with ⟨N, fN, dN⟩,
-  have gL : ¬online g L := λ gL, dL (online_3_of_B Begd eL gL),
-  have sasc := sas side (len_symm_of_len len2.symm) (by linarith [angle_symm f e g]),
-  have gN : ¬online g N,--oneliner?
-  { intro gN,
-    have := line_unique_of_pts (ne_23_of_B Begd) gN dN (online_2_of_B Begd eM dM) dM,
-    exact (lines_neq_of_online_offline gN gL) (line_unique_of_pts ef eL fL (by rwa ← this at eM : online e N) fN).symm, },
-  have key := angles_add_of_sameside (neq_of_online_offline fL dL) ef.symm fN dN fL eL (sameside_symm (sameside_of_B_not_online_2 Begd eL gL))
-    (sameside_symm (sameside_of_B_not_online_2 (B_symm Begd) dN gN)),
-  linarith [angle_symm b c a, angle_symm e f g],
-end-/
 
+/--Euclid I.26, if two triangles have two corresponding angles equal and the included sides equal,
+   then they are congruent-/ 
+theorem asa (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e)
+    (bac_edf : angle b a c = angle e d f) (abc_def : angle a b c = angle d e f) : 
+    length a c = length d f ∧ length b c = length e f ∧ angle a c b = angle d f e := by
+  wlog df_le_ac : length d f ≤ length a c; have := this tri_def tri_abc ab_de.symm bac_edf.symm 
+    abc_def.symm (by linarith); tauto
+  by_cases ac_df : length a c = length d f; have' := sas ab_de ac_df bac_edf; tauto
+  rcases B_length_eq_of_ne_lt (ne_13_of_tri tri_def) $ Ne.lt_of_le (Ne.symm ac_df) df_le_ac
+    with ⟨g, Bagc, ag_df⟩
+  have : angle a b g = angle d e f := 
+    (sas ag_df ab_de $ by perm; linarith[angle_extension_of_B' (ne_12_of_tri tri_abc) Bagc]).2.2
+  exfalso; exact ang_2_nonzero_of_tri (tri_of_B_tri Bagc $ tri213 tri_abc) $ angle_zero_of_lt_eq_B 
+    (ne_21_of_tri tri_abc) Bagc tri_abc $ by linarith
+    -------------------------------------------- Book I Old-----------------------------------------
 def para (M N : line) : Prop :=  (∀  (e : point), ¬online e M ∨ ¬online e N)
 
 --Euclid I.27
