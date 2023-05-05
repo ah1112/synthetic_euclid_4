@@ -269,18 +269,25 @@ elab_rules: tactic
       let name := mkIdent ldecl.userName
       if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
 
+elab "assumption_symm" : tactic => withMainContext do
+  for ldecl in ← getLCtx do
+    let name := mkIdent ldecl.userName
+    if !ldecl.isImplementationDetail then
+      evalTactic (← `(tactic| try exact $name))
+      evalTactic (← `(tactic| try exact Eq.symm $name))
+
 /-- ## Tactic perma
 Like `perm`, but also tries to exact assumptions and their symmetrized versions.
  -/
 syntax "perma" ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
-  | `(tactic| perma) => `(tactic| perm; try assumption)
+  | `(tactic| perma) => `(tactic| perm; assumption_symm)
   | `(tactic| perma at $h) => `(tactic| perm at $h; try exact $h; try exact Eq.symm $h)
   | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic| perma at $h; perma at $hs,*)
-  | `(tactic| perma only [$perm_type]) => `(tactic| perm only [$perm_type]; assumption)
+  | `(tactic| perma only [$perm_type]) => `(tactic| perm only [$perm_type]; assumption_symm)
   | `(tactic| perma only [$perm_type] at $h) => `(tactic| perm only [$perm_type] at $h:ident; try exact $h; try exact Eq.symm $h)
-  | `(tactic| perma at *) => `(tactic| perma at *; assumption)
-  | `(tactic| perma only [$perm_type] at *) => `(tactic| perm only [$perm_type] at *; assumption)
+  | `(tactic| perma at *) => `(tactic| perma at *; assumption_symm)
+  | `(tactic| perma only [$perm_type] at *) => `(tactic| perm only [$perm_type] at *; assumption_symm)
 
 open Lean Meta in
 def haveExpr (n:Name) (h:Expr) :=
