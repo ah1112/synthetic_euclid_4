@@ -196,7 +196,7 @@ Usage:
 - `perm` permutes the variables in the goal
 - `perm at h` permutes the variables in hypothesis h
 - `perm at *` permutes the variables in the goal and all hypotheses
-All of these variants also internally try to use `assumption` or `exact h`.
+All of these variants also internally try to use `assumption` or `exact h` and `exact Eq.symm $h`.
  -/
 syntax "perm" ("only [" ident "]")? ("at" ident)? ("at *")? : tactic
 macro_rules
@@ -332,6 +332,13 @@ elab_rules : tactic
         haveExpr "this" h
         evalTactic (← `(tactic| perm at $(mkIdent "this")))
 
+/-- ## Tactic linperm
+A combination of linarith and perm.
+
+Usage:
+- `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm at *; linarith`
+- `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `linarith`
+ -/
 syntax "linperm " (("only ")? "[" term,* "]")? ("only [" term,* "]")?: tactic
 macro_rules
   | `(tactic| linperm [$args,*] ) => `(tactic| havePerms [$args,*]; perm at *; linarith)
