@@ -269,6 +269,19 @@ elab_rules: tactic
         let name := mkIdent ldecl.userName
         if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
 
+/-- ## Tactic perma
+Like `perm`, but also tries to exact assumptions and their symmetrized versions.
+ -/
+syntax "perma" ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
+macro_rules
+  | `(tactic| perma) => `(tactic| perm; try assumption)
+  | `(tactic| perma at $h) => `(tactic| perm at $h; try exact $h; try exact Eq.symm $h)
+  | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic| perma at $h; perma at $hs,*)
+  | `(tactic| perma only [$perm_type]) => `(tactic| perm only [$perm_type]; assumption)
+  | `(tactic| perma only [$perm_type] at $h) => `(tactic| perm only [$perm_type] at $h:ident; try exact $h; try exact Eq.symm $h)
+  | `(tactic| perma at *) => `(tactic| perma at *; assumption)
+  | `(tactic| perma only [$perm_type] at *) => `(tactic| perm only [$perm_type] at *; assumption)
+
 open Lean Meta in
 def haveExpr (n:Name) (h:Expr) :=
     withMainContext do
