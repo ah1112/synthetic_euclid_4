@@ -259,15 +259,15 @@ elab_rules: tactic
     else
       throwError "permutation type {perm_type} is not valid, please use one of 'area/colinear/triangle/length/angle/sameside/diffside'"
   | `(tactic| perm at *) => withMainContext do
-      evalTactic (← `(tactic| perm))
-      for ldecl in ← getLCtx do
-        let name := mkIdent ldecl.userName
-        if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm at $name))
+    evalTactic (← `(tactic| perm))
+    for ldecl in ← getLCtx do
+      let name := mkIdent ldecl.userName
+      if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm at $name))
   | `(tactic| perm only [$perm_type] at *) => withMainContext do
-      evalTactic (← `(tactic| perm only [$perm_type]))
-      for ldecl in ← getLCtx do
-        let name := mkIdent ldecl.userName
-        if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
+    evalTactic (← `(tactic| perm only [$perm_type]))
+    for ldecl in ← getLCtx do
+      let name := mkIdent ldecl.userName
+      if !ldecl.isImplementationDetail then evalTactic (← `(tactic| perm only [$perm_type] at $name))
 
 /-- ## Tactic perma
 Like `perm`, but also tries to exact assumptions and their symmetrized versions.
@@ -284,22 +284,22 @@ macro_rules
 
 open Lean Meta in
 def haveExpr (n:Name) (h:Expr) :=
-    withMainContext do
-      let t ← inferType h
-      liftMetaTactic fun mvarId => do
-        let mvarIdNew ← Lean.MVarId.assert mvarId n t h
-        let (_, mvarIdNew) ← Lean.MVarId.intro1P mvarIdNew
-        return [mvarIdNew]
+  withMainContext do
+    let t ← inferType h
+    liftMetaTactic fun mvarId => do
+      let mvarIdNew ← Lean.MVarId.assert mvarId n t h
+      let (_, mvarIdNew) ← Lean.MVarId.intro1P mvarIdNew
+      return [mvarIdNew]
 
 open Parser Tactic Syntax
 
 syntax "havePerms" (" [" term,* "]")? : tactic
 elab_rules : tactic
   | `(tactic| havePerms $[[$args,*]]?) => withMainContext do
-      let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
-      for h in hyps do
-        haveExpr "this" h
-        evalTactic (← `(tactic| perm at $(mkIdent "this")))
+    let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
+    for h in hyps do
+      haveExpr "this" h
+      evalTactic (← `(tactic| perm at $(mkIdent "this")))
 
 /-- ## Tactic linperm
 A combination of linarith and perm.
