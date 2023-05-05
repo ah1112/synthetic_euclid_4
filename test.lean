@@ -39,5 +39,5 @@ lemma in_circle_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β) -
    ⟨e, Bet, eα⟩
   rcases Bet with Bet | Bet
   all_goals exact ⟨e, eα, (in_circle_iff_length_lt bβ dβ).mp $ by 
-                    linarith[length_sum_of_B Bet, (on_circle_iff_length_eq aα cα).mpr eα, 
-            abs_lt.mp lt_cen, length_symm e b]⟩
+                    linperm[length_sum_of_B Bet, (on_circle_iff_length_eq aα cα).mpr eα, 
+            abs_lt.mp lt_cen]⟩
