@@ -332,9 +332,10 @@ elab_rules : tactic
         haveExpr "this" h
         evalTactic (← `(tactic| perm at $(mkIdent "this")))
 
-syntax "linperm" "only"? (" [" term,* "]")? : tactic
+syntax "linperm " (("only ")? "[" term,* "]")? ("only [" term,* "]")?: tactic
 macro_rules
-  | `(tactic| linperm $[[$args,*]]? ) => `(tactic| havePerms $[[$args,*]]?; perm at *; linarith)
+  | `(tactic| linperm [$args,*] ) => `(tactic| havePerms [$args,*]; perm at *; linarith)
+  | `(tactic| linperm only [$args,*] ) => `(tactic| havePerms [$args,*]; linarith)
 
 macro "split_all" : tactic => `(tactic|
   (
