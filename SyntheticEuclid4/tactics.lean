@@ -194,11 +194,11 @@ A custom experimental tactic for permuting the variables in geometric primitives
 
 Usage:
 - `perm` permutes the variables in the goal
-- `perm at h` permutes the variables in hypothesis h
+- `perm at h1, h2, ...` permutes the variables in hypotheses `h1`, `h2`, ...
 - `perm at *` permutes the variables in the goal and all hypotheses
 All of these variants also internally try to use `assumption` or `exact h` and `exact Eq.symm $h`.
  -/
-syntax "perm" ("only [" ident "]")? ("at" ident)? ("at *")? : tactic
+syntax "perm" ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
   | `(tactic| perm) => `(tactic|
     (
@@ -258,6 +258,7 @@ macro_rules
       try exact $h
       try exact Eq.symm $h
     ))
+  | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic| perm at $h; perm at $hs,*)
   | `(tactic| perm only [area] at $h) => `(tactic|
     (
       try conv at $h in (occs := *) area _ _ _ => all_goals area_nf
