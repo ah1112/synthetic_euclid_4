@@ -1,6 +1,9 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/5/5
+Now with triangle_of_ne_online and asa you can obtain the original statemnt of asa.
+
 --2023/5/4
 Replaced
 
