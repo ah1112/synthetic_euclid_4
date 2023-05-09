@@ -350,7 +350,8 @@ macro_rules
   (havePerms [$args,*]
    linarith))
 
-macro "split_all" : tactic => `(tactic|
-  repeat (constructor
-          rotate_right)
-  )
+macro "splitAll" : tactic => `(tactic|
+  (repeat (constructor
+           rotate_left)
+   rotate_left
+  ))
