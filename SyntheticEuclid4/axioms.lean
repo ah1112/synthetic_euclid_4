@@ -137,3 +137,5 @@ def eq_tri (a b c : point) := triangle a b c ∧ length a b = length a c ∧ len
   ∧ length c a = length c b
 
 def iso_tri (a b c : point) := triangle a b c ∧ length a b = length a c
+
+def para (M N : line) : Prop := ∀ e, ¬online e M ∨ ¬online e N

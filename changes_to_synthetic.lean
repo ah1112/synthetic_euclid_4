@@ -1,6 +1,20 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/5/9
+Changed 
+
+  theorem angeqpar {a e f d : point} {L M N : line} (ae : a ≠ e) (ef : e ≠ f) (fd : f ≠ d)
+  (aM : online a M) (eM : online e M) (fN : online f N) (dN : online d N)
+  (eL : online e L) (fL : online f L) (ang : angle a e f = angle e f d) (adL : diffside a d L) :
+  para M N
+
+to 
+
+  theorem para_of_ang_eq (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : online b L) 
+    (cL : online c L) (cN : online c N) (dN : online d N) (adL : diffside a d L) 
+    (cba_bcd : angle c b a = angle b c d) : para M N
+
 --2023/5/5
 Now with triangle_of_ne_online and asa you can obtain the original statemnt of asa.
 
