@@ -2,7 +2,7 @@ import SyntheticEuclid4.tactics
 open incidence_geometry
 variable [i: incidence_geometry]
 
-lemma test_perm1 {a b : point} : area a b b = area b b a ∧ area a b c + area e d f = area a c b + area d f e ∧ area a b c + area e d f = area a c b + area d f e := by split_all; all_goals perm only [area]
+lemma test_perm1 {a b : point} : area a b b = area b b a ∧ area a b c + area e d f = area a c b + area d f e ∧ area a b c + area e d f = area a c b + area f d e := by split_all; all_goals perm only [area]
 
 lemma test_perm2 {a b c: point} : area b a c + area c b a = area a b c * 2 := by perm; ring
 
@@ -38,6 +38,6 @@ lemma in_circle_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β) -
   rcases B_or_B_of_circ_pt (mt length_eq_zero_iff.mpr $ by linarith[abs_lt.mp lt_cen]) aα bα with
    ⟨e, Bet, eα⟩
   rcases Bet with Bet | Bet
-  all_goals exact ⟨e, eα, (in_circle_iff_length_lt bβ dβ).mp $ by 
-                    linperm[length_sum_of_B Bet, (on_circle_iff_length_eq aα cα).mpr eα, 
-            abs_lt.mp lt_cen]⟩
+  all_goals
+    exact ⟨e, eα, (in_circle_iff_length_lt bβ dβ).mp $ by
+     linperm[length_sum_of_B Bet, (on_circle_iff_length_eq aα cα).mpr eα, abs_lt.mp lt_cen]⟩
