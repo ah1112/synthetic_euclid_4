@@ -50,7 +50,7 @@ theorem length_sum_perm_of_B (Babc : B a b c) : 0 < length a b ∧ 0 < length b 
     length b a + length b c = length c a ∧ length b a + length c b = length c a ∧
     length a b + length c b = length a c ∧ length a b + length b c = length c a ∧
     length a b + length c b = length c a := by
-  perm; split_all; repeat exact len_pos_of_nq $ ne_12_of_B Babc
+  perm; splitAll; repeat exact len_pos_of_nq $ ne_12_of_B Babc
   repeat exact len_pos_of_nq $ ne_23_of_B Babc; repeat exact len_pos_of_nq $ ne_13_of_B Babc
   repeat exact length_sum_of_B Babc
 
@@ -65,7 +65,7 @@ theorem not_online_of_line (L : line) : ∃ (a : point), ¬online a L := by
      bα) (inside_circle_of_center cβ)) with ⟨a, -, -, aα, aβ, -, -⟩
   have bc_ba := (on_circle_iff_length_eq bα cα).mpr aα
   have cb_ca := (on_circle_iff_length_eq cβ bβ).mpr aβ 
-  refine ⟨a, fun aL => (by push_neg; split_all; all_goals exact (fun Bet => 
+  refine ⟨a, fun aL => (by push_neg; splitAll; all_goals exact (fun Bet =>
     by linarith[length_sum_perm_of_B Bet]) : ¬ (B b c a ∨ B c b a ∨ B b a c)) $ 
     B_of_three_online_ne bc (ne_of_ne_len bc bc_ba) (ne_of_ne_len bc.symm cb_ca) bL cL aL⟩
 
