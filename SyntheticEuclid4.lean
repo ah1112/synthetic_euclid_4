@@ -564,6 +564,29 @@ theorem offline_of_online_inter (bc : b ≠ c) (aM : online a M) (bM : online b 
     (eM : online e M) (eN : online e N) : ¬online e L :=
   offline_of_online_offline (ne_of_online' eM $ offline_of_online_offline bc aM bM bL cL aL) bL cL 
     cN eN $ offline_of_online_offline bc.symm dN cN cL bL dL
+--2023/5/10
+theorem para_symm (paraMN : para M N) : para N M := fun e => by have := paraMN e; tauto
+
+theorem offline_of_para (aM : online a M) (paraMN : para M N) : ¬online a N := by 
+  have := paraMN a; tauto 
+
+theorem offline_of_para' (aN : online a N) (paraMN : para M N) : ¬online a M := by 
+  have := paraMN a; tauto
+
+theorem ne_of_para (aM : online a M) (bN : online b N) (paraMN : para M N) : a ≠ b := 
+  ne_of_online aM $ offline_of_para' bN paraMN
+
+theorem ne_of_para' (aM : online a M) (bN : online b N) (paraMN : para M N) : b ≠ a := 
+  ne_of_online' aM $ offline_of_para' bN paraMN
+
+theorem not_para_of_inter (aM : online a M) (aN : online a N) : ¬para M N := by
+  intro paraMN; have := paraMN a; tauto
+
+theorem diffside_of_B_sameside (Bcad : B c a d) (aL : online a L) (bL : online b L) 
+    (ceL : sameside c e L) : diffside d e L :=
+  diffside_symm $ diffside_of_sameside_diffside ceL $ diffside_of_B_offline' Bcad aL $ 
+    not_online_of_sameside ceL
+
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -629,7 +652,7 @@ theorem angle_eq_of_iso (iso_abc : iso_tri a b c) : angle a b c = angle a c b :=
 theorem iso_of_angle_eq (tri_abc : triangle a b c) (abc_eq_acb : angle a b c = angle a c b) :
   length a b = length a c := by
 by_contra ab_ac
-wlog ab_le_ac : length a b ≤ length a c; exact this (by perm; assumption) abc_eq_acb.symm 
+wlog ab_le_ac : length a b ≤ length a c; exact this (by perma) abc_eq_acb.symm 
   (Ne.symm ab_ac) $ by linarith
 rcases B_length_eq_of_ne_lt (ne_12_of_tri tri_abc) 
   (by perm at *; exact Ne.lt_of_le ab_ac ab_le_ac) with ⟨d, Bcda, cd_ab⟩
@@ -761,18 +784,18 @@ theorem internal_lt_external (Babc : B a b c) (tri_abd : triangle a b d) :
   have ebc_split : angle e b c = angle f b e + angle f b c := angle_add_of_sameside bL eL bM cM 
     (sameside_of_B_B Babc Baef bL eL $ online_1_of_triangle bL dL tri_abd) $ sameside_of_B_online_3 
     Baef aM $ offline_of_B_B_tri Baef Bbed aM bM tri_abd  
-  linarith[zero_lt_angle_of_offline (ne_23_of_B Babc) bM cM $ offline_of_B_B_tri Baef Bbed aM bM
+  linperm[zero_lt_angle_of_offline (ne_23_of_B Babc) bM cM $ offline_of_B_B_tri Baef Bbed aM bM
     tri_abd, angle_extension_of_B (ne_23_of_B Babc) Bbed, angle_extension_of_B (ne_31_of_tri 
-    tri_abd) (B_symm Bbed), angle_symm f b e]
+    tri_abd) (B_symm Bbed)]
 
 /-- Euclid I.16, external angles are greater than interior angles-/
 theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) : 
     angle b a d < angle d b c := by
   rcases length_eq_B_of_ne (ne_32_of_tri tri_abd) (ne_23_of_tri tri_abd) with ⟨e, Bdbe, -⟩
-  have' : angle b a d < angle a b e := internal_lt_external Bdbe (by perm; assumption)
+  have' : angle b a d < angle a b e := internal_lt_external Bdbe $ by perma
   have : angle e b a = angle d b c := vertical_angle' (B_symm Bdbe) Babc $ tri213 $ 
-    tri_143_of_tri_col (ne_23_of_B Bdbe) (by perm; assumption) $ col_213_of_col $ col_of_B Bdbe
-  perm at *; linarith 
+    tri_143_of_tri_col (ne_23_of_B Bdbe) (by perma) $ col_213_of_col $ col_of_B Bdbe
+  linperm
   
 /-- Euclid I.18, Opposite larger sides you have larger angles in a triangle-/
 theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < length c b) :
@@ -790,16 +813,16 @@ theorem len_lt_of_ang_lt (tri_abc : triangle a b c) (ang_lt : angle c b a < angl
     length c a < length c b := by
   by_contra cb_le_ca; push_neg at cb_le_ca
   by_cases cb_ca : length c b = length c a
-  . linarith[angle_eq_of_iso ⟨by perm; assumption, cb_ca.symm⟩]
-  linarith[ang_lt_of_len_lt (by perm; assumption) $ lt_of_le_of_ne cb_le_ca cb_ca]
+  . linarith[angle_eq_of_iso ⟨by perma, cb_ca.symm⟩]
+  linarith[ang_lt_of_len_lt (by perma) $ lt_of_le_of_ne cb_le_ca cb_ca]
 
 /--Euclid I.20, a triangle inequality-/
 theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + length b c := by
   rcases length_eq_B_of_ne_four (ne_13_of_tri tri_abc) (ne_23_of_tri tri_abc) with ⟨d, Bacd, bc_cd⟩
   have : angle d b c < angle d b a := angle_lt_of_B_tri (B_symm Bacd) $ tri312 $ tri_143_of_tri_col
-    (ne_13_of_B Bacd) (by perm; assumption) $ col_of_B Bacd
+    (ne_13_of_B Bacd) (by perma) $ col_of_B Bacd
   have : angle c d b = angle c b d := angle_eq_of_iso ⟨tri_143_of_tri_col (ne_23_of_B Bacd) 
-    (by perm; assumption) $ col_213_of_col $ col_of_B Bacd, len_43_of_len bc_cd.symm⟩
+    (by perma) $ col_213_of_col $ col_of_B Bacd, len_43_of_len bc_cd.symm⟩
   have : length a b < length a d := len_lt_of_ang_lt (tri321 $ tri_143_of_tri_col (ne_13_of_B Bacd) 
     (tri132_of_tri123 tri_abc) $ col_of_B Bacd) $ 
     by linarith[angle_symm c b d, angle_symm d b a, angle_extension_of_B (ne_of_col_tri' 
@@ -810,7 +833,7 @@ theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + le
 /--Euclid I.20, the triangle inequalities-/
 theorem len_lt_of_tri (tri_abc : triangle a b c) : length a b < length a c + length b c ∧ 
     length b c < length b a + length c a ∧ length c a < length c b + length a b := 
-  ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ by perm; assumption, len_lt_of_tri' $ by perma⟩ 
+  ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ by perma, len_lt_of_tri' $ by perma⟩ 
 
 /--Euclid I.22, making a triangle with prescribed lengths-/
 theorem triangle_of_ineq (aL : online a L) (bL : online b L) (fL : ¬online f L) 
@@ -871,74 +894,41 @@ theorem para_of_ang_eq (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : 
     (cL : online c L) (cN : online c N) (dN : online d N) (adL : diffside a d L) 
     (cba_bcd : angle c b a = angle b c d) : para M N := by
   intro e; by_contra eMN; push_neg at eMN
-  wlog aeL : sameside a e L; exact this bc.symm dN cN cL bL bM aM (by perm; assumption) (by 
-    linperm) e (by tauto) $ sameside_of_diffside_diffside adL ⟨adL.1, offline_of_online_inter bc aM
+  wlog aeL : sameside a e L; exact this bc.symm dN cN cL bL bM aM (by perma) (by linperm) e
+    (by tauto) $ sameside_of_diffside_diffside adL ⟨adL.1, offline_of_online_inter bc aM
     bM bL cL cN dN adL.1 adL.2.1 eMN.1 eMN.2, aeL⟩
-  have : angle c b e < angle b c d:= internal_lt_external (B_of_col_diffside ⟨N, eMN.2, cN, dN⟩ cL
+  have : angle c b e < angle b c d := internal_lt_external (B_of_col_diffside ⟨N, eMN.2, cN, dN⟩ cL
     $ diffside_of_sameside_diffside aeL adL) $ tri321 $ triangle_of_ne_online bc bL cL $ 
     not_online_of_sameside $ sameside_symm aeL
   linperm[angle_extension_of_sameside bc.symm cL bL ⟨M, bM, aM, eMN.1⟩ aeL]
-    -------------------------------------------- Book I Old-----------------------------------------
---Euclid I.29
-theorem parapost {a b d e g h : point} {L M N : line} (dh : d ≠ h) (aM: online a M) (gM: online g M)
-  (dN: online d N)(hL : online h L) (hN: online h N)
-  (gL : online g L) (par : para M N) (Bagb : B a g b) (Begh : B e g h)
-  (bdL : sameside b d L) : angle a g h = angle g h d ∧ angle e g b = angle g h d ∧
-  angle b g h + angle g h d = 2 * rightangle :=
-  by sorry /-begin
-  rcases same_length_B_of_ne dh dh.symm with ⟨c, Bdhc, len⟩,
-  have hM : ¬online h M, { cases par h, exact h_1, exfalso, exact h_1 hN, },--better way?
-  have gN : ¬online g N, { cases par g, exfalso, exact h_1 gM, exact h_1 },--better way?
-  have acL : sameside a c L := sameside_of_diffside_diffside (difsamedif bdL ⟨not_online_of_sameside bdL, λ aL, (not_online_of_sameside bdL) (online_3_of_B Bagb aL gL),
-    difsym (not_sameside13_of_B123_online2 Bagb gL)⟩) ⟨(not_online_of_sameside (sameside_symm bdL)), λ cL, (not_online_of_sameside (sameside_symm bdL)) (online_3_of_B (B_symm Bdhc) cL hL),
-    not_sameside13_of_B123_online2 Bdhc hL⟩,
-  have := angle_symm h g b,
-  have := angle_symm h g a,
-  have := flatsumright aM (online_3_of_B Bagb aM gM) hM Bagb,
-  have := flatsumright dN (online_3_of_B Bdhc dN hN) gN Bdhc,
-  have key1 : angle a g h = angle g h d,
-  { by_contra ang,
-    by_cases ang1 : angle g h d < angle a g h, --anything better than the casework?
-    { rcases unparallel_postulate (neq_of_online_offline gM hM) (online_3_of_B Bagb aM gM) gM gL hL hN dN bdL
-        (by linarith) with ⟨e, eM, eN, junk⟩, -- *** `junk` can be replaced by `-`?
-      cases par e,
-      exact h_1 eM,
-      exact h_1 eN, },
-    push_neg at ang1,
-    have ang2 : angle a g h < angle g h d := (ne.le_iff_lt ang).mp ang1,--anything better?
-    rcases unparallel_postulate (neq_of_online_offline gM hM) aM gM gL hL hN (online_3_of_B Bdhc dN hN) acL
-      (by linarith) with ⟨e, eM, eN, junk⟩,
-    cases par e, exact h_1 eM, exact h_1 eN, },
-  exact ⟨key1, by linarith [vertang hL (online_3_of_B (B_symm Begh) hL gL) (not_online_of_sameside bdL) (B_symm Begh) (B_symm Bagb)],
-    by linarith⟩,
-end-/
 
---Euclid I.29
-theorem parapostcor {a d g h : point} {L M N : line} (dh : d ≠ h) (aM: online a M) (gM: online g M)
-(hN: online h N) (dN: online d N) (hL : online h L)
-  (gL : online g L) (par : para M N) (adL : diffside a d L) : angle a g h = angle g h d :=
-  by sorry /-begin
-  have hg : h ≠ g,
-  { intro hg, rw hg at *, cases par g, exact h_1 gM, exact h_1 hN, },
-  rcases same_length_B_of_ne (neq_of_online_offline gL adL.1).symm (neq_of_online_offline gL adL.1) with ⟨b, Bagb, junk⟩,
-  rcases same_length_B_of_ne hg hg.symm with ⟨e, Bhge, junk⟩,
-  exact (parapost dh aM gM dN hL hN gL par Bagb (B_symm Bhge)
-    (sameside_of_diffside_diffside ⟨adL.1, (λ bL, adL.1 (online_3_of_B (B_symm Bagb) bL gL)), not_sameside13_of_B123_online2 Bagb gL⟩ adL)).1,
-end-/
+/--Euclid I.29, basic properties of alternate, exterior, and interior angles with parallel lines-/
+theorem alternate_eq_of_para (aM : online a M) (bM : online b M) (bL : online b L) 
+    (cL : online c L) (cN : online c N) (dN : online d N) (adL : diffside a d L) 
+    (paraMN : para M N) : angle a b c = angle b c d := by
+  wlog bcd_lt_abc : angle b c d < angle a b c; by_cases angle a b c = angle b c d; exact h; 
+    push_neg at bcd_lt_abc; linperm[this dN cN cL bL bM aM (by perma) (para_symm paraMN) 
+    (by linperm[lt_of_le_of_ne bcd_lt_abc h])]
+  rcases length_eq_B_of_ne (ne_of_online' bL adL.1) (ne_of_online bL adL.1) with ⟨e, Babe, -⟩
+  have : angle c b a + angle c b e = 2 * rightangle := 
+    two_right_of_flat_angle Babe aM bM $ offline_of_para' cN paraMN
+  have : angle c b e + angle b c d < 2 * rightangle := by perm at *; linarith
+  rcases unparallel_postulate (ne_of_para bM cN paraMN) (online_3_of_B Babe aM bM) bM bL cL cN dN
+    (sameside_symm $ sameside_of_B_diffside (ne_of_para bM cN paraMN) bL cL Babe adL) (by perma) 
+    with ⟨f, fM, fN, -⟩
+  exfalso; exact not_para_of_inter fM fN paraMN
 
---Euclid I.29
-theorem parapostcor2 {b g h d : point} {L M N : line} (dh : d ≠ h) (bM: online b M) (gM: online g M)
-(hN: online h N) (dN: online d N) (hL : online h L)
-  (gL : online g L) (par : para M N) (bdL : sameside b d L) : angle b g h + angle g h d = 2 * rightangle  :=
-  by sorry /-begin
-  have hg : h ≠ g,
-  { intro hg, rw hg at *, cases par g, exact h_1 gM, exact h_1 hN, },
-  rcases same_length_B_of_ne (neq_of_online_offline gL (not_online_of_sameside bdL)).symm (neq_of_online_offline gL (not_online_of_sameside bdL)) with ⟨a, Bbga, -⟩,
-  rcases same_length_B_of_ne hg hg.symm with ⟨e, Bhge, -⟩,
-  exact (parapost dh (online_3_of_B Bbga bM gM) gM dN hL hN gL par (B_symm Bbga) (B_symm Bhge)
-    bdL).2.2,
-end-/
-
+/--Euclid I.29, basic properties of alternate, exterior, and interior angles with parallel lines-/
+theorem interior_rightangles_of_para (aM : online a M) (bM : online b M) (bL : online b L) 
+    (cL : online c L) (cN : online c N) (dN : online d N) (adL : sameside a d L) 
+    (paraMN : para M N) : angle a b c + angle b c d = 2 * rightangle := by
+  rcases length_eq_B_of_ne (ne_of_sameside bL adL) (ne_of_sameside' bL adL) with ⟨e, Babe, -⟩
+  have ras : angle c b a + angle c b e = 2 * rightangle := 
+    two_right_of_flat_angle Babe aM bM $ offline_of_para' cN paraMN
+  have : angle e b c = angle b c d := alternate_eq_of_para (online_3_of_B Babe aM bM) bM bL cL 
+    cN dN (diffside_of_B_sameside Babe bL cL adL) paraMN
+  perm at *; linarith
+-------------------------------------------- Book I Old-----------------------------------------
 --Euclid I.31
 theorem drawpar {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
   (aL : ¬online a L) : ∃ (e : point), ∃ (N : line),online e N ∧ online a N ∧ online b L ∧ online c L∧  para N L :=
@@ -1855,24 +1845,9 @@ theorem pythagoras {a b c f g h k d e : point} {L M N O P Q R S T U V W : line} 
   linarith [area_invariant b c f, area_invariant c b k, area_invariant l d b, area_invariant l b d, area_invariant l m b, area_invariant b l m],
 end-/
 
-
---Simplest statement
-theorem pythagorean_theorem {a b c : point} (ang : angle c a b = rightangle) :
-  (length a b)^2 + (length a c)^2 = (length b c)^2  :=
-  by sorry /-begin
-  by sorry,
-end-/
-
 ------------------------------------------- old API ------------------------------------------------
 lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
   := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
-
-theorem para_symm {M N : line} (par: para M N) : para N M:= by sorry --λ a, or.swap (par a)
-
-theorem online_of_online_para {a : point} {M N: line}(aM: online a M)(par: para M N): ¬ online a N:=
-  by sorry /-begin
-  cases par a,exfalso,exact h aM,exact h,
-end-/
 
 theorem sameside_of_online_online_para {a b : point} {M N: line} (aM: online a M) (bM: online b M)(par: para M N):
 sameside a b N:=

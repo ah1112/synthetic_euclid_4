@@ -1,6 +1,22 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/5/10
+Replaced
+  theorem parapostcor {a d g h : point} {L M N : line} (dh : d ≠ h) (aM: online a M) (gM: online g M)
+  (hN: online h N) (dN: online d N) (hL : online h L)
+    (gL : online g L) (par : para M N) (adL : diffside a d L) : angle a g h = angle g h d :=
+with
+  theorem alternate_eq_of_para (aM : online a M) (bM : online b M) (bL : online b L) 
+    (cL : online c L) (cN : online c N) (dN : online d N) (adL : diffside a d L) 
+    (paraMN : para M N) : angle a b c = angle b c d 
+
+Replaced
+  theorem online_of_online_para {a : point} {M N: line}(aM: online a M)(par: para M N): 
+    ¬ online a N:=
+with
+theorem offline_of_para (aM : online a M) (paraMN : para M N) : ¬online a N := by 
+
 --2023/5/9
 Changed 
 
