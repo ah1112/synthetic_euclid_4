@@ -894,7 +894,7 @@ theorem para_of_ang_eq (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : 
     (cL : online c L) (cN : online c N) (dN : online d N) (adL : diffside a d L) 
     (cba_bcd : angle c b a = angle b c d) : para M N := by
   intro e; by_contra eMN; push_neg at eMN
-  wlog aeL : sameside a e L; exact this bc.symm dN cN cL bL bM aM (by perma) (by
+  wlog aeL : sameside a e L; exact this bc.symm dN cN cL bL bM aM (by perma) (by 
     linperm) e (by tauto) $ sameside_of_diffside_diffside adL ⟨adL.1, offline_of_online_inter bc aM
     bM bL cL cN dN adL.1 adL.2.1 eMN.1 eMN.2, aeL⟩
   have : angle c b e < angle b c d := internal_lt_external (B_of_col_diffside ⟨N, eMN.2, cN, dN⟩ cL
