@@ -3,6 +3,12 @@ Here I will note changes made to the axioms and synthetic:
 
 --2023/5/10
 Replaced
+  theorem drawpar {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
+    (aL : ¬online a L) : ∃ (e : point), ∃ (N : line),online e N ∧ online a N ∧ online b L ∧ online c L∧  para N L
+with
+  theorem para_of_offline (aM : ¬online a M) : ∃ N, online a N ∧ para M N := by
+
+Replaced
   theorem parapostcor {a d g h : point} {L M N : line} (dh : d ≠ h) (aM: online a M) (gM: online g M)
   (hN: online h N) (dN: online d N) (hL : online h L)
     (gL : online g L) (par : para M N) (adL : diffside a d L) : angle a g h = angle g h d :=

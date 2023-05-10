@@ -586,7 +586,6 @@ theorem diffside_of_B_sameside (Bcad : B c a d) (aL : online a L) (bL : online b
     (ceL : sameside c e L) : diffside d e L :=
   diffside_symm $ diffside_of_sameside_diffside ceL $ diffside_of_B_offline' Bcad aL $ 
     not_online_of_sameside ceL
-
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -867,6 +866,14 @@ theorem angle_copy (ab : a ≠ b) (aL : online a L) (bL : online b L) (jL : ¬on
   exact ⟨h, by linarith[angle_extension_of_B' (ne_of_sameside' aL hjL) Babg, angle_extension_of_B' 
                 (ne_13_of_tri tri_cde) Bcdf], hjL⟩
 
+/--Euclid I.23, copying an angle-/
+theorem angle_copy' (ab : a ≠ b) (aL : online a L) (bL : online b L) (jL : ¬online j L) 
+    (tri_cde : triangle c d e) : ∃ h, angle h a b = angle e c d ∧ diffside h j L := by
+  rcases diffside_of_not_online jL with ⟨f, fL, jfL⟩
+  rcases angle_copy ab aL bL fL tri_cde with ⟨h, hab_ecd, hfL⟩
+  refine ⟨h, hab_ecd, diffside_of_sameside_diffside (sameside_symm hfL) $ diffside_symm 
+    ⟨jL, fL, jfL⟩⟩ 
+
 /--Euclid I.26, if two triangles have two corresponding angles equal and the included sides equal,
    then they are congruent-/ 
 theorem asa' (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e)
@@ -928,23 +935,16 @@ theorem interior_rightangles_of_para (aM : online a M) (bM : online b M) (bL : o
   have : angle e b c = angle b c d := alternate_eq_of_para (online_3_of_B Babe aM bM) bM bL cL 
     cN dN (diffside_of_B_sameside Babe bL cL adL) paraMN
   perm at *; linarith
--------------------------------------------- Book I Old-----------------------------------------
---Euclid I.31
-theorem drawpar {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
-  (aL : ¬online a L) : ∃ (e : point), ∃ (N : line),online e N ∧ online a N ∧ online b L ∧ online c L∧  para N L :=
-  by sorry /-begin
-  rcases pt_B_of_ne bc with ⟨d, Bbdc⟩,
-  have dL := online_2_of_B Bbdc bL cL,
-  rcases line_of_pts d a with ⟨M, dM, aM⟩,
-  have bM : ¬online b M := λ bM, (lines_neq_of_online_offline aM aL) (line_unique_of_pts bc bM (online_3_of_B Bbdc bM dM) bL cL),
-  rcases angcopy (neq_of_online_offline dL aL).symm (ne_23_of_B Bbdc) dL cL aL aM dM bM with ⟨e, ang, ebM⟩,
-  have ae : a ≠ e := λ ae, (not_online_of_sameside ebM) (by rwa ae at aM),
-  rcases line_of_pts a e with ⟨N, aN, eN⟩,
-  refine ⟨e, N,eN, aN, bL , cL,angeqpar ae.symm (neq_of_online_offline dL aL).symm (ne_23_of_B Bbdc) eN aN dL cL aM dM
-    (by linarith [angle_symm e a d, angle_symm a d c]) (difsamedif (sameside_symm ebM)
-    ⟨bM, (λ cM, bM (online_3_of_B (B_symm Bbdc) cM dM)), not_sameside13_of_B123_online2 Bbdc dM⟩)⟩,
-end-/
 
+/--Euclid I.31, through a point off a line there exists a parallel line-/
+theorem para_of_offline (aM : ¬online a M) : ∃ N, online a N ∧ para M N := by
+  rcases online_ne_of_line M with ⟨b, c, bc, bM, cM⟩
+  rcases line_of_pts a b with ⟨L, aL, bL⟩ 
+  rcases angle_copy' (ne_of_online' bM aM) aL bL (offline_of_online_offline bc aL bL bM cM aM) 
+    (triangle_of_ne_online bc bM cM aM) with ⟨d, bad_abc, cdL⟩; perm at *
+  rcases line_of_pts a d with ⟨N, aN, dN⟩ 
+  refine ⟨N, aN, para_of_ang_eq (ne_of_online bM aM) cM bM bL aL aN dN cdL bad_abc.symm⟩
+-------------------------------------------- Book I Old-----------------------------------------
 theorem parasianar {a b c d : point} {L M N K : line} (aL: online a L) (bL: online b L)
  (cM: online c M) (dM: online d M) (aK: online a K) (cK: online c K) (bN: online b N) (dN: online d N)
  (par1 : para L M) (par2 : para K N) :
