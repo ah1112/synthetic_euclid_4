@@ -335,9 +335,10 @@ A combination of linarith and perm.
 Usage:
 - `linperm` runs `perm at *` followed by `linarith`
 - `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm at *` followed by `linarith`
-- `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `linarith`
+- `linperm only` runs `perm` followed by `linarith`
+- `linperm only [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm` followed by `linarith`
  -/
-syntax "linperm " (("only ")? "[" term,* "]")? ("only [" term,* "]")?: tactic
+syntax "linperm " ("only ")? ("[" term,* "]")? ("only [" term,* "]")?: tactic
 macro_rules
   | `(tactic| linperm) => `(tactic|
   (perm at *
@@ -346,8 +347,12 @@ macro_rules
   (havePerms [$args,*]
    perm at *
    linarith))
+  | `(tactic| linperm only) => `(tactic|
+  (perm
+   linarith))
   | `(tactic| linperm only [$args,*] ) => `(tactic|
   (havePerms [$args,*]
+   perm
    linarith))
 
 macro "splitAll" : tactic => `(tactic|

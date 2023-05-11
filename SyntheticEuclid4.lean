@@ -523,7 +523,7 @@ theorem circint_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β)
     (cen_lt : length a b < length a c + length b d) : circles_inter α β := by
   rcases in_circle_of_lt_lt aα bβ cα dβ lt_cen cen_lt with ⟨e, eα, eβ⟩
   rcases in_circle_of_lt_lt bβ aα dβ cα (by rw[abs_lt]; constructor; repeat 
-    linperm[abs_lt.mp lt_cen]) $ by perm; linarith with ⟨f, fβ, fα⟩
+    linperm[abs_lt.mp lt_cen]) $ by linperm only with ⟨f, fβ, fα⟩
   exact circles_inter_of_inside_on_circle eα fβ fα eβ
 --2023/5/4
 theorem ang_2_nonzero_of_tri (tri_abc : triangle a b c) : angle b a c ≠ 0 := by
@@ -885,7 +885,7 @@ theorem asa' (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : leng
   rcases B_length_eq_of_ne_lt (ne_13_of_tri tri_def) $ Ne.lt_of_le (Ne.symm ac_df) df_le_ac
     with ⟨g, Bagc, ag_df⟩
   have : angle a b g = angle d e f := 
-    (sas ag_df ab_de $ by linperm[angle_extension_of_B' (ne_12_of_tri tri_abc) Bagc]).2.2
+    (sas ag_df ab_de $ by linperm only [angle_extension_of_B' (ne_12_of_tri tri_abc) Bagc]).2.2
   exfalso; exact ang_2_nonzero_of_tri (tri_of_B_tri Bagc $ tri213 tri_abc) $ angle_zero_of_lt_eq_B 
     (ne_21_of_tri tri_abc) Bagc tri_abc $ by linarith
 
