@@ -196,10 +196,11 @@ Usage:
 - `perm` permutes the variables in the goal
 - `perm at h1, h2, ...` permutes the variables in hypotheses `h1`, `h2`, ...
 - `perm at *` permutes the variables in the goal and all hypotheses
+- `perm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm`
 
-In each of these variants, `perm` can be replaced with `perm only [perm_type]`, where `perm_type` is one of area, colinear, triangle, length, angle, sameside, diffside.
+In each of these variants but the last, `perm` can be replaced with `perm only [perm_type]`, where `perm_type` is one of area, colinear, triangle, length, angle, sameside, diffside.
  -/
-syntax "perm" ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
+syntax "perm" (" [" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
   | `(tactic| perm) => `(tactic|
     (
@@ -225,6 +226,29 @@ macro_rules
   (perm at $h
    perm at $hs,*))
 
+open Lean Meta in
+def haveExpr (n:Name) (h:Expr) :=
+  withMainContext do
+    let t ← inferType h
+    liftMetaTactic fun mvarId => do
+      let mvarIdNew ← Lean.MVarId.assert mvarId n t h
+      let (_, mvarIdNew) ← Lean.MVarId.intro1P mvarIdNew
+      return [mvarIdNew]
+
+open Parser Tactic Syntax
+
+syntax "havePerms" (" [" term,* "]")? : tactic
+elab_rules : tactic
+  | `(tactic| havePerms $[[$args,*]]?) => withMainContext do
+    let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
+    for h in hyps do
+      haveExpr "this" h
+      evalTactic (← `(tactic| perm at $(mkIdent "this")))
+
+macro_rules
+  | `(tactic| perm [$args,*] ) => `(tactic|
+    (havePerms [$args,*]
+     perm))
 elab_rules: tactic
   | `(tactic| perm only [$perm_type:ident]) => do
     if perm_type == mkIdent `area then
@@ -280,7 +304,7 @@ elab "assumption_symm" : tactic => withMainContext do
 /-- ## Tactic perma
 Like `perm`, but also tries to exact assumptions and their symmetrized versions.
  -/
-syntax "perma" ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
+syntax "perma" ("[" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
   | `(tactic| perma) => `(tactic|
   (perm
@@ -309,25 +333,11 @@ macro_rules
   (perm only [$perm_type] at *
    try assumption
    try assumption_symm))
-
-open Lean Meta in
-def haveExpr (n:Name) (h:Expr) :=
-  withMainContext do
-    let t ← inferType h
-    liftMetaTactic fun mvarId => do
-      let mvarIdNew ← Lean.MVarId.assert mvarId n t h
-      let (_, mvarIdNew) ← Lean.MVarId.intro1P mvarIdNew
-      return [mvarIdNew]
-
-open Parser Tactic Syntax
-
-syntax "havePerms" (" [" term,* "]")? : tactic
-elab_rules : tactic
-  | `(tactic| havePerms $[[$args,*]]?) => withMainContext do
-    let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
-    for h in hyps do
-      haveExpr "this" h
-      evalTactic (← `(tactic| perm at $(mkIdent "this")))
+   | `(tactic| perma [$args,*] ) => `(tactic|
+  (havePerms [$args,*]
+   perm
+   try assumption
+   try assumption_symm))
 
 /-- ## Tactic linperm
 A combination of linarith and perm.
