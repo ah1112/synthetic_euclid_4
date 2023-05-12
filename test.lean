@@ -15,8 +15,7 @@ lemma test_linperm {a b c d e f g h i: point} (H1: area a c b = 0) (H2: area c b
 lemma bad (a b c d : point) : angle a b c = angle a b d := sorry
 
 lemma linperm2 (a b c d : point) : angle c b a + angle a b c = 2 * angle a b d := by
-  try linperm only [bad a b c d]
-  linperm [bad a b c d]
+  linperm only [bad a b c d]
 
 lemma B_or_B_of_B_B (cd : c ≠ d) (Babc : B a b c) (Babd : B a b d) :
     B b c d ∨ B b d c := by
