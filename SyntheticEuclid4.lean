@@ -523,7 +523,7 @@ theorem circint_of_lt_lt (aα : center_circle a α) (bβ : center_circle b β)
     (cen_lt : length a b < length a c + length b d) : circles_inter α β := by
   rcases in_circle_of_lt_lt aα bβ cα dβ lt_cen cen_lt with ⟨e, eα, eβ⟩
   rcases in_circle_of_lt_lt bβ aα dβ cα (by rw[abs_lt]; constructor; repeat 
-    linperm[abs_lt.mp lt_cen]) $ by linperm only with ⟨f, fβ, fα⟩
+    linperm[abs_lt.mp lt_cen]) $ by linperm with ⟨f, fβ, fα⟩
   exact circles_inter_of_inside_on_circle eα fβ fα eβ
 --2023/5/4
 theorem ang_2_nonzero_of_tri (tri_abc : triangle a b c) : angle b a c ≠ 0 := by
@@ -904,11 +904,11 @@ theorem asa' (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : leng
     length a c = length d f ∧ length b c = length e f ∧ angle a c b = angle d f e := by
   wlog df_le_ac : length d f ≤ length a c; have := this tri_def tri_abc ab_de.symm bac_edf.symm 
     abc_def.symm (by linarith); tauto
-  by_cases ac_df : length a c = length d f; have' := sas ab_de ac_df bac_edf; tauto
+  by_cases ac_df : length a c = length d f; have := sas ab_de ac_df bac_edf; tauto
   rcases B_length_eq_of_ne_lt (ne_13_of_tri tri_def) $ Ne.lt_of_le (Ne.symm ac_df) df_le_ac
     with ⟨g, Bagc, ag_df⟩
   have : angle a b g = angle d e f := 
-    (sas ag_df ab_de $ by linperm only [angle_extension_of_B' (ne_12_of_tri tri_abc) Bagc]).2.2
+    (sas ag_df ab_de $ by linperm[angle_extension_of_B' (ne_12_of_tri tri_abc) Bagc]).2.2
   exfalso; exact ang_2_nonzero_of_tri (tri_of_B_tri Bagc $ tri213 tri_abc) $ angle_zero_of_lt_eq_B 
     (ne_21_of_tri tri_abc) Bagc tri_abc $ by linarith
 
@@ -928,8 +928,8 @@ theorem para_of_ang_eq (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : 
     linperm) e (by tauto) $ sameside_of_diffside_diffside adL ⟨adL.1, offline_of_online_inter bc aM
     bM bL cL cN dN adL.1 adL.2.1 eMN.1 eMN.2, aeL⟩
   have : angle c b e < angle b c d := internal_lt_external (B_of_col_diffside ⟨N, eMN.2, cN, dN⟩ cL
-    $ diffside_of_sameside_diffside aeL adL) $ tri321 $ triangle_of_ne_online bc bL cL $ 
-    not_online_of_sameside $ sameside_symm aeL
+    $ diffside_of_sameside_diffside aeL adL) $ by perma[triangle_of_ne_online bc bL cL $ 
+                not_online_of_sameside $ sameside_symm aeL]
   linperm[angle_extension_of_sameside bc.symm cL bL ⟨M, bM, aM, eMN.1⟩ aeL]
 
 /--Euclid I.29, basic properties of alternate, exterior, and interior angles with parallel lines-/
@@ -975,9 +975,9 @@ theorem len_ang_area_eq_of_parallelogram (pgram : paragram a b c d M N O P) :
   rcases line_of_pts b d with ⟨L, bL, dL⟩ 
   have abd_bdc : angle a b d = angle b d c := alternate_eq_of_para aM bM bL dL 
     dO cO (diffside_of_paragram bL dL pgram) paraMO
-  have adb_dbc : angle a d b = angle d b c := alternate_eq_of_para aP  
-    dP dL bL bN cN (diffside_of_paragram bL dL pgram) $ para_symm paraNP; perm at adb_dbc
-  have ⟨ba_dc, da_bc, bad_dcb⟩ := asa (tri231_of_tri123 $ tri124_of_paragram pgram) 
+  have adb_dbc : angle a d b = angle d b c := alternate_eq_of_para aP dP dL bL bN cN 
+    (diffside_of_paragram bL dL pgram) $ para_symm paraNP; perm at adb_dbc
+  have ⟨ba_dc, da_bc, bad_dcb⟩ := asa (by perma[tri124_of_paragram pgram]) 
     (length_symm b d) (by perma : angle d b a = angle b d c) (by perma)
   have : area b a d = area d c b := area_eq_of_SSS ba_dc (length_symm b d) (by linperm[da_bc])
   perm at *; exact ⟨ba_dc, bad_dcb, this⟩
