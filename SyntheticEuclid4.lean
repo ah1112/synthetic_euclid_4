@@ -586,6 +586,29 @@ theorem diffside_of_B_sameside (Bcad : B c a d) (aL : online a L) (bL : online b
     (ceL : sameside c e L) : diffside d e L :=
   diffside_symm $ diffside_of_sameside_diffside ceL $ diffside_of_B_offline' Bcad aL $ 
     not_online_of_sameside ceL
+--2023/5/12
+theorem pt_of_online_not_sameside (aL : online a L) (bL : online b L) (abM : ¬sameside a b M) :
+    ∃ c, online c M ∧ online c L := 
+pt_of_lines_inter $ lines_inter_of_not_sameside aL bL abM
+
+theorem sameside_of_para_online (aM : online a M) (bM : online b M) (paraMN : para M N) 
+    : sameside a b N := by
+  by_contra abO; rcases pt_of_online_not_sameside aM bM abO with ⟨c, cN, cM⟩
+  exact not_para_of_inter cM cN paraMN
+
+theorem sameside_of_para_online' (aN : online a N) (bN : online b N) (paraMN : para M N) 
+    : sameside a b M := sameside_of_para_online aN bN (para_symm paraMN)
+
+theorem tri124_of_paragram (pgram : paragram a b c d M N O P) : triangle a b d := by
+  have ⟨aM, bM, bN, cN, _, dO, _, aP, paraMO, paraNP⟩ := pgram
+  exact triangle_of_ne_online (ne_of_sameside' aP $ sameside_of_para_online 
+    bN cN paraNP) aM bM $ offline_of_para dO $ para_symm paraMO
+
+theorem diffside_of_paragram (bL : online b L) (dL : online d L) (pgram : paragram a b c d M N O P) 
+    : diffside a c L := by
+  have ⟨aM, bM, bN, cN, cO, dO, dP, aP, paraMO, paraNP⟩ := pgram
+  exact diffside_of_sameside_sameside bM bL bN aM dL cN (sameside_of_para_online' cO dO paraMO)
+    (sameside_of_para_online' aP dP paraNP)
  ---------------------------------------- Book I Refactored ----------------------------------------
               /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -944,32 +967,21 @@ theorem para_of_offline (aM : ¬online a M) : ∃ N, online a N ∧ para M N := 
     (triangle_of_ne_online bc bM cM aM) with ⟨d, bad_abc, cdL⟩; perm at *
   rcases line_of_pts a d with ⟨N, aN, dN⟩ 
   refine ⟨N, aN, para_of_ang_eq (ne_of_online bM aM) cM bM bL aL aN dN cdL bad_abc.symm⟩
--------------------------------------------- Book I Old-----------------------------------------
-theorem parasianar {a b c d : point} {L M N K : line} (aL: online a L) (bL: online b L)
- (cM: online c M) (dM: online d M) (aK: online a K) (cK: online c K) (bN: online b N) (dN: online d N)
- (par1 : para L M) (par2 : para K N) :
-  length a b = length c d ∧ angle c a b = angle b d c ∧ area c a b = area b d c :=
-  by sorry /-begin
-  have ab : a ≠ b := neq_of_online_offline aK (online_of_online_para' bN par2),
-  have cd : c ≠ d := neq_of_online_offline cK (online_of_online_para' dN par2),
-  have cb : c ≠ b := neq_of_online_offline cM (online_of_online_para bL par1),
-  have ca : c ≠ a := neq_of_online_offline cM (online_of_online_para aL par1),
-  rcases line_of_pts c b with ⟨O, cO, bO⟩,
-  have adO := not_sameside_of_sameside_sameside bL bO bN aL cO dN
-    (sameside_of_online_online_para' cM dM par1) (sameside_of_online_online_para aK cK par2),
-  have aO : ¬online a O,
-  { intro aO, have := line_unique_of_pts ab aL bL aO bO, rw this at par1, cases par1 c,
-    exact h cO, exact h cM, },
-  have dO : ¬online d O,
-  { intro dO, have := line_unique_of_pts cd cO dO cM dM, rw this at *, cases par1 b,
-    exact h bL, exact h bO, },
-    have ang1:= parapostcor cd.symm aL bL cM dM cO bO par1 ⟨aO, dO, adO⟩,
-  have ang2 := parapostcor ca.symm dN bN cK aK cO bO (para_symm par2) ⟨dO, aO, difsym adO⟩,
-  have key := asa cb cO bO aO (length_symm b c) (by linarith [angle_symm c b d] : angle c b d = angle b c a)
-    (by linarith [angle_symm d c b]),
-  exact ⟨by linarith [length_symm c d], key.2.2.symm, (area_eq_of_SSS (len_symm2_of_len key.1) key.2.1 (length_symm c b)).symm⟩,
-end-/
 
+/--Euclid I.34, basic length, angle, and area properties of paralellograms-/
+theorem len_ang_area_eq_of_parallelogram (pgram : paragram a b c d M N O P) : 
+    length a b = length c d ∧ angle b a d = angle b c d ∧ area a b d = area b c d := by
+  have ⟨aM, bM, bN, cN, cO, dO, dP, aP, paraMO, paraNP⟩ := pgram
+  rcases line_of_pts b d with ⟨L, bL, dL⟩ 
+  have abd_bdc : angle a b d = angle b d c := alternate_eq_of_para aM bM bL dL 
+    dO cO (diffside_of_paragram bL dL pgram) paraMO
+  have adb_dbc : angle a d b = angle d b c := alternate_eq_of_para aP  
+    dP dL bL bN cN (diffside_of_paragram bL dL pgram) $ para_symm paraNP; perm at adb_dbc
+  have ⟨ba_dc, da_bc, bad_dcb⟩ := asa (tri231_of_tri123 $ tri124_of_paragram pgram) 
+    (length_symm b d) (by perma : angle d b a = angle b d c) (by perma)
+  have : area b a d = area d c b := area_eq_of_SSS ba_dc (length_symm b d) (by linperm[da_bc])
+  perm at *; exact ⟨ba_dc, bad_dcb, this⟩
+-------------------------------------------- Book I Old-----------------------------------------
 --Euclid I.35
 theorem parallelarea1 {a b c d e f : point} {L M K N O P : line}
  (aL: online a L) (dL: online d L) (bM: online b M) (cM: online c M)
@@ -1849,26 +1861,18 @@ end-/
 lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
   := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
 
-theorem sameside_of_online_online_para {a b : point} {M N: line} (aM: online a M) (bM: online b M)(par: para M N):
-sameside a b N:=
-  by sorry /-begin
-   by_contra abN, rcases pt_of_lines_inter (lines_inter_of_not_sameside aM bM abN) with ⟨z,zN,zM⟩,
-    cases par z, exact h zM, exact h zN,
-end
+--   theorem length_eq_of_ne' (a : point) (bc : b ≠ c) : ∃ (f : point), length a f = length b c := by
+-- by_cases ab : a = b; rw [ab]; exact ⟨c, rfl⟩ --degenerate case
+-- rcases iseqtri_of_ne ab with ⟨d, eqtri⟩
+-- rcases B_circ_of_ne (ne_32_of_tri eqtri.1) bc with ⟨e, α, Bdbe, bα, cα, eα⟩
+-- rcases B_circ_out_of_B (ne_31_of_tri eqtri.1) Bdbe eqtri.2.2.2 with ⟨f, β, Bdaf, dβ, eβ, fβ⟩
+-- use f
+-- calc length a f = length b e := length_eq_of_B_B Bdbe Bdaf eqtri.2.2.2 
+--                                 (length_eq_of_oncircle dβ eβ fβ)
+--      length b e = length b c := (length_eq_of_oncircle bα cα eα).symm
 
-  theorem length_eq_of_ne' (a : point) (bc : b ≠ c) : ∃ (f : point), length a f = length b c := by
-by_cases ab : a = b; rw [ab]; exact ⟨c, rfl⟩ --degenerate case
-rcases iseqtri_of_ne ab with ⟨d, eqtri⟩
-rcases B_circ_of_ne (ne_32_of_tri eqtri.1) bc with ⟨e, α, Bdbe, bα, cα, eα⟩
-rcases B_circ_out_of_B (ne_31_of_tri eqtri.1) Bdbe eqtri.2.2.2 with ⟨f, β, Bdaf, dβ, eβ, fβ⟩
-use f
-calc length a f = length b e := length_eq_of_B_B Bdbe Bdaf eqtri.2.2.2 
-                                (length_eq_of_oncircle dβ eβ fβ)
-     length b e = length b c := (length_eq_of_oncircle bα cα eα).symm
+--   theorem ne_of_B_B (Babc : B a b c) (Bbcd : B b c d) : a ≠ d := 
+--   ne_13_of_B $ B124_of_B123_B234 Babc Bbcd
 
-  theorem ne_of_B_B (Babc : B a b c) (Bbcd : B b c d) : a ≠ d := 
-  ne_13_of_B $ B124_of_B123_B234 Babc Bbcd
-
-theorem ne_of_B_B_B (Babc : B a b c) (Bbcd : B b c d) (Bcde : B c d e) : a ≠ e :=
-  ne_13_of_B $ B124_of_B123_B234 Babc (B124_of_B123_B234 Bbcd Bcde)
--/
+-- theorem ne_of_B_B_B (Babc : B a b c) (Bbcd : B b c d) (Bcde : B c d e) : a ≠ e :=
+--   ne_13_of_B $ B124_of_B123_B234 Babc (B124_of_B123_B234 Bbcd Bcde)

@@ -1,6 +1,25 @@
 /-
 Here I will note changes made to the axioms and synthetic:
 
+--2023/5/11
+Replaced 
+
+  theorem parasianar {a b c d : point} {L M N K : line} (aL: online a L) (bL: online b L)
+  (cM: online c M) (dM: online d M) (aK: online a K) (cK: online c K) (bN: online b N) (dN: online d N)
+  (par1 : para L M) (par2 : para K N) :
+    length a b = length c d ∧ angle c a b = angle b d c ∧ area c a b = area b d c
+with
+  theorem len_ang_area_eq_of_parallelogram (pgram : paragram a b c d M N O P) : 
+    length a b = length c d ∧ angle b a d = angle b c d ∧ area a b d = area b c d
+
+Added paragram to the axioms file. This pretty much cleans up some statements. If you need to prove paragram, then you can use the constructor ⟨...⟩ notation to provide the arguments.
+
+Replaced
+  theorem sameside_of_online_online_para {a b : point} {M N: line} (aM: online a M) (bM: online b M)(par: para M N) : sameside a b N
+with
+  theorem sameside_of_para_online (aM : online a M) (bM : online b M) (paraMN : para M N) 
+    : sameside a b N
+
 --2023/5/10
 Replaced
   theorem drawpar {a b c : point} {L : line} (bc : b ≠ c) (bL : online b L) (cL : online c L)
