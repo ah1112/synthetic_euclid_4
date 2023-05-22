@@ -61,8 +61,15 @@ lemma ds21 {a b : point} {L : line}: diffside a b L ↔ diffside b a L := by
 
 namespace Lean.Elab.Tactic
 
-def lte (a : @& Expr) (b : @& Expr) : Bool :=
-  Lean.Expr.lt a b || Lean.Expr.equal a b
+def getFVars (e : Expr) : Array FVarId :=
+  (Lean.collectFVars {} e).fvarIds
+
+def lte (n1 : @& Name) (n2: @& Name) : Bool :=
+  Name.lt n1 n2 || n1 = n2
+
+def lteAsStr (n1 : @& Name) (n2: @& Name) : Bool :=
+  (String.decLt (toString n1) (toString n2)).decide || n1 = n2
+
 
 /-- ## Conv tactic `area_nf`
 A conv tactic for permuting the variables in an `area` expression. A building block for the `perm` tactic.
@@ -71,20 +78,20 @@ syntax "area_nf" : conv
 elab_rules : conv
   |`(conv| area_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      let arg3 := Lean.Expr.getArg! tgt 3
-      if lte arg1 arg2 && lte arg2 arg3 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
         evalTactic (← `(tactic| skip )) -- abc
-      else if lte arg1 arg3 && lte arg3 arg2 then
+      else if lte n1 n3 && lte n3 n2 then
         evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
-      else if lte arg2 arg1 && lte arg1 arg3 then
+      else if lte n2 n1 && lte n1 n3 then
         evalTactic (← `(tactic| rw [@ar213 _ _ _] )) -- bac
-      else if lte arg3 arg1 && lte arg1 arg2 then
+      else if lte n3 n1 && lte n1 n2 then
         evalTactic (← `(tactic| rw [@ar312 _ _ _] )) -- bca
-      else if lte arg2 arg3 && lte arg3 arg1 then
+      else if lte n2 n3 && lte n3 n1 then
         evalTactic (← `(tactic| rw [@ar231 _ _ _] )) -- cab
-      else if lte arg3 arg2 && lte arg2 arg1 then
+      else if lte n3 n2 && lte n2 n1 then
         evalTactic (← `(tactic| rw [@ar321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `colinear_nf`
@@ -94,20 +101,20 @@ syntax "colinear_nf" : conv
 elab_rules : conv
   |`(conv| colinear_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      let arg3 := Lean.Expr.getArg! tgt 3
-      if lte arg1 arg2 && lte arg2 arg3 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
         evalTactic (← `(tactic| skip )) -- abc
-      else if lte arg1 arg3 && lte arg3 arg2 then
+      else if lte n1 n3 && lte n3 n2 then
         evalTactic (← `(tactic| rw [@col132 _ _ _] )) -- acb
-      else if lte arg2 arg1 && lte arg1 arg3 then
+      else if lte n2 n1 && lte n1 n3 then
         evalTactic (← `(tactic| rw [@col213 _ _ _] )) -- bac
-      else if lte arg3 arg1 && lte arg1 arg2 then
+      else if lte n3 n1 && lte n1 n2 then
         evalTactic (← `(tactic| rw [@col312 _ _ _] )) -- bca
-      else if lte arg2 arg3 && lte arg3 arg1 then
+      else if lte n2 n3 && lte n3 n1 then
         evalTactic (← `(tactic| rw [@col231 _ _ _] )) -- cab
-      else if lte arg3 arg2 && lte arg2 arg1 then
+      else if lte n3 n2 && lte n2 n1 then
         evalTactic (← `(tactic| rw [@col321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `triangle_nf`
@@ -117,20 +124,20 @@ syntax "triangle_nf" : conv
 elab_rules : conv
   |`(conv| triangle_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      let arg3 := Lean.Expr.getArg! tgt 3
-      if lte arg1 arg2 && lte arg2 arg3 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
         evalTactic (← `(tactic| skip )) -- abc
-      else if lte arg1 arg3 && lte arg3 arg2 then
+      else if lte n1 n3 && lte n3 n2 then
         evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
-      else if lte arg2 arg1 && lte arg1 arg3 then
+      else if lte n2 n1 && lte n1 n3 then
         evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
-      else if lte arg3 arg1 && lte arg1 arg2 then
+      else if lte n3 n1 && lte n1 n2 then
         evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
-      else if lte arg2 arg3 && lte arg3 arg1 then
+      else if lte n2 n3 && lte n3 n1 then
         evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
-      else if lte arg3 arg2 && lte arg2 arg1 then
+      else if lte n3 n2 && lte n2 n1 then
         evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `length_nf`
@@ -140,9 +147,9 @@ syntax "length_nf" : conv
 elab_rules : conv
   |`(conv| length_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      if lte arg1 arg2 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
         evalTactic (← `(tactic| skip ))
       else
         evalTactic (← `(tactic| rw [@length_symm _ _] ))
@@ -154,9 +161,9 @@ syntax "angle_nf" : conv
 elab_rules : conv
   |`(conv| angle_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg3 := Lean.Expr.getArg! tgt 3
-      if lte arg1 arg3 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n3 then
         evalTactic (← `(tactic| skip ))
       else
         evalTactic (← `(tactic| rw [@angle_symm _ _] ))
@@ -168,9 +175,9 @@ syntax "sameside_nf" : conv
 elab_rules : conv
   |`(conv| sameside_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      if lte arg1 arg2 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
         evalTactic (← `(tactic| skip ))
       else
         evalTactic (← `(tactic| rw [@ss21 _ _] ))
@@ -182,9 +189,9 @@ syntax "diffside_nf" : conv
 elab_rules : conv
   |`(conv| diffside_nf) => withMainContext do
       let tgt ← instantiateMVars (← Conv.getLhs)
-      let arg1 := Lean.Expr.getArg! tgt 1
-      let arg2 := Lean.Expr.getArg! tgt 2
-      if lte arg1 arg2 then
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
         evalTactic (← `(tactic| skip ))
       else
         evalTactic (← `(tactic| rw [@ds21 _ _] ))

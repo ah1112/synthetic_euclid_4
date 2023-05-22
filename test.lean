@@ -2,7 +2,7 @@ import SyntheticEuclid4.tactics
 open incidence_geometry
 variable [i: incidence_geometry]
 
-lemma test_perm1 {a b : point} : area a b b = area b b a ∧ area a b c + area e d f = area a c b + area d f e ∧ area a b c + area e d f = area a c b + area f d e := by splitAll; all_goals perm only [area]
+lemma test_perm1 {d b f c e a: point} : area a b b = area b b a ∧ area a b c + area e d f = area a c b + area d f e ∧ area a b c + area e d f = area a c b + area f d e := by splitAll; all_goals perm only [area]
 
 lemma test_perm2 {a b c: point} : area b a c + area c b a = area a b c * 2 := by perm; ring
 
