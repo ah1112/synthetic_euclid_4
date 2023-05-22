@@ -58,6 +58,13 @@ lemma ds21 {a b : point} {L : line}: diffside a b L ↔ diffside b a L := by
     rw [ss21] at nss
     exact ⟨ nbL, naL, nss ⟩
 
+lemma para21 {L M : line}: para L M ↔ para M L := by
+  constructor
+  all_goals
+    intros p e
+    rw [Or.comm]
+    exact p e
+
 
 namespace Lean.Elab.Tactic
 
@@ -196,6 +203,20 @@ elab_rules : conv
       else
         evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
+/-- ## Conv tactic `para_nf`
+A conv tactic for permuting the variables in an `para` expression. A building block for the `perm` tactic.
+ -/
+syntax "para_nf" : conv
+elab_rules : conv
+  |`(conv| para_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@para21 _ _] ))
+
 /-- ## Tactic perm
 A custom experimental tactic for permuting the variables in geometric primitives. The ordering is the one in which the variables are introduced, so it is not necessarily lexigraphic in general.
 
@@ -218,6 +239,7 @@ macro_rules
       try conv in (occs := *) angle _ _ _ => all_goals angle_nf
       try conv in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try conv in (occs := *) para _ _ => all_goals para_nf
     ))
   | `(tactic| perm at $h) => `(tactic|
     (
@@ -228,6 +250,7 @@ macro_rules
       try conv at $h in (occs := *) angle _ _ _ => all_goals angle_nf
       try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
+      try conv at $h in (occs := *) para _ _ => all_goals para_nf
     ))
   | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic|
   (perm at $h
@@ -272,8 +295,10 @@ elab_rules: tactic
       evalTactic (← `(tactic| try conv in (occs := *) sameside _ _ _ => all_goals sameside_nf))
     else if perm_type == mkIdent `diffside then
       evalTactic (← `(tactic| try conv in (occs := *) diffside _ _ _ => all_goals diffside_nf))
+    else if perm_type == mkIdent `para then
+      evalTactic (← `(tactic| try conv in (occs := *) para _ _ => all_goals para_nf))
     else
-      throwError "permutation type {perm_type} is not valid, please use one of 'area/colinear/triangle/length/angle/sameside/diffside'"
+      throwError "permutation type {perm_type} is not valid, please use one of 'area/colinear/triangle/length/angle/sameside/diffside/para'"
   | `(tactic| perm only [$perm_type:ident] at $h:ident) => withMainContext do
     if perm_type == mkIdent `area then
       evalTactic (← `(tactic| try conv at $h in (occs := *) area _ _ _ => all_goals area_nf))
@@ -289,6 +314,8 @@ elab_rules: tactic
       evalTactic (← `(tactic| try conv at $h in (occs := *) sameside _ _ _ => all_goals sameside_nf))
     else if perm_type == mkIdent `diffside then
       evalTactic (← `(tactic| try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf))
+    else if perm_type == mkIdent `para then
+      evalTactic (← `(tactic| try conv at $h in (occs := *) para _ _ => all_goals para_nf))
     else
       throwError "permutation type {perm_type} is not valid, please use one of 'area/colinear/triangle/length/angle/sameside/diffside'"
   | `(tactic| perm at *) => withMainContext do
