@@ -360,7 +360,7 @@ macro_rules
    try exact $h
    try exact Eq.symm $h))
   | `(tactic| perma at *) => `(tactic|
-  (perma at *
+  (perm at *
    try assumption
    try assumption_symm))
   | `(tactic| perma only [$perm_type] at *) => `(tactic|
