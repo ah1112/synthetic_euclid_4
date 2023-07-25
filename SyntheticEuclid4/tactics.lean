@@ -81,141 +81,125 @@ def lteAsStr (n1 : @& Name) (n2: @& Name) : Bool :=
 /-- ## Conv tactic `area_nf`
 A conv tactic for permuting the variables in an `area` expression. A building block for the `perm` tactic.
  -/
-syntax "area_nf" : conv
-elab_rules : conv
-  |`(conv| area_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
-      if lte n1 n2 && lte n2 n3 then
-        evalTactic (← `(tactic| skip )) -- abc
-      else if lte n1 n3 && lte n3 n2 then
-        evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
-      else if lte n2 n1 && lte n1 n3 then
-        evalTactic (← `(tactic| rw [@ar213 _ _ _] )) -- bac
-      else if lte n3 n1 && lte n1 n2 then
-        evalTactic (← `(tactic| rw [@ar312 _ _ _] )) -- bca
-      else if lte n2 n3 && lte n3 n1 then
-        evalTactic (← `(tactic| rw [@ar231 _ _ _] )) -- cab
-      else if lte n3 n2 && lte n2 n1 then
-        evalTactic (← `(tactic| rw [@ar321 _ _ _] )) -- cba
+elab "area_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  if lte n1 n2 && lte n2 n3 then
+    evalTactic (← `(tactic| skip )) -- abc
+  else if lte n1 n3 && lte n3 n2 then
+    evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
+  else if lte n2 n1 && lte n1 n3 then
+    evalTactic (← `(tactic| rw [@ar213 _ _ _] )) -- bac
+  else if lte n3 n1 && lte n1 n2 then
+    evalTactic (← `(tactic| rw [@ar312 _ _ _] )) -- bca
+  else if lte n2 n3 && lte n3 n1 then
+    evalTactic (← `(tactic| rw [@ar231 _ _ _] )) -- cab
+  else if lte n3 n2 && lte n2 n1 then
+    evalTactic (← `(tactic| rw [@ar321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `colinear_nf`
 A conv tactic for permuting the variables in an `colinear` expression. A building block for the `perm` tactic.
  -/
-syntax "colinear_nf" : conv
-elab_rules : conv
-  |`(conv| colinear_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
-      if lte n1 n2 && lte n2 n3 then
-        evalTactic (← `(tactic| skip )) -- abc
-      else if lte n1 n3 && lte n3 n2 then
-        evalTactic (← `(tactic| rw [@col132 _ _ _] )) -- acb
-      else if lte n2 n1 && lte n1 n3 then
-        evalTactic (← `(tactic| rw [@col213 _ _ _] )) -- bac
-      else if lte n3 n1 && lte n1 n2 then
-        evalTactic (← `(tactic| rw [@col312 _ _ _] )) -- bca
-      else if lte n2 n3 && lte n3 n1 then
-        evalTactic (← `(tactic| rw [@col231 _ _ _] )) -- cab
-      else if lte n3 n2 && lte n2 n1 then
-        evalTactic (← `(tactic| rw [@col321 _ _ _] )) -- cba
+elab "colinear_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  if lte n1 n2 && lte n2 n3 then
+    evalTactic (← `(tactic| skip )) -- abc
+  else if lte n1 n3 && lte n3 n2 then
+    evalTactic (← `(tactic| rw [@col132 _ _ _] )) -- acb
+  else if lte n2 n1 && lte n1 n3 then
+    evalTactic (← `(tactic| rw [@col213 _ _ _] )) -- bac
+  else if lte n3 n1 && lte n1 n2 then
+    evalTactic (← `(tactic| rw [@col312 _ _ _] )) -- bca
+  else if lte n2 n3 && lte n3 n1 then
+    evalTactic (← `(tactic| rw [@col231 _ _ _] )) -- cab
+  else if lte n3 n2 && lte n2 n1 then
+    evalTactic (← `(tactic| rw [@col321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `triangle_nf`
 A conv tactic for permuting the variables in an `triangle` expression. A building block for the `perm` tactic.
  -/
-syntax "triangle_nf" : conv
-elab_rules : conv
-  |`(conv| triangle_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
-      if lte n1 n2 && lte n2 n3 then
-        evalTactic (← `(tactic| skip )) -- abc
-      else if lte n1 n3 && lte n3 n2 then
-        evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
-      else if lte n2 n1 && lte n1 n3 then
-        evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
-      else if lte n3 n1 && lte n1 n2 then
-        evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
-      else if lte n2 n3 && lte n3 n1 then
-        evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
-      else if lte n3 n2 && lte n2 n1 then
-        evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
+elab "triangle_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  if lte n1 n2 && lte n2 n3 then
+    evalTactic (← `(tactic| skip )) -- abc
+  else if lte n1 n3 && lte n3 n2 then
+    evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
+  else if lte n2 n1 && lte n1 n3 then
+    evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
+  else if lte n3 n1 && lte n1 n2 then
+    evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
+  else if lte n2 n3 && lte n3 n1 then
+    evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
+  else if lte n3 n2 && lte n2 n1 then
+    evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `length_nf`
 A conv tactic for permuting the variables in an `length` expression. A building block for the `perm` tactic.
  -/
-syntax "length_nf" : conv
-elab_rules : conv
-  |`(conv| length_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      if lte n1 n2 then
-        evalTactic (← `(tactic| skip ))
-      else
-        evalTactic (← `(tactic| rw [@length_symm _ _] ))
+elab "length_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  if lte n1 n2 then
+    evalTactic (← `(tactic| skip ))
+  else
+    evalTactic (← `(tactic| rw [@length_symm _ _] ))
 
 /-- ## Conv tactic `angle_nf`
 A conv tactic for permuting the variables in an `angle` expression. A building block for the `perm` tactic.
  -/
-syntax "angle_nf" : conv
-elab_rules : conv
-  |`(conv| angle_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
-      if lte n1 n3 then
-        evalTactic (← `(tactic| skip ))
-      else
-        evalTactic (← `(tactic| rw [@angle_symm _ _] ))
+elab "angle_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  if lte n1 n3 then
+    evalTactic (← `(tactic| skip ))
+  else
+    evalTactic (← `(tactic| rw [@angle_symm _ _] ))
 
 /-- ## Conv tactic `sameside_nf`
 A conv tactic for permuting the variables in an `sameside` expression. A building block for the `perm` tactic.
  -/
-syntax "sameside_nf" : conv
-elab_rules : conv
-  |`(conv| sameside_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      if lte n1 n2 then
-        evalTactic (← `(tactic| skip ))
-      else
-        evalTactic (← `(tactic| rw [@ss21 _ _] ))
+elab "sameside_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  if lte n1 n2 then
+    evalTactic (← `(tactic| skip ))
+  else
+    evalTactic (← `(tactic| rw [@ss21 _ _] ))
 
 /-- ## Conv tactic `diffside_nf`
 A conv tactic for permuting the variables in an `diffside` expression. A building block for the `perm` tactic.
  -/
-syntax "diffside_nf" : conv
-elab_rules : conv
-  |`(conv| diffside_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      if lte n1 n2 then
-        evalTactic (← `(tactic| skip ))
-      else
-        evalTactic (← `(tactic| rw [@ds21 _ _] ))
+elab "diffside_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  if lte n1 n2 then
+    evalTactic (← `(tactic| skip ))
+  else
+    evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
 /-- ## Conv tactic `para_nf`
 A conv tactic for permuting the variables in an `para` expression. A building block for the `perm` tactic.
  -/
-syntax "para_nf" : conv
-elab_rules : conv
-  |`(conv| para_nf) => withMainContext do
-      let tgt ← instantiateMVars (← Conv.getLhs)
-      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-      if lte n1 n2 then
-        evalTactic (← `(tactic| skip ))
-      else
-        evalTactic (← `(tactic| rw [@para21 _ _] ))
+elab "para_nf" : conv => withMainContext do
+  let tgt ← instantiateMVars (← Conv.getLhs)
+  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  if lte n1 n2 then
+    evalTactic (← `(tactic| skip ))
+  else
+    evalTactic (← `(tactic| rw [@para21 _ _] ))
 
 /-- ## Tactic perm
 A custom experimental tactic for permuting the variables in geometric primitives. The ordering is the one in which the variables are introduced, so it is not necessarily lexigraphic in general.
