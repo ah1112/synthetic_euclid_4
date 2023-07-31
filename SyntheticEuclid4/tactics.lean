@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2023 Vladimir Sedlacek. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Author : Vladimir Sedlacek
+-/
 import SyntheticEuclid4.axioms
 open incidence_geometry
 variable [i: incidence_geometry]

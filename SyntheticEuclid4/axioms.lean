@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2023 André Hernandez-Espiet. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Author : André Hernandez-Espiet
+-/
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Finite
 
