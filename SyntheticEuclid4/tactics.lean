@@ -241,12 +241,10 @@ macro_rules
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try conv at $h in (occs := *) para _ _ => all_goals para_nf
     ))
-  | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic|
-  (perm at $h
-   perm at $hs,*))
+  | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic| perm at $h; perm at $hs,*)
 
 open Lean Meta in
-def haveExpr (n:Name) (h:Expr) :=
+def haveExpr (n : Name) (h : Expr) :=
   withMainContext do
     let t ← inferType h
     liftMetaTactic fun mvarId => do
@@ -265,9 +263,7 @@ elab_rules : tactic
       evalTactic (← `(tactic| perm at $(mkIdent "this")))
 
 macro_rules
-  | `(tactic| perm [$args,*] ) => `(tactic|
-    (havePerms [$args,*]
-     perm))
+  | `(tactic| perm [$args,*] ) => `(tactic| havePerms [$args,*]; perm)
 elab_rules: tactic
   | `(tactic| perm only [$perm_type:ident]) => do
     if perm_type == mkIdent `area then
@@ -329,38 +325,19 @@ Like `perm`, but also tries to exact assumptions and their symmetrized versions.
  -/
 syntax "perma" ("[" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
-  | `(tactic| perma) => `(tactic|
-  (perm
-   try assumption
-   try assumption_symm))
-  | `(tactic| perma at $h) => `(tactic|
-  (perm at $h
-   try exact $h
-   try exact Eq.symm $h))
-  | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic|
-  (perma at $h
-   perma at $hs,*))
-  | `(tactic| perma only [$perm_type]) => `(tactic|
-  (perm only [$perm_type]
-   try assumption
-   try assumption_symm))
-  | `(tactic| perma only [$perm_type] at $h) => `(tactic|
-  (perm only [$perm_type] at $h:ident
-   try exact $h
-   try exact Eq.symm $h))
-  | `(tactic| perma at *) => `(tactic|
-  (perm at *
-   try assumption
-   try assumption_symm))
-  | `(tactic| perma only [$perm_type] at *) => `(tactic|
-  (perm only [$perm_type] at *
-   try assumption
-   try assumption_symm))
-   | `(tactic| perma [$args,*] ) => `(tactic|
-  (havePerms [$args,*]
-   perm
-   try assumption
-   try assumption_symm))
+  | `(tactic| perma) => `(tactic| perm; try assumption; try assumption_symm)
+  | `(tactic| perma at $h) => `(tactic| perm at $h; try exact $h; try exact Eq.symm $h)
+  | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic| perma at $h; perma at $hs,*)
+  | `(tactic| perma only [$perm_type]) =>
+      `(tactic| perm only [$perm_type]; try assumption; try assumption_symm)
+  | `(tactic| perma only [$perm_type] at $h) =>
+      `(tactic| perm only [$perm_type] at $h:ident; try exact $h; try exact Eq.symm $h)
+  | `(tactic| perma at *) =>
+      `(tactic| perm at *; try assumption; try assumption_symm)
+  | `(tactic| perma only [$perm_type] at *) =>
+      `(tactic| perm only [$perm_type] at *; try assumption; try assumption_symm)
+  | `(tactic| perma [$args,*] ) =>
+      `(tactic| perm [$args,*]; try assumption; try assumption_symm)
 
 /-- ## Tactic linperm
 A combination of linarith and perm.
@@ -375,7 +352,6 @@ macro_rules
   | `(tactic| linperm [$args,*] ) => `(tactic| perm at *; havePerms [$args,*]; linarith)
 
 macro "splitAll" : tactic => `(tactic|
-  (repeat (constructor
-           rotate_left)
+  (repeat (constructor; rotate_left)
    rotate_left
   ))
