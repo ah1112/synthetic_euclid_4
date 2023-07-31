@@ -367,26 +367,12 @@ A combination of linarith and perm.
 
 Usage:
 - `linperm` runs `perm at *` followed by `linarith`
-- `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm at *` followed by `linarith`
-- `linperm only` runs `perm` followed by `linarith`
-- `linperm only [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm` followed by `linarith`
+- `linperm [t1 t2 ...]` runs `perm at *`, adds permuted proof terms `t1, t2, ...` to the local context, and finishes with `linarith`
  -/
-syntax "linperm " ("only ")? ("[" term,* "]")? ("only [" term,* "]")?: tactic
+syntax "linperm " ("[" term,* "]")? : tactic
 macro_rules
-  | `(tactic| linperm) => `(tactic|
-  (perm at *
-   linarith))
-  | `(tactic| linperm [$args,*] ) => `(tactic|
-  (havePerms [$args,*]
-   perm at *
-   linarith))
-  | `(tactic| linperm only) => `(tactic|
-  (perm
-   linarith))
-  | `(tactic| linperm only [$args,*] ) => `(tactic|
-  (havePerms [$args,*]
-   perm
-   linarith))
+  | `(tactic| linperm) => `(tactic| perm at *; linarith)
+  | `(tactic| linperm [$args,*] ) => `(tactic| perm at *; havePerms [$args,*]; linarith)
 
 macro "splitAll" : tactic => `(tactic|
   (repeat (constructor
