@@ -76,6 +76,9 @@ namespace Lean.Elab.Tactic
 def getFVars (e : Expr) : Array FVarId :=
   (Lean.collectFVars {} e).fvarIds
 
+def getNthArgName (tgt : Expr) (n : Nat) : MetaM Name :=
+  ((getFVars (Lean.Expr.getArg! tgt n)).get! 0).getUserName
+
 def lte (n1 : @& Name) (n2: @& Name) : Bool :=
   Name.lt n1 n2 || n1 = n2
 
@@ -84,9 +87,9 @@ A conv tactic for permuting the variables in an `area` expression. A building bl
  -/
 elab "area_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
+  let n3 ← getNthArgName tgt 3
   if lte n1 n2 && lte n2 n3 then
     evalTactic (← `(tactic| skip )) -- abc
   else if lte n1 n3 && lte n3 n2 then
@@ -105,9 +108,9 @@ A conv tactic for permuting the variables in an `colinear` expression. A buildin
  -/
 elab "colinear_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
+  let n3 ← getNthArgName tgt 3
   if lte n1 n2 && lte n2 n3 then
     evalTactic (← `(tactic| skip )) -- abc
   else if lte n1 n3 && lte n3 n2 then
@@ -126,9 +129,9 @@ A conv tactic for permuting the variables in an `triangle` expression. A buildin
  -/
 elab "triangle_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
+  let n3 ← getNthArgName tgt 3
   if lte n1 n2 && lte n2 n3 then
     evalTactic (← `(tactic| skip )) -- abc
   else if lte n1 n3 && lte n3 n2 then
@@ -147,8 +150,8 @@ A conv tactic for permuting the variables in an `length` expression. A building 
  -/
 elab "length_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
   if n2.lt n1 then
     evalTactic (← `(tactic| rw [@length_symm _ _] ))
 
@@ -157,8 +160,8 @@ A conv tactic for permuting the variables in an `angle` expression. A building b
  -/
 elab "angle_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n3 ← getNthArgName tgt 3
   if n3.lt n1 then
     evalTactic (← `(tactic| rw [@angle_symm _ _] ))
 
@@ -167,8 +170,8 @@ A conv tactic for permuting the variables in an `sameside` expression. A buildin
  -/
 elab "sameside_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
   if n2.lt n1 then
     evalTactic (← `(tactic| rw [@ss21 _ _] ))
 
@@ -177,8 +180,8 @@ A conv tactic for permuting the variables in an `diffside` expression. A buildin
  -/
 elab "diffside_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
   if n2.lt n1 then
     evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
@@ -187,8 +190,8 @@ A conv tactic for permuting the variables in an `para` expression. A building bl
  -/
 elab "para_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
-  let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+  let n1 ← getNthArgName tgt 1
+  let n2 ← getNthArgName tgt 2
   if n2.lt n1 then
     evalTactic (← `(tactic| rw [@para21 _ _] ))
 
