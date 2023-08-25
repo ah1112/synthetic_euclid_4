@@ -340,7 +340,4 @@ macro_rules
   | `(tactic| linperm) => `(tactic| perm at *; linarith)
   | `(tactic| linperm [$args,*] ) => `(tactic| perm at *; havePerms [$args,*]; linarith)
 
-macro "splitAll" : tactic => `(tactic|
-  (repeat (constructor; rotate_left)
-   rotate_left
-  ))
+macro "splitAll" : tactic => `(tactic | repeat' constructor)
