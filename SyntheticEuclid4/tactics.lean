@@ -79,10 +79,6 @@ def getFVars (e : Expr) : Array FVarId :=
 def lte (n1 : @& Name) (n2: @& Name) : Bool :=
   Name.lt n1 n2 || n1 = n2
 
-def lteAsStr (n1 : @& Name) (n2: @& Name) : Bool :=
-  (String.decLt (toString n1) (toString n2)).decide || n1 = n2
-
-
 /-- ## Conv tactic `area_nf`
 A conv tactic for permuting the variables in an `area` expression. A building block for the `perm` tactic.
  -/
@@ -153,9 +149,7 @@ elab "length_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
   let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
   let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  if lte n1 n2 then
-    evalTactic (← `(tactic| skip ))
-  else
+  if n2.lt n1 then
     evalTactic (← `(tactic| rw [@length_symm _ _] ))
 
 /-- ## Conv tactic `angle_nf`
@@ -165,9 +159,7 @@ elab "angle_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
   let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
   let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
-  if lte n1 n3 then
-    evalTactic (← `(tactic| skip ))
-  else
+  if n3.lt n1 then
     evalTactic (← `(tactic| rw [@angle_symm _ _] ))
 
 /-- ## Conv tactic `sameside_nf`
@@ -177,9 +169,7 @@ elab "sameside_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
   let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
   let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  if lte n1 n2 then
-    evalTactic (← `(tactic| skip ))
-  else
+  if n2.lt n1 then
     evalTactic (← `(tactic| rw [@ss21 _ _] ))
 
 /-- ## Conv tactic `diffside_nf`
@@ -189,9 +179,7 @@ elab "diffside_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
   let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
   let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  if lte n1 n2 then
-    evalTactic (← `(tactic| skip ))
-  else
+  if n2.lt n1 then
     evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
 /-- ## Conv tactic `para_nf`
@@ -201,9 +189,7 @@ elab "para_nf" : conv => withMainContext do
   let tgt ← instantiateMVars (← Conv.getLhs)
   let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
   let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
-  if lte n1 n2 then
-    evalTactic (← `(tactic| skip ))
-  else
+  if n2.lt n1 then
     evalTactic (← `(tactic| rw [@para21 _ _] ))
 
 /-- ## Tactic perm
