@@ -1,5 +1,19 @@
 /-
 Here I will note changes made to the axioms and synthetic:
+--2023/5/27
+Replaced 
+
+  theorem parallelarea {a b c d e f : point} {L M K N O P : line}
+  (aL: online a L) (dL: online d L) (bM: online b M) (cM: online c M)
+  (eL: online e L) (fL: online f L)
+  (aK: online a K) (bK: online b K) (dN: online d N) (cN: online c N)
+  (bO: online b O) (eO: online e O) (cP: online c P) (fP: online f P)
+  (par1 : para L M)
+    (par3 : para K N) (par4 : para O P) :
+    area b a d + area d b c = area c f e + area e c b
+with
+  theorem area_eq_of_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragram e f c b L P N Q)
+    : area a d b + area d b c = area e f b + area f b c
 
 --2023/5/11
 Replaced 
