@@ -1164,16 +1164,6 @@ theorem para_len_parallelogram (aL : online a L) (bL : online b L) (bO : online 
   exact ⟨aL, bL, bO, dO, dM, cM, cN, aN, paraLM, para_symm $ 
     para_of_ang_eq (ne_of_para' bL cM paraLM) aN cN cP bP bO dO aPd bca_cbd⟩
 
--- /-- Euclid I.33, parallel lines with pair of points with same length make a parallelogram -/
--- theorem para_len_parallelogram (aL : online a L) (bL : online b L) (cM : online c M) 
---     (dM : online d M) (aN : online a N) (cN : online c N) (bO : online b O) (dO : online d O) 
---     (bP : online b P) (cP : online c P) (aPd : diffside a d P) (paraLM : para L M) 
---     (ab_cd : length a b = length c d) : paragram a b d c L O M N := by
---   have abc_bcd := alternate_eq_of_para aL bL bP cP cM dM aPd paraLM
---   obtain ⟨-, -, bca_cbd⟩ := sas (by perma) (by perm) (by perma)
---   exact ⟨aL, bL, bO, dO, dM, cM, cN, aN, paraLM, para_symm $ 
---     para_of_ang_eq (ne_of_para' bL cM paraLM) aN cN cP bP bO dO aPd bca_cbd⟩
-
 /--Euclid I.34, basic length, angle, and area properties of paralellograms-/
 theorem len_ang_area_eq_of_parallelogram (pgram : paragram a b c d M N O P) : 
     length a b = length c d ∧ angle b a d = angle b c d ∧ area a b d = area b c d := by
