@@ -1,8 +1,3 @@
-/-
-Copyright (c) 2023 Vladimir Sedlacek. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Author : Vladimir Sedlacek
--/
 import SyntheticEuclid4.axioms
 open incidence_geometry
 variable [i: incidence_geometry]
@@ -76,124 +71,151 @@ namespace Lean.Elab.Tactic
 def getFVars (e : Expr) : Array FVarId :=
   (Lean.collectFVars {} e).fvarIds
 
-def getNthArgName (tgt : Expr) (n : Nat) : MetaM Name :=
-  ((getFVars (Lean.Expr.getArg! tgt n)).get! 0).getUserName
-
 def lte (n1 : @& Name) (n2: @& Name) : Bool :=
   Name.lt n1 n2 || n1 = n2
+
+def lteAsStr (n1 : @& Name) (n2: @& Name) : Bool :=
+  (String.decLt (toString n1) (toString n2)).decide || n1 = n2
+
 
 /-- ## Conv tactic `area_nf`
 A conv tactic for permuting the variables in an `area` expression. A building block for the `perm` tactic.
  -/
-elab "area_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  let n3 ← getNthArgName tgt 3
-  if lte n1 n2 && lte n2 n3 then
-    evalTactic (← `(tactic| skip )) -- abc
-  else if lte n1 n3 && lte n3 n2 then
-    evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
-  else if lte n2 n1 && lte n1 n3 then
-    evalTactic (← `(tactic| rw [@ar213 _ _ _] )) -- bac
-  else if lte n3 n1 && lte n1 n2 then
-    evalTactic (← `(tactic| rw [@ar312 _ _ _] )) -- bca
-  else if lte n2 n3 && lte n3 n1 then
-    evalTactic (← `(tactic| rw [@ar231 _ _ _] )) -- cab
-  else if lte n3 n2 && lte n2 n1 then
-    evalTactic (← `(tactic| rw [@ar321 _ _ _] )) -- cba
+syntax "area_nf" : conv
+elab_rules : conv
+  |`(conv| area_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
+        evalTactic (← `(tactic| skip )) -- abc
+      else if lte n1 n3 && lte n3 n2 then
+        evalTactic (← `(tactic| rw [@ar132 _ _ _] )) -- acb
+      else if lte n2 n1 && lte n1 n3 then
+        evalTactic (← `(tactic| rw [@ar213 _ _ _] )) -- bac
+      else if lte n3 n1 && lte n1 n2 then
+        evalTactic (← `(tactic| rw [@ar312 _ _ _] )) -- bca
+      else if lte n2 n3 && lte n3 n1 then
+        evalTactic (← `(tactic| rw [@ar231 _ _ _] )) -- cab
+      else if lte n3 n2 && lte n2 n1 then
+        evalTactic (← `(tactic| rw [@ar321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `colinear_nf`
 A conv tactic for permuting the variables in an `colinear` expression. A building block for the `perm` tactic.
  -/
-elab "colinear_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  let n3 ← getNthArgName tgt 3
-  if lte n1 n2 && lte n2 n3 then
-    evalTactic (← `(tactic| skip )) -- abc
-  else if lte n1 n3 && lte n3 n2 then
-    evalTactic (← `(tactic| rw [@col132 _ _ _] )) -- acb
-  else if lte n2 n1 && lte n1 n3 then
-    evalTactic (← `(tactic| rw [@col213 _ _ _] )) -- bac
-  else if lte n3 n1 && lte n1 n2 then
-    evalTactic (← `(tactic| rw [@col312 _ _ _] )) -- bca
-  else if lte n2 n3 && lte n3 n1 then
-    evalTactic (← `(tactic| rw [@col231 _ _ _] )) -- cab
-  else if lte n3 n2 && lte n2 n1 then
-    evalTactic (← `(tactic| rw [@col321 _ _ _] )) -- cba
+syntax "colinear_nf" : conv
+elab_rules : conv
+  |`(conv| colinear_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
+        evalTactic (← `(tactic| skip )) -- abc
+      else if lte n1 n3 && lte n3 n2 then
+        evalTactic (← `(tactic| rw [@col132 _ _ _] )) -- acb
+      else if lte n2 n1 && lte n1 n3 then
+        evalTactic (← `(tactic| rw [@col213 _ _ _] )) -- bac
+      else if lte n3 n1 && lte n1 n2 then
+        evalTactic (← `(tactic| rw [@col312 _ _ _] )) -- bca
+      else if lte n2 n3 && lte n3 n1 then
+        evalTactic (← `(tactic| rw [@col231 _ _ _] )) -- cab
+      else if lte n3 n2 && lte n2 n1 then
+        evalTactic (← `(tactic| rw [@col321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `triangle_nf`
 A conv tactic for permuting the variables in an `triangle` expression. A building block for the `perm` tactic.
  -/
-elab "triangle_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  let n3 ← getNthArgName tgt 3
-  if lte n1 n2 && lte n2 n3 then
-    evalTactic (← `(tactic| skip )) -- abc
-  else if lte n1 n3 && lte n3 n2 then
-    evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
-  else if lte n2 n1 && lte n1 n3 then
-    evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
-  else if lte n3 n1 && lte n1 n2 then
-    evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
-  else if lte n2 n3 && lte n3 n1 then
-    evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
-  else if lte n3 n2 && lte n2 n1 then
-    evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
+syntax "triangle_nf" : conv
+elab_rules : conv
+  |`(conv| triangle_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n2 && lte n2 n3 then
+        evalTactic (← `(tactic| skip )) -- abc
+      else if lte n1 n3 && lte n3 n2 then
+        evalTactic (← `(tactic| rw [@tr132 _ _ _] )) -- acb
+      else if lte n2 n1 && lte n1 n3 then
+        evalTactic (← `(tactic| rw [@tr213 _ _ _] )) -- bac
+      else if lte n3 n1 && lte n1 n2 then
+        evalTactic (← `(tactic| rw [@tr312 _ _ _] )) -- bca
+      else if lte n2 n3 && lte n3 n1 then
+        evalTactic (← `(tactic| rw [@tr231 _ _ _] )) -- cab
+      else if lte n3 n2 && lte n2 n1 then
+        evalTactic (← `(tactic| rw [@tr321 _ _ _] )) -- cba
 
 /-- ## Conv tactic `length_nf`
 A conv tactic for permuting the variables in an `length` expression. A building block for the `perm` tactic.
  -/
-elab "length_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  if n2.lt n1 then
-    evalTactic (← `(tactic| rw [@length_symm _ _] ))
+syntax "length_nf" : conv
+elab_rules : conv
+  |`(conv| length_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@length_symm _ _] ))
 
 /-- ## Conv tactic `angle_nf`
 A conv tactic for permuting the variables in an `angle` expression. A building block for the `perm` tactic.
  -/
-elab "angle_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n3 ← getNthArgName tgt 3
-  if n3.lt n1 then
-    evalTactic (← `(tactic| rw [@angle_symm _ _] ))
+syntax "angle_nf" : conv
+elab_rules : conv
+  |`(conv| angle_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n3 ← ((getFVars (Lean.Expr.getArg! tgt 3)).get! 0).getUserName
+      if lte n1 n3 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@angle_symm _ _] ))
 
 /-- ## Conv tactic `sameside_nf`
 A conv tactic for permuting the variables in an `sameside` expression. A building block for the `perm` tactic.
  -/
-elab "sameside_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  if n2.lt n1 then
-    evalTactic (← `(tactic| rw [@ss21 _ _] ))
+syntax "sameside_nf" : conv
+elab_rules : conv
+  |`(conv| sameside_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@ss21 _ _] ))
 
 /-- ## Conv tactic `diffside_nf`
 A conv tactic for permuting the variables in an `diffside` expression. A building block for the `perm` tactic.
  -/
-elab "diffside_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  if n2.lt n1 then
-    evalTactic (← `(tactic| rw [@ds21 _ _] ))
+syntax "diffside_nf" : conv
+elab_rules : conv
+  |`(conv| diffside_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@ds21 _ _] ))
 
 /-- ## Conv tactic `para_nf`
 A conv tactic for permuting the variables in an `para` expression. A building block for the `perm` tactic.
  -/
-elab "para_nf" : conv => withMainContext do
-  let tgt ← instantiateMVars (← Conv.getLhs)
-  let n1 ← getNthArgName tgt 1
-  let n2 ← getNthArgName tgt 2
-  if n2.lt n1 then
-    evalTactic (← `(tactic| rw [@para21 _ _] ))
+syntax "para_nf" : conv
+elab_rules : conv
+  |`(conv| para_nf) => withMainContext do
+      let tgt ← instantiateMVars (← Conv.getLhs)
+      let n1 ← ((getFVars (Lean.Expr.getArg! tgt 1)).get! 0).getUserName
+      let n2 ← ((getFVars (Lean.Expr.getArg! tgt 2)).get! 0).getUserName
+      if lte n1 n2 then
+        evalTactic (← `(tactic| skip ))
+      else
+        evalTactic (← `(tactic| rw [@para21 _ _] ))
 
 /-- ## Tactic perm
 A custom experimental tactic for permuting the variables in geometric primitives. The ordering is the one in which the variables are introduced, so it is not necessarily lexigraphic in general.
@@ -230,10 +252,12 @@ macro_rules
       try conv at $h in (occs := *) diffside _ _ _ => all_goals diffside_nf
       try conv at $h in (occs := *) para _ _ => all_goals para_nf
     ))
-  | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic| perm at $h; perm at $hs,*)
+  | `(tactic| perm at $h:ident, $hs:ident,*) => `(tactic|
+  (perm at $h
+   perm at $hs,*))
 
 open Lean Meta in
-def haveExpr (n : Name) (h : Expr) :=
+def haveExpr (n:Name) (h:Expr) :=
   withMainContext do
     let t ← inferType h
     liftMetaTactic fun mvarId => do
@@ -252,7 +276,9 @@ elab_rules : tactic
       evalTactic (← `(tactic| perm at $(mkIdent "this")))
 
 macro_rules
-  | `(tactic| perm [$args,*] ) => `(tactic| havePerms [$args,*]; perm)
+  | `(tactic| perm [$args,*] ) => `(tactic|
+    (havePerms [$args,*]
+     perm))
 elab_rules: tactic
   | `(tactic| perm only [$perm_type:ident]) => do
     if perm_type == mkIdent `area then
@@ -314,30 +340,67 @@ Like `perm`, but also tries to exact assumptions and their symmetrized versions.
  -/
 syntax "perma" ("[" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
 macro_rules
-  | `(tactic| perma) => `(tactic| perm; try assumption; try assumption_symm)
-  | `(tactic| perma at $h) => `(tactic| perm at $h; try exact $h; try exact Eq.symm $h)
-  | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic| perma at $h; perma at $hs,*)
-  | `(tactic| perma only [$perm_type]) =>
-      `(tactic| perm only [$perm_type]; try assumption; try assumption_symm)
-  | `(tactic| perma only [$perm_type] at $h) =>
-      `(tactic| perm only [$perm_type] at $h:ident; try exact $h; try exact Eq.symm $h)
-  | `(tactic| perma at *) =>
-      `(tactic| perm at *; try assumption; try assumption_symm)
-  | `(tactic| perma only [$perm_type] at *) =>
-      `(tactic| perm only [$perm_type] at *; try assumption; try assumption_symm)
-  | `(tactic| perma [$args,*] ) =>
-      `(tactic| perm [$args,*]; try assumption; try assumption_symm)
+  | `(tactic| perma) => `(tactic|
+  (perm
+   try assumption
+   try assumption_symm))
+  | `(tactic| perma at $h) => `(tactic|
+  (perm at $h
+   try exact $h
+   try exact Eq.symm $h))
+  | `(tactic| perma at $h:ident, $hs:ident,*) => `(tactic|
+  (perma at $h
+   perma at $hs,*))
+  | `(tactic| perma only [$perm_type]) => `(tactic|
+  (perm only [$perm_type]
+   try assumption
+   try assumption_symm))
+  | `(tactic| perma only [$perm_type] at $h) => `(tactic|
+  (perm only [$perm_type] at $h:ident
+   try exact $h
+   try exact Eq.symm $h))
+  | `(tactic| perma at *) => `(tactic|
+  (perm at *
+   try assumption
+   try assumption_symm))
+  | `(tactic| perma only [$perm_type] at *) => `(tactic|
+  (perm only [$perm_type] at *
+   try assumption
+   try assumption_symm))
+   | `(tactic| perma [$args,*] ) => `(tactic|
+  (havePerms [$args,*]
+   perm
+   try assumption
+   try assumption_symm))
 
 /-- ## Tactic linperm
 A combination of linarith and perm.
 
 Usage:
 - `linperm` runs `perm at *` followed by `linarith`
-- `linperm [t1 t2 ...]` runs `perm at *`, adds permuted proof terms `t1, t2, ...` to the local context, and finishes with `linarith`
+- `linperm [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm at *` followed by `linarith`
+- `linperm only` runs `perm` followed by `linarith`
+- `linperm only [t1 t2 ...]` adds permuted proof terms `t1, t2, ...` to the local context, then runs `perm` followed by `linarith`
  -/
-syntax "linperm " ("[" term,* "]")? : tactic
+syntax "linperm " ("only ")? ("[" term,* "]")? ("only [" term,* "]")?: tactic
 macro_rules
-  | `(tactic| linperm) => `(tactic| perm at *; linarith)
-  | `(tactic| linperm [$args,*] ) => `(tactic| perm at *; havePerms [$args,*]; linarith)
+  | `(tactic| linperm) => `(tactic|
+  (perm at *
+   linarith))
+  | `(tactic| linperm [$args,*] ) => `(tactic|
+  (havePerms [$args,*]
+   perm at *
+   linarith))
+  | `(tactic| linperm only) => `(tactic|
+  (perm
+   linarith))
+  | `(tactic| linperm only [$args,*] ) => `(tactic|
+  (havePerms [$args,*]
+   perm
+   linarith))
 
-macro "splitAll" : tactic => `(tactic | repeat' constructor)
+macro "splitAll" : tactic => `(tactic|
+  (repeat (constructor
+           rotate_left)
+   rotate_left
+  ))

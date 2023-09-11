@@ -1,5 +1,8 @@
 /-
 Here I will note changes made to the axioms and synthetic:
+--2023/9/10
+Changed name of I.37 to area_eq_of_tri. Deleted a bad lemma for the previous I.37
+
 --2023/5/27
 Replaced 
 
