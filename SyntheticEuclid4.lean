@@ -1155,7 +1155,7 @@ theorem para_of_offline (aM : ¬online a M) : ∃ N, online a N ∧ para M N := 
   refine ⟨N, aN, para_of_ang_eq (ne_of_online bM aM) cM bM bL aL aN dN cdL bad_abc.symm⟩
 
 /-- Euclid I.33, parallel lines with pair of points with same length make a parallelogram -/
-theorem para_len_parallelogram (aL : online a L) (bL : online b L) (bO : online b O) 
+theorem pgram_of_para_len_eq (aL : online a L) (bL : online b L) (bO : online b O) 
     (dO : online d O) (dM : online d M) (cM : online c M) (cN : online c N) (aN : online a N)
     (bP : online b P) (cP : online c P) (aPd : diffside a d P) (paraLM : para L M) 
     (ab_cd : length a b = length c d) : paragram a b d c L O M N := by
@@ -1237,10 +1237,10 @@ lemma paragram_of_tri_para (bc : b ≠ c) (bM : online b M) (cM : online c M) (a
   rcases line_of_pts a c with ⟨L, aL, cL⟩
   rcases line_of_pts a b with ⟨P, aP, bP⟩
   rcases length_eq_of_sameside bP (online_3_of_triangle aP bP 
-    (by perma[triangle_of_ne_online bc bM cM (offline_of_para' aN paraMN)])) 
+    (by perma[triangle_of_ne_online bc bM cM $ offline_of_para' aN paraMN])) 
     (offline_of_para bM paraMN) aP aN with ⟨d, dN, dcP, da_bc⟩
   rcases line_of_pts d b with ⟨O, dO, bO⟩
-  exact ⟨d, L, O, para_len_parallelogram dN aN aL cL cM bM bO dO aP bP dcP (by perma) da_bc⟩
+  exact ⟨d, L, O, pgram_of_para_len_eq dN aN aL cL cM bM bO dO aP bP dcP (by perma) da_bc⟩
 
 /--Euclid I.37, triangles sharing two parallels have the same area-/
 theorem area_eq_of_tri (aL : online a L) (dL : online d L) (bM : online b M) (cM : online c M) 
@@ -1252,15 +1252,16 @@ theorem area_eq_of_tri (aL : online a L) (dL : online d L) (bM : online b M) (cM
   have half_pgram1 := area_eq_of_parallelogram pgram1
   have half_pgram2 := area_eq_of_parallelogram pgram2
   linperm
--------------------------------------------- Book I Old-----------------------------------------
---Euclid I.41
-theorem paratri {a d b c e : point} {L M N K : line} (eL : online e L)
-(aL: online a L) (dL: online d L) (bM: online b M) (cM: online c M)
-(aN: online a N) (bN: online b N) (dK: online d K) (cK: online c K)
-(par1 : para L M) (par2 : para N K) : area a d c + area a b c = 2 * area b e c := sorry
---by linarith [parasianar dK cK aN bN dL aL cM bM (para_symm par2) par1,
---triarea aL eL bM cM par1,  area_invariant a b c, area_invariant c a b, area_invariant e b c, area_invariant e c b]
 
+/--Euclid I.41, if a parallelogram shares the same parallels as a 
+  triangle and the same base, then the parallelogram has twice the area of the triangle-/
+theorem twice_pgram_of_tri  (eL : online e L) (pgram : paragram a b c d L M N O) : 
+    area a b d + area b c d = 2 * area c d e := by
+  have ⟨_, _, _, _, cN, dN, _, _, paraLM, _⟩ := pgram
+  have pgram_eq := area_eq_of_parallelogram pgram
+  have tri_eq := area_eq_of_tri pgram.2.1 eL cN dN paraLM
+  linperm
+-------------------------------------------- Book I Old-----------------------------------------
 def square (a b d e: point) : Prop :=
 a≠ b ∧ a≠ e ∧ length a b = length d e ∧ length a b = length a d ∧ length a b = length b e ∧
 angle d a b = angle a b e ∧ angle d a b = angle a d e ∧ angle d a b = angle d e b
