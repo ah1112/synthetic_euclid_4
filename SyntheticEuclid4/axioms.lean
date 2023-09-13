@@ -145,5 +145,9 @@ def iso_tri (a b c : point) := triangle a b c ∧ length a b = length a c
 
 def para (M N : line) := ∀ e, ¬online e M ∨ ¬online e N
 
-def paragram (a b c d : point) (L M N O : line) := online a L ∧ online b L ∧ online b M ∧ online c M
-  ∧ online c N ∧ online d N ∧ online d O ∧ online a O ∧ para L N ∧ para M O
+def paragram (a b c d : point) (L M N O : line) := online a L ∧ online b L ∧ online b M ∧ 
+    online c M ∧ online c N ∧ online d N ∧ online d O ∧ online a O ∧ para L N ∧ para M O
+
+def square (a b c d : point) := length a b = length b c ∧ length a b = length c d ∧ 
+    length a b = length d a ∧ angle a b c = rightangle ∧ angle b c d = rightangle ∧ 
+    angle c d a = rightangle ∧ angle d a b = rightangle
