@@ -311,3 +311,11 @@ macro_rules
   | `(tactic| linperm [$args,*] ) => `(tactic| perm at *; havePerms [$args,*]; linarith)
 
 macro "splitAll" : tactic => `(tactic | repeat' constructor)
+
+syntax "push_contra" binderIdent location: tactic
+macro_rules
+  | `(tactic| push_contra $h:binderIdent $l:location) => `(tactic|
+    (
+      by_contra $h
+      push_neg $l
+    ))
