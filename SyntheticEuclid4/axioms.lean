@@ -68,31 +68,38 @@ class incidence_geometry :=
 (sameside_rfl_of_not_online : ∀ {a : point}, ∀ {L : line}, ¬online a L → sameside a a L)
 (sameside_symm : ∀ {a b : point}, ∀ {L : line}, sameside a b L → sameside b a L)
 (not_online_of_sameside : ∀ {a b : point}, ∀ {L : line}, sameside a b L → ¬online a L)
-(sameside_trans : ∀ {a b c : point}, ∀ {L : line}, sameside a b L → sameside a c L → sameside b c L)
-(sameside_or_of_diffside : ∀ {a b c : point}, ∀ {L : line}, ¬online a L → ¬online b L → ¬online c L →
-  ¬sameside a b L → sameside a c L ∨ sameside b c L)
-(sameside12_of_B123_sameside13 : ∀ {a b c : point}, ∀ {L : line}, B a b c → sameside a c L → sameside a b L)
-(sameside_of_B_not_online_2 : ∀ {a b c : point}, ∀ {L : line}, B a b c → online a L → ¬online b L → sameside b c L)
-(not_sameside13_of_B123_online2 : ∀ {a b c : point}, ∀ {L : line}, B a b c → online b L → ¬sameside a c L)
-(B_of_online_inter : ∀ {a b c : point}, ∀ {L M : line}, a ≠ b → b ≠ c → a ≠ c → L ≠ M → online a L → 
-  online b L → online c L → online b M → ¬sameside a c M → B a b c)
-(not_sameside_of_sameside_sameside : ∀ {a b c d : point}, ∀ {L M N : line}, online a L → online a M → online a N → online b L →
-  online c M → online d N → sameside c d L → sameside b c N → ¬sameside b d M)
-(sameside_of_sameside_not_sameside : ∀ {a b c d : point}, ∀ {L M N : line}, a≠ b → online a L → online a M → online a N → online b L →
-  online c M → online d N → ¬online d M → sameside c d L → ¬sameside b d M →
-  sameside b c N)
-(B_of_line_circle_inter : ∀ {a b c : point}, ∀ {L : line}, ∀ {α : circle },b ≠ c → online a L → online b L → online c L
-  → on_circle b α → on_circle c α → in_circle a α →   B b a c)
-(not_sameside_of_circle_inter : ∀ {a b c d : point}, ∀ {L : line}, ∀ {α β : circle},  c ≠ d→ α ≠ β →  online a L
-  → online b L  → on_circle c α → on_circle c β → on_circle d α → on_circle d β → center_circle a α → center_circle b β →
-  circles_inter α β → ¬sameside c d L)
-(lines_inter_of_not_sameside : ∀ {a b : point}, ∀ {L M : line}, online a M → online b M → ¬sameside a b L →
-  lines_inter L M)
-(line_circle_inter_of_not_sameside : ∀ {a b : point}, ∀ {L : line}, ∀ {α : circle},¬sameside a b L → on_circle a α ∨ in_circle a α→
- on_circle b α ∨ in_circle b α  →  line_circle_inter L α)
-(line_circle_inter_of_inside_online : ∀ {a : point}, ∀ {L : line}, ∀ {α : circle}, online a L → in_circle a α →  line_circle_inter L α)
-(circles_inter_of_inside_on_circle : ∀ {a b : point}, ∀ {α β : circle}, on_circle b α → on_circle a β → in_circle a α →  in_circle b β →
-  circles_inter α β)
+(sameside_trans : ∀ {a b c : point}, ∀ {L : line}, sameside a b L → sameside a c L → 
+  sameside b c L)
+(sameside_or_of_diffside : ∀ {a b c : point}, ∀ {L : line}, ¬online a L → ¬online b L → 
+  ¬online c L → ¬sameside a b L → sameside a c L ∨ sameside b c L)
+(sameside12_of_B123_sameside13 : ∀ {a b c : point}, ∀ {L : line}, B a b c → sameside a c L → 
+  sameside a b L)
+(sameside_of_B_not_online_2 : ∀ {a b c : point}, ∀ {L : line}, B a b c → online a L → ¬online b L
+  → sameside b c L)
+(not_sameside13_of_B123_online2 : ∀ {a b c : point}, ∀ {L : line}, B a b c → online b L → 
+  ¬sameside a c L)
+(B_of_online_inter : ∀ {a b c : point}, ∀ {L M : line}, a ≠ b → b ≠ c → a ≠ c → L ≠ M → 
+  online a L → online b L → online c L → online b M → ¬sameside a c M → B a b c)
+(not_sameside_of_sameside_sameside : ∀ {a b c d : point}, ∀ {L M N : line}, online a L → 
+  online a M → online a N → online b L → online c M → online d N → sameside c d L → 
+  sameside b c N → ¬sameside b d M)
+(sameside_of_sameside_not_sameside : ∀ {a b c d : point}, ∀ {L M N : line}, a≠ b → online a L → 
+  online a M → online a N → online b L → online c M → online d N → ¬online d M → sameside c d L → 
+  ¬sameside b d M → sameside b c N)
+(B_of_line_circle_inter : ∀ {a b c : point}, ∀ {L : line}, ∀ {α : circle },b ≠ c → online a L → 
+  online b L → online c L → on_circle b α → on_circle c α → in_circle a α →   B b a c)
+(not_sameside_of_circle_inter : ∀ {a b c d : point}, ∀ {L : line}, ∀ {α β : circle},  c ≠ d → 
+  α ≠ β →  online a L → online b L  → on_circle c α → on_circle c β → on_circle d α → 
+  on_circle d β → center_circle a α → center_circle b β → circles_inter α β → ¬sameside c d L)
+(lines_inter_of_not_sameside : ∀ {a b : point}, ∀ {L M : line}, online a M → online b M → 
+  ¬sameside a b L → lines_inter L M)
+(line_circle_inter_of_not_sameside : ∀ {a b : point}, ∀ {L : line}, ∀ {α : circle}, 
+  ¬sameside a b L → on_circle a α ∨ in_circle a α→ on_circle b α ∨ in_circle b α →
+  line_circle_inter L α)
+(line_circle_inter_of_inside_online : ∀ {a : point}, ∀ {L : line}, ∀ {α : circle}, online a L → 
+  in_circle a α →  line_circle_inter L α)
+(circles_inter_of_inside_on_circle : ∀ {a b : point}, ∀ {α β : circle}, on_circle b α → 
+  on_circle a β → in_circle a α →  in_circle b β → circles_inter α β)
 (length_eq_zero_iff : ∀ {a b : point}, length a b = 0 ↔ a = b)
 (length_symm : ∀ (a b : point), length a b = length b a)
 (angle_symm : ∀ (a b c : point), angle a b c = angle c b a)
@@ -104,32 +111,33 @@ class incidence_geometry :=
 (area_eq_of_SSS : ∀ {a b c a1 b1 c1 : point}, length a b = length a1 b1 →
   length a c = length a1 c1 → length b c = length b1 c1 → area a b c = area a1 b1 c1)
 (length_sum_of_B : ∀ {a b c : point}, B a b c → length a b + length b c = length a c)
-(on_circle_iff_length_eq : ∀ {a b c : point}, ∀ {α : circle},  center_circle a α → on_circle b α → 
-  (length a b = length a c ↔ on_circle c α))
+(on_circle_iff_length_eq : ∀ {a b c : point}, ∀ {α : circle},  center_circle a α → 
+  on_circle b α → (length a b = length a c ↔ on_circle c α))
 (in_circle_iff_length_lt : ∀ {a b c : point}, ∀ {α : circle}, center_circle a α → on_circle b α → 
   (length a c < length a b ↔ in_circle c α))
-(angle_zero_iff_online : ∀ {a b c : point}, ∀ {L : line}, a ≠ b → a ≠ c → online a L → online b L →
-  (online c L ∧ ¬B b a c ↔ angle b a c = 0))--better reformulation?
-(angle_add_iff_sameside : ∀ {a b c d : point}, ∀ {L M : line}, a ≠ b → a ≠ c → online a L → online b L → online a M
-  → online c M → ¬online d M → ¬online d L → L ≠ M →
+(angle_zero_iff_online : ∀ {a b c : point}, ∀ {L : line}, a ≠ b → a ≠ c → online a L → 
+  online b L → (online c L ∧ ¬B b a c ↔ angle b a c = 0))--better reformulation?
+(angle_add_iff_sameside : ∀ {a b c d : point}, ∀ {L M : line}, a ≠ b → a ≠ c → online a L → 
+  online b L → online a M → online c M → ¬online d M → ¬online d L → L ≠ M →
   (angle b a c = angle b a d + angle d a c ↔ sameside b d M ∧ sameside c d L))
-(angle_eq_iff_rightangle : ∀ {a b c d : point}, ∀ {L : line}, online a L → online b L → ¬online d L → B a c b →
-  (angle a c d = angle d c b ↔ angle a c d = rightangle))
-(angle_extension : ∀ {a b c a1 b1 c1 : point}, ∀ {L M : line}, b ≠ a → b1 ≠ a → c ≠ a → c1 ≠ a → online a L → online b L → online b1 L →
-  online a M → online c M → online c1 M →  ¬B b a b1 → ¬B c a c1 → angle b a c = angle b1 a1 c1)
-(unparallel_postulate : ∀ {a b c d : point}, ∀ {L M N : line},b ≠ c → online a L → online b L → online b M → online c M →
-  online c N → online d N →  sameside a d M → angle a b c + angle b c d < 2 * rightangle →
-  ∃ (e : point), online e L ∧ online e N ∧ sameside e a M)
+(angle_eq_iff_rightangle : ∀ {a b c d : point}, ∀ {L : line}, online a L → online b L → 
+  ¬online d L → B a c b → (angle a c d = angle d c b ↔ angle a c d = rightangle))
+(angle_extension : ∀ {a b c a1 b1 c1 : point}, ∀ {L M : line}, b ≠ a → b1 ≠ a → c ≠ a → c1 ≠ a → 
+  online a L → online b L → online b1 L → online a M → online c M → online c1 M → 
+  ¬B b a b1 → ¬B c a c1 → angle b a c = angle b1 a1 c1)
+(unparallel_postulate : ∀ {a b c d : point}, ∀ {L M N : line}, b ≠ c → online a L → online b L → 
+  online b M → online c M → online c N → online d N →  sameside a d M → angle a b c + 
+  angle b c d < 2 * rightangle → ∃ (e : point), online e L ∧ online e N ∧ sameside e a M)
 (area_zero_iff_online : ∀ {a b c : point}, ∀ {L : line}, a ≠ b → online a L → online b L →
   (area a b c = 0 ↔ online c L))
-(area_add_iff_B : ∀ {a b c d : point}, ∀ {L : line}, a ≠ b → b ≠ c → c ≠ a → online a L → online b L →
-  online c L → ¬online d L → (B a b c ↔ area d a b + area d c b = area d a c))
+(area_add_iff_B : ∀ {a b c d : point}, ∀ {L : line}, a ≠ b → b ≠ c → c ≠ a → online a L → 
+  online b L → online c L → ¬online d L → (B a b c ↔ area d a b + area d c b = area d a c))
 (SAS_iff_SSS : ∀ {a b c d e f : point}, length a b = length d e → length a c = length d f →
   (angle b a c = angle e d f ↔ length b c = length e f)) --Euclid Prop 4,8
 
 variable [i : incidence_geometry]
 open incidence_geometry
--------------------------------------------------- Definitions -------------------------------------
+-------------------------------------------------- Definitions -----------------------------------
 def diffside (a b : point) (L : line) := ¬online a L ∧ ¬online b L ∧ ¬sameside a b L
 --3/28/23
 def out_circle (a : point) (α : circle) := ¬on_circle a α ∧ ¬in_circle a α
