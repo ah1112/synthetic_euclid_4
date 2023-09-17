@@ -1,5 +1,13 @@
 /-
 Here I will note changes made to the axioms and synthetic:
+--2023/9/13
+Changed pythlem to right_B_of_le_right
+
+You can move this to pythagoras4 : 
+lemma nq_of_len_pos {a b : point} (length : 0 < length a b) : a ≠ b
+  := (not_congr (length_eq_zero_iff)).1 (ne_of_gt length)
+
+
 --2023/9/12
 Changed names of I.33 and I.41
 
