@@ -64,10 +64,11 @@ lemma para21 {L M : line}: para L M ↔ para M L := by
     rw [Or.comm]
     exact p e
 namespace Lean.Elab.Tactic
-def getFVars (e : Expr) : Array FVarId :=
-  (Lean.collectFVars {} e).fvarIds
 def getNthArgName (tgt : Expr) (n : Nat) : MetaM Name :=
-  ((getFVars (Lean.Expr.getArg! tgt n)).get! 0).getUserName
+  do
+    let some id := Lean.Expr.fvarId? (Lean.Expr.getArg! tgt n) | throwError "argument {n} is not a free variable"
+    id.getUserName
+
 def lte (n1 : @& Name) (n2: @& Name) : Bool :=
   Name.lt n1 n2 || n1 = n2
 /-- ## Conv tactic `area_nf`
