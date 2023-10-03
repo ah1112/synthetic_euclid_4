@@ -808,6 +808,21 @@ theorem sameside_of_pyth (Beld : B e l d) (aX : online a X) (lX : online l X)
   exact sameside_trans (sameside_trans (sameside_of_B_online_3 Beld eQ $ offline_of_para dO paraOQ)
     $ sameside_symm $ sameside_of_para_online' aX lX paraQX) $ sameside_symm $
     sameside_of_para_online cO dO paraOQ
+
+theorem tri_tri_B_B_of_int (bL : online b L) (cL : online c L) (aM : online a M) (cM : online c M)
+    (aN : online a N) (bN : online b N) (adL : sameside a d L) (bdM : sameside b d M) 
+    (cdN : sameside c d N) : ∃ e, B a e c ∧ B b d e ∧ triangle a b e ∧ triangle c d e := by
+rcases line_of_pts b d with ⟨P, bP, dP⟩ 
+rcases line_of_pts c d with ⟨O, cO, dO⟩
+have caP := diffside_of_sameside_sameside bL bP bN cL dP aN adL cdN
+rcases pt_B_of_diffside caP with ⟨e, eP, Bcea⟩
+have beO := diffside_of_sameside_sameside cL cO cM bL dO (online_2_of_B Bcea cM aM) 
+  (by perma[sameside_trans adL $ 
+    by perma[sameside_of_B_online_3 Bcea cL $ not_online_of_sameside adL]]) bdM
+have Bbde := B_of_col_diffside ⟨P, bP, dP, eP⟩ dO beO
+exact ⟨e, B_symm Bcea, B_of_col_diffside ⟨P, bP, dP, eP⟩ dO beO, 
+  by perma[triangle_of_ne_online (ne_13_of_B Bbde) bP eP caP.2.1], 
+  by perma[triangle_of_ne_online (ne_23_of_B Bbde) dP eP caP.1]⟩ 
  ---------------------------------------- Book I Refactored ---------------------------------------
 /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -1085,6 +1100,23 @@ theorem len_lt_of_tri' (tri_abc : triangle a b c) : length a b < length a c + le
 theorem len_lt_of_tri (tri_abc : triangle a b c) : length a b < length a c + length b c ∧
     length b c < length b a + length c a ∧ length c a < length c b + length a b :=
   ⟨len_lt_of_tri' tri_abc, len_lt_of_tri' $ by perma, len_lt_of_tri' $ by perma⟩
+
+/--Euclid I.21, with one triangle in another and sharing a base, the sum of the other two sides of
+   the outer triangle is larger than that for the inner triangle, and the top angle of the outer 
+   triangle is smaller than that of the interior triangle-/
+theorem angle_len_leq_of_tri_in_out (bL : online b L) (cL : online c L) (aM : online a M) 
+    (cM : online c M) (aN : online a N) (bN : online b N) (adL : sameside a d L) 
+    (bdM : sameside b d M) (cdN : sameside c d N) : 
+    length b d + length c d < length a b + length a c ∧ angle b a c < angle b d c := by
+rcases tri_tri_B_B_of_int bL cL aM cM aN bN adL bdM cdN with ⟨e, Baec, Bbde, tri_abe, tri_cde⟩
+have be_lt_ba_ea := (len_lt_of_tri tri_abe).2.1
+have cd_lt_ce_de := (len_lt_of_tri tri_cde).1
+have ac_split := length_sum_of_B Baec
+have be_split := length_sum_of_B Bbde
+have dec_lt_cdb := internal_lt_external' (B_symm Bbde) (tri321 tri_cde)
+have eab_lt_bec := internal_lt_external' Baec (tri132_of_tri123 tri_abe)
+exact ⟨by linperm, by linperm[angle_extension_of_B (ne_23_of_B Baec) (B_symm Bbde), 
+  angle_extension_of_B (ne_of_sameside bL adL) Baec]⟩
 
 /--Euclid I.22, making a triangle with prescribed lengths-/
 theorem triangle_of_ineq (aL : online a L) (bL : online b L) (fL : ¬online f L)
