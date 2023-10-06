@@ -823,6 +823,21 @@ have Bbde := B_of_col_diffside ⟨P, bP, dP, eP⟩ dO beO
 exact ⟨e, B_symm Bcea, B_of_col_diffside ⟨P, bP, dP, eP⟩ dO beO, 
   by perma[triangle_of_ne_online (ne_13_of_B Bbde) bP eP caP.2.1], 
   by perma[triangle_of_ne_online (ne_23_of_B Bbde) dP eP caP.1]⟩ 
+
+theorem line_circle_inter_sameside_of_offline (aL : online a L) (aM : online a M) (cM : online c M) (cL : ¬online c L) (aα : center_circle a α) : ∃ d, online d M ∧ sameside c d L ∧ on_circle d α := by
+rcases pts_of_line_circle_inter $ line_circle_inter_of_inside_online aM (inside_circle_of_center aα) with ⟨d, e, de, dM, eM, dα, eα⟩
+have Bdae := B_of_line_circle_inter de aM dM eM dα eα (inside_circle_of_center aα)
+have dL : ¬online d L := --turn into API
+  fun dL => cL (by rwa[line_unique_of_pts de dM eM dL (online_3_of_B Bdae dL aL)] at cM)
+have deL := diffside_of_B_offline'' Bdae dL aL
+rcases sameside_or_of_diffside' cL deL with dcL | ecL
+exact ⟨d, dM, by perma[dcL], dα⟩; exact ⟨e, eM, by perma[ecL], eα⟩
+
+/--Euclid I.2, generalization-/
+theorem len_eq_of_sameside (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : online b L) (cL : online c L) (aL : ¬online a L) : ∃ d, online d L ∧ sameside c d M ∧ length a b = length b d := by
+rcases circle_of_ne $ ne_of_online bL aL with ⟨α, bα, aα⟩ 
+rcases line_circle_inter_sameside_of_offline bM bL cL (offline_of_ne_online_offline bc bL cL bM aM aL) bα with ⟨d, dL, cdM, dα⟩ 
+exact ⟨d, dL, cdM, by perma[length_eq_of_oncircle bα aα dα]⟩  
  ---------------------------------------- Book I Refactored ---------------------------------------
 /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -1063,6 +1078,20 @@ theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) :
     tri_143_of_tri_col (ne_23_of_B Bdbe) (by perma) $ col_213_of_col $ col_of_B Bdbe
   linperm
 
+/-- Euclid I.17, Any two angles of a triangle sum to less than two right angles-/
+theorem two_ang_lt_two_right_of_tri (tri_abc : triangle a b c) : angle a b c + angle a c b < 2 * rightangle := by
+  rcases length_eq_B_of_ne (ne_32_of_tri tri_abc) (ne_23_of_tri tri_abc) with ⟨d, Bcbd, _⟩
+  rcases line_of_pts c b with ⟨L, cL, bL⟩ 
+  have bca_lt_abd := internal_lt_external' Bcbd $ tri321 tri_abc
+  have cbd_split := two_right_of_flat_angle Bcbd cL bL (online_1_of_triangle bL cL tri_abc)
+  linperm
+
+/-- Euclid I.17 corollary, An obtuse angle in a triangle is bigger than the other two angles-/
+theorem ang_lt_obtuse_of_tri (tri_abc : triangle a b c) (right_lt_abc : rightangle < angle a b c) : angle b a c < angle a b c ∧ angle a c b < angle a b c := by
+  have abc_acb_ra := two_ang_lt_two_right_of_tri tri_abc
+  have cba_cab_ra := two_ang_lt_two_right_of_tri $ tri321 tri_abc
+  exact ⟨by linperm, by linperm⟩ 
+
 /-- Euclid I.18, Opposite larger sides you have larger angles in a triangle-/
 theorem ang_lt_of_len_lt (tri_abc : triangle a b c) (len_lt : length c a < length c b) :
     angle c b a < angle c a b := by
@@ -1157,6 +1186,80 @@ theorem angle_copy' (ab : a ≠ b) (aL : online a L) (bL : online b L) (jL : ¬o
   rcases angle_copy ab aL bL fL tri_cde with ⟨h, hab_ecd, hfL⟩
   refine ⟨h, hab_ecd, diffside_of_sameside_diffside (sameside_symm hfL) $ diffside_symm
     ⟨jL, fL, jfL⟩⟩
+
+theorem offline_of_angle_lt (ad : a ≠ d) (dL : online d L) (cN : online c N) (dN : online d N) (bcL : sameside b c L) (adb_lt_adc : angle a d b < angle a d c) : ¬online b N := by
+  rcases line_of_pts d b with ⟨M, dM, bM⟩ 
+  intro bN; rw[line_unique_of_pts (ne_of_sameside dL bcL) bN dN bM dM] at cN
+  linperm[angle_extension_of_sameside ad dL ⟨M, dM, bM, cN⟩ bcL]
+
+theorem not_online_of_B_online (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : ¬online b L := fun bL => cL $ online_3_of_B Babc aL bL --exists?
+
+theorem sameside_of_B_not_online_3 (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : sameside b c L := sameside_of_B_not_online_2 Babc aL $ not_online_of_B_online Babc aL cL
+
+theorem sameside_of_sameside_sameside (dL : online d L) (dM : online d M) (dN : online d N) (cN : online c N) (eN : online e N) (ceM : sameside c e M) (bcL : sameside b c L) : sameside c e L := by
+  by_cases ce : c = e; rw[←ce]; exact sameside_rfl_of_not_online $ not_online_of_sameside $ sameside_symm bcL
+  rcases B_or_B_of_sameside ce dM ⟨N, dN, cN, eN⟩ ceM with Bet | Bet
+  exact sameside_of_B_not_online_2 Bet dL $ not_online_of_sameside $ sameside_symm bcL
+  perma[sameside_of_B_not_online_3 Bet dL $ not_online_of_sameside $ sameside_symm bcL]
+
+theorem diffside_of_angle_lt (ad : a ≠ d) (dL : online d L) (dM : online d M) (dN : online d N) (aL : online a L) (bM : online b M) (cN : online c N) (aM : ¬online a M) (bcL : sameside b c L) (adb_lt_adc : angle a d b < angle a d c) : diffside a c M := by
+  by_cases acM : sameside a c M; linperm[angle_add_of_sameside dL aL dM bM bcL acM, angle_nonneg c d b]
+  exact ⟨aM, offline_of_online_offline (ne_of_sameside dL $ sameside_symm bcL).symm bM dM dN cN $ offline_of_angle_lt ad dL cN dN bcL adb_lt_adc, acM⟩ --golf?
+
+/--Euclid I.24, If two triangles have two congruent sides, and the included angle of one is bigger
+   than the other then the opposite side is also bigger than that of the other triangle-/
+theorem opp_lt_of_ss_lt (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e) (ac_df : length a c = length d f) (edf_lt_bac : angle e d f < angle b a c) : length e f < length b c := by
+  --have ab_le_ac : length a b ≤ length a c := sorry
+  wlog ab_le_ac : length a b ≤ length a c generalizing a b c d e f; perma[this (tri132_of_tri123 tri_abc) (tri132_of_tri123 tri_def) ac_df ab_de (by perma) (by linperm)]
+  rcases line_of_pts d e with ⟨L, dL, eL⟩ 
+  rcases line_of_pts d f with ⟨N, dN, fN⟩ 
+  rcases angle_copy (ne_12_of_tri tri_def) dL eL (online_3_of_triangle dL eL tri_def) tri_abc with ⟨h, hde_cab, hfL⟩
+  rcases line_of_pts d h with ⟨M, dM, hM⟩
+  have fM := offline_of_angle_lt (ne_21_of_tri tri_def) dL hM dM (sameside_symm hfL) $ by linperm 
+  rcases len_eq_of_sameside (ne_of_sameside' dL hfL) fN dN dM hM fM with ⟨g, gM, hgN, fd_dg⟩ 
+  rcases line_of_pts f g with ⟨O, fO, gO⟩
+  rcases line_of_pts f e with ⟨P, fP, eP⟩
+  have hgL := sameside_of_sameside_sameside dL dN dM hM gM hgN $ sameside_symm hfL
+  have gfL := sameside_trans hgL hfL
+  have bc_eg := (sas ab_de (by linperm : length a c = length d g) $ by linperm[angle_extension_of_sameside (ne_21_of_tri tri_def) dL ⟨M, dM, hM, gM⟩ $ sameside_symm hgL]).1
+  have tri_gdf := triangle_of_ne_online (ne_of_sameside dN $ sameside_symm hgN) gM dM fM
+  have dgf_dfg := angle_eq_of_iso ⟨tri213 tri_gdf, by linperm⟩
+  have egN := diffside_of_angle_lt (ne_21_of_tri tri_def) dL dN dM eL fN gM 
+    (online_2_of_triangle dN fN tri_def) (sameside_symm gfL) $ 
+    by linperm[angle_extension_of_sameside (ne_21_of_tri tri_def) dL ⟨M, dM, hM, gM⟩ $ 
+    sameside_symm hgL]
+  --have tri_fge : ¬colinear f g e := sorry
+  by_cases tri_fge : colinear f g e; linperm[length_sum_of_B $ B_of_col_diffside (by perma
+    [tri_fge]) fN $ (diffside_of_angle_lt (ne_21_of_tri tri_def) dL dN dM eL fN gM 
+    (online_2_of_triangle dN fN tri_def) gfL $ 
+    by linperm[angle_extension_of_sameside (ne_21_of_tri tri_def) dL ⟨M, dM, hM, gM⟩ $ 
+    sameside_symm hgL]), len_pos_of_nq (ne_of_online gM fM)] --can give its own lemma
+
+  by_cases deO : ¬sameside d e O
+  rcases pt_B_of_diffside ⟨online_2_of_triangle gO fO tri_gdf, online_3_of_triangle fO gO tri_fge, deO⟩ with ⟨x, xO, Bdxe⟩
+  have xeN := sameside_of_B_not_online_3 Bdxe dN (online_2_of_triangle dN fN tri_def)
+  have xgN := diffside_of_sameside_diffside (sameside_symm xeN) egN
+  have Bxfg := B_of_col_diffside ⟨O, xO, fO, gO⟩ fN xgN
+  have fgd_dfx := internal_lt_external' (B_symm Bxfg) (tri132_of_tri123 tri_gdf)
+  have dfg_lt_ra := two_ang_lt_two_right_of_tri (tri213 tri_gdf)
+  have gfx_split := two_right_of_flat_angle Bxfg xO fO (online_2_of_triangle gO fO tri_gdf)
+  have tri_xfd := triangle_of_ne_online (ne_12_of_B Bxfg) xO fO (online_2_of_triangle gO fO tri_gdf)
+  have fxd_xfd := (ang_lt_obtuse_of_tri tri_xfd (by linperm)).1
+  have df_dx := len_lt_of_ang_lt (tri213 tri_xfd) (by linperm)
+  have dxe_split := length_sum_of_B Bdxe
+  have xe_pos := len_pos_of_nq (ne_23_of_B Bdxe)
+  linperm
+  
+  have gdP := sameside_of_sameside_diffside fO fN fP gO dN eP (by push_neg at deO; exact deO) (diffside_symm egN)
+  have gfe_split := angle_add_of_sameside fO gO fP eP (by push_neg at deO; exact sameside_symm deO) gdP
+  have efM := sameside_of_sameside_diffside dL dN dM eL fN gM (sameside_symm gfL) egN
+  have dgf_split := angle_add_of_sameside gM dM gO fO (sameside_symm efM) (by push_neg at deO; exact deO)
+  have nangle1 := zero_lt_angle_of_tri (tri321 tri_def)
+  have nangle2 := zero_lt_angle_of_tri (tri321 $ triangle_of_ne_online (ne_12_of_tri tri_def) dL eL (not_online_of_sameside gfL))
+  have ef_eg := len_lt_of_ang_lt tri_fge (by linperm)
+  linarith
+
+#exit
 
 /--Euclid I.26, if two triangles have two corresponding angles equal and the included sides equal,
    then they are congruent-/
