@@ -845,11 +845,8 @@ theorem offline_of_angle_lt (ad : a ≠ d) (dL : online d L) (cN : online c N) (
   intro bN; rw[line_unique_of_pts (ne_of_sameside dL bcL) bN dN bM dM] at cN
   linperm[angle_extension_of_sameside ad dL ⟨M, dM, bM, cN⟩ bcL]
 
-theorem not_online_of_B_online (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : 
-    ¬online b L := fun bL => cL $ online_3_of_B Babc aL bL --exists?
-
 theorem sameside_of_B_not_online_3 (Babc : B a b c) (aL : online a L) (cL : ¬online c L) : 
-    sameside b c L := sameside_of_B_not_online_2 Babc aL $ not_online_of_B_online Babc aL cL
+    sameside b c L := sameside_of_B_not_online_2 Babc aL $ online_of_B_online Babc aL cL
 
 theorem sameside_of_sameside_sameside (dL : online d L) (dM : online d M) (dN : online d N) 
     (cN : online c N) (eN : online e N) (ceM : sameside c e M) (bcL : sameside b c L) : 
@@ -1123,7 +1120,8 @@ theorem internal_lt_external' (Babc : B a b c) (tri_abd : triangle a b d) :
   linperm
 
 /-- Euclid I.17, Any two angles of a triangle sum to less than two right angles-/
-theorem two_ang_lt_two_right_of_tri (tri_abc : triangle a b c) : angle a b c + angle a c b < 2 * rightangle := by
+theorem two_ang_lt_two_right_of_tri (tri_abc : triangle a b c) : 
+    angle a b c + angle a c b < 2 * rightangle := by
   rcases length_eq_B_of_ne (ne_32_of_tri tri_abc) (ne_23_of_tri tri_abc) with ⟨d, Bcbd, _⟩
   rcases line_of_pts c b with ⟨L, cL, bL⟩ 
   have bca_lt_abd := internal_lt_external' Bcbd $ tri321 tri_abc
@@ -1131,7 +1129,8 @@ theorem two_ang_lt_two_right_of_tri (tri_abc : triangle a b c) : angle a b c + a
   linperm
 
 /-- Euclid I.17 corollary, An obtuse angle in a triangle is bigger than the other two angles-/
-theorem ang_lt_obtuse_of_tri (tri_abc : triangle a b c) (right_lt_abc : rightangle < angle a b c) : angle b a c < angle a b c ∧ angle a c b < angle a b c := by
+theorem ang_lt_obtuse_of_tri (tri_abc : triangle a b c) (right_lt_abc : rightangle < angle a b c) : 
+    angle b a c < angle a b c ∧ angle a c b < angle a b c := by
   have abc_acb_ra := two_ang_lt_two_right_of_tri tri_abc
   have cba_cab_ra := two_ang_lt_two_right_of_tri $ tri321 tri_abc
   exact ⟨by linperm, by linperm⟩ 
@@ -1280,6 +1279,16 @@ theorem opp_lt_of_ss_lt (tri_abc : triangle a b c) (tri_def : triangle d e f)
   have ef_eg := len_lt_of_ang_lt tri_fge (by linperm[zero_lt_angle_of_tri $ tri321 tri_def])
   rwa[bc_eg]
 
+/--Euclid I.25, the converse of I.24-/
+theorem ang_lt_of_ss_lt (tri_abc : triangle a b c) (tri_def : triangle d e f) 
+    (ab_de : length a b = length d e) (ac_df : length a c = length d f) 
+    (ef_bc : length e f < length b c) : angle e d f < angle b a c := by
+  by_cases edf_bac : angle e d f = angle b a c;
+  have bc_ef := (sas ab_de ac_df edf_bac.symm).1; linperm
+  by_cases bac_edf : angle b a c < angle e d f;
+  have bc_lt_ef := opp_lt_of_ss_lt tri_def tri_abc ab_de.symm ac_df.symm bac_edf; linperm
+  push_neg at bac_edf; exact Ne.lt_of_le edf_bac bac_edf
+
 /--Euclid I.26, if two triangles have two corresponding angles equal and the included sides equal,
    then they are congruent-/
 theorem asa' (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e)
@@ -1337,6 +1346,28 @@ theorem para_of_ang_eq (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : 
     $ diffside_of_sameside_diffside aeL adL) $ by perma[triangle_of_ne_online bc bL cL $
                 not_online_of_sameside $ sameside_symm aeL]
   linperm[angle_extension_of_sameside bc.symm bL ⟨M, bM, aM, eMN.1⟩ aeL]
+
+/--Euclid I.28 part 1, If the exterior angle is equal to the internal and opposite angle then we have
+    parallel lines-/
+theorem para_of_ext_ang_eq (Bebc : B e b c) (bM : online b M) (fM : online f M)
+    (bL : online b L) (cL : online c L) (cN : online c N) (dN : online d N) (fdL : sameside f d L)
+    (ebf_bcd : angle e b f = angle b c d) : para M N := by
+  rcases length_eq_B_of_ne (ne_of_sameside bL fdL) $ ne_of_sameside' bL fdL with ⟨a, Bfba, _⟩
+  have ebf_cba := vertical_angle Bebc Bfba (online_3_of_B (B_symm Bebc) cL bL) bL
+    $ online_of_B_online' Bfba bL (diffside_of_B_sameside Bfba bL fdL).1
+  exact para_of_ang_eq (ne_23_of_B Bebc) (online_3_of_B Bfba fM bM) bM bL cL cN dN 
+    (diffside_of_B_sameside Bfba bL fdL) $ by linperm
+
+/--Euclid I.28 part 2, If the sum of the interior angles is equal to two right angles then we have
+    parallel lines-/
+theorem para_of_int_ang_sum (bc : b ≠ c) (aM : online a M) (bM : online b M) (bL : online b L) 
+    (cL : online c L) (cN : online c N) (dN : online d N) (adL : sameside a d L) 
+    (abc_bcd : angle a b c + angle b c d = 2 * rightangle) : para M N := by
+  rcases length_eq_B_of_ne (ne_of_sameside bL adL) $ ne_of_sameside' bL adL with ⟨e, Babe, _⟩
+  have abe_split := two_right_of_flat_angle Babe aM bM $ online_3_of_triangle aM bM $ 
+    tri_of_sameside bc bL cL adL
+  exact para_of_ang_eq bc (online_3_of_B Babe aM bM) bM bL cL cN dN 
+    (diffside_of_B_sameside Babe bL adL) $ by linperm
 
 /--Euclid I.29, basic properties of alternate, exterior, and interior angles with parallel lines-/
 theorem alternate_eq_of_para (aM : online a M) (bM : online b M) (bL : online b L)
