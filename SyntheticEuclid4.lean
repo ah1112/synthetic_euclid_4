@@ -879,6 +879,13 @@ theorem online_sameside_diffside_len_ang_tri_of_ang_lt (tri_def : triangle d e f
     (ne_12_of_tri tri_def) dL eL $ not_online_of_sameside $ sameside_symm hgL, tri_gdf, 
     diffside_of_angle_lt (ne_21_of_tri tri_def) dL dN dM eL fN gM (online_2_of_triangle dN fN 
     tri_def) (sameside_symm $ sameside_trans hgL hfL) $ by linperm⟩ 
+
+theorem sameside_of_not_sameside_para (bc : b ≠ c) (eh : e ≠ h) (eL : online e L) (eR : online e R) (
+    eS : online e S) (hL : online h L) (cR : online c R) (bS : online b S) (bN : online b N) 
+    (cN : online c N) (bhR : ¬sameside b h R) (paraLN : para L N) : sameside c h S := sameside_symm $ 
+  sameside_of_sameside_diffside eL eR eS hL cR bS (sameside_of_para_online' cN bN paraLN) 
+  ⟨offline_of_online_offline eh cR eR eL hL (offline_of_para' cN paraLN), offline_of_online_offline 
+  bc.symm eR cR cN bN (offline_of_para eL paraLN), not_sameside_symm bhR⟩ 
  ---------------------------------------- Book I Refactored ---------------------------------------
 /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ (c d : point), ∃ (L : line), online a L ∧
@@ -1520,7 +1527,7 @@ lemma B_sameside_of_2_paragram (Badf : B a d f) (pgram1 : paragram a d c b L M N
   exact ⟨Bet, sameside_of_B_prgram_pgram_trans Badf pgram1 pgram2⟩
 
 /--Euclid I.35, parallelograms sharing two parallels have the same area-/
-theorem area_eq_of_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragram e f c b L P N Q):
+theorem area_eq_of_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragram e f c b L P N Q) :
     area a d b + area d b c = area e f b + area f b c := by
   wlog Badf : B a d f generalizing a b c d e f L M N O P Q; by_cases df : d = f; rw [←df] at pgram2
     ⊢; linperm [(len_ang_area_eq_of_parallelogram pgram1).2.2, (len_ang_area_eq_of_parallelogram
@@ -1546,6 +1553,29 @@ theorem area_eq_of_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragr
     (sameside_of_para_online' cN bN paraLN) $ sameside_of_B_para Bfea fP eQ bQ paraPQ
   have ar3 := area_add_of_B_offline Badf aL fL $ offline_of_para' cN paraLN
   have ar4 := area_add_of_B_offline Bfea fL aL $ offline_of_para' bN paraLN
+  linperm
+
+/--Euclid I.36, generalization of I.35 to parallelograms with a distance-/
+theorem area_eq_of_far_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragram e h g f L P N Q) 
+    (bc_fg : length b c = length f g) : area a d b + area d b c = area f g e + area g e h := by
+  have ⟨aL, dL, dM, cM, cN, bN, bO, aO, paraLN, paraMO⟩ := pgram1
+  have ⟨eL, hL, hP, gP, gN, fN, fQ, eQ, _, paraPQ⟩ := pgram2
+  rcases line_of_pts e c with ⟨R, eR, cR⟩
+  wlog bhR : sameside b h R generalizing a b c d M O R; rcases line_of_pts b e with ⟨S, bS, eS⟩
+  have quad_comm := paragram_area_comm pgram1
+  have key := this ⟨dL, aL, aO, bO, bN, cN, cM, dM, paraLN, para_symm paraMO⟩ (by linperm) dL aL aO bO bN
+    cN cM dM (para_symm paraMO) S eS bS $ sameside_of_not_sameside_para (ne_of_para' cM bO paraMO) 
+    (ne_of_para' hP eQ paraPQ) eL eR eS hL cR bS bN cN bhR paraLN; perm at *; rw[quad_comm,key]
+  rcases line_of_pts b h with ⟨T, bT, hT⟩
+  rcases B_diagonal_of_quad hL eL eR cR cN bN (sameside_of_para_online hL eL paraLN) 
+    (sameside_of_para_online' cN bN paraLN) (sameside_symm bhR) with ⟨_, _, S, _, _, _, _, eS, bS, _, _, 
+    _, hcS⟩
+  have eh_gf := len_eq_of_parallelogram pgram2
+  have ⟨hL, eL, eR, cR, cN, bN, bT, hT, _, paraRT⟩ := pgram_of_para_len_eq hL eL eR cR cN bN bT hT eS bS
+    hcS paraLN (by linperm)
+  have pgram3_pgram1 := area_eq_of_paragram ⟨hL, eL, eR, cR, cN, bN, bT, hT, paraLN, paraRT⟩ pgram1
+  have pgram3_pgram2 := area_eq_of_paragram ⟨cN, bN, bT, hT, hL, eL, eR, cR, para_symm paraLN, 
+    para_symm paraRT⟩ ⟨fN, gN, gP, hP, hL, eL, eQ, fQ, para_symm paraLN, paraPQ⟩
   linperm
 
 /--Proof of the construction of the parallelogram from the triangle in I.37, used twice so worth
