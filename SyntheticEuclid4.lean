@@ -1570,6 +1570,20 @@ theorem area_eq_of_tri (aL : OnLine a L) (dL : OnLine d L) (bM : OnLine b M) (cM
   have half_pgram2 := area_eq_of_parallelogram pgram2
   linperm
 
+/--Euclid I.38, the analog of I.35 for triangles-/
+theorem area_eq_of_tri_far (aL : OnLine a L) (dL : OnLine d L) (bM : OnLine b M) (cM : OnLine c M) 
+    (eM : OnLine e M) (fM : OnLine f M) (bc_ef : length b c = length e f) (paraLM : para L M) : 
+    area a b c = area d e f := by
+  by_cases ef : e = f; rw[ef, eq_of_length_zero (by rwa[length_zero_of_eq ef] at bc_ef : 
+    length b c = 0)]; linperm[degenerate_area c a, degenerate_area f d]
+  rcases paragram_of_tri_para (ne_of_ne_len ef bc_ef.symm) bM cM aL (para_symm paraLM) 
+    with ⟨g, N, O, pgram1⟩
+  rcases paragram_of_tri_para ef eM fM dL (para_symm paraLM) with ⟨h, P, Q, pgram2⟩
+  have pgram_eq := area_eq_of_far_paragram pgram1 pgram2 bc_ef
+  have half_pgram1 := area_eq_of_parallelogram pgram1
+  have half_pgram2 := area_eq_of_parallelogram pgram2
+  linperm[paragram_area_comm pgram2]
+
 /--Euclid I.41, if a parallelogram shares the same parallels as a
   triangle and the same base, then the parallelogram has twice the area of the triangle-/
 theorem twice_pgram_of_tri  (eL : OnLine e L) (pgram : paragram a b c d L M N O) :
