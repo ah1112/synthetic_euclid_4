@@ -1604,23 +1604,30 @@ theorem area_eq_of_tri_far (aL : OnLine a L) (dL : OnLine d L) (bM : OnLine b M)
   have half_pgram2 := area_eq_of_parallelogram pgram2
   linperm[paragram_area_comm pgram2]
 
+/--Euclid I.40, equal area triangles on the same side must be on the same parallels-/
+theorem para_of_tri_sameside_area_far (ad : a ≠ d) (tri_abc : triangle a b c) (tri_def : triangle d e f) 
+    (bL : OnLine b L) (cL : OnLine c L) (eL : OnLine e L) (fL : OnLine f L) (aM : OnLine a M) 
+    (dM : OnLine d M) (adL : SameSide a d L) (bc_ef : length b c = length e f) 
+    (eq_tri : area a b c = area d e f) : para L M := by
+  by_contra paraLM
+  rcases line_of_pts e d with ⟨O, eO, dO⟩
+  rcases para_of_offline $ online_1_of_triangle bL cL tri_abc with ⟨N, aN, paraLN⟩
+  by_cases paraNO : para N O; have paraLO := para_trans (ne_line_of_online dO $ online_1_of_triangle eL 
+    fL tri_def) (para_symm paraLN) paraNO e; tauto
+  rcases not_para paraNO with ⟨g, gN, gO⟩
+  have abc_gef := area_eq_of_tri_far aN gN bL cL eL fL bc_ef $ para_symm paraLN
+  by_cases Begd : B e g d; exact tri_sum_contra eO dO gO (online_3_of_triangle dO eO tri_def) 
+    (by linperm) Begd
+  by_cases Bedg : B e d g; exact tri_sum_contra eO gO dO (online_3_of_triangle dO eO tri_def) 
+    (by linperm) Bedg
+  have := B_or_B_of_sameside (ne_of_para_para ad aN aM dM gN paraLN paraLM) eL ⟨O, eO, dO, gO⟩ 
+    (sameside_trans adL $ sameside_of_para_online' aN gN paraLN); tauto
+
 /--Euclid I.39, equal area triangles on the same side must be on the same parallels-/
 theorem para_of_tri_sameside_area (ad : a ≠ d) (tri_abc : triangle a b c) (tri_dbc : triangle d b c) 
     (bL : OnLine b L) (cL : OnLine c L) (aM : OnLine a M) (dM : OnLine d M) (adL : SameSide a d L) 
-    (eq_tri : area a b c = area b c d) : para L M := by
-  by_contra paraLM
-  rcases line_of_pts b d with ⟨O, bO, dO⟩
-  rcases para_of_offline $ online_1_of_triangle bL cL tri_abc with ⟨N, aN, paraLN⟩
-  by_cases paraNO : para N O; have paraLO := para_trans (ne_line_of_online dO $ online_1_of_triangle bL 
-    cL tri_dbc) (para_symm paraLN) paraNO b; tauto
-  rcases not_para paraNO with ⟨e, eN, eO⟩
-  have abc_ebc := area_eq_of_tri aN eN bL cL $ para_symm paraLN
-  by_cases Bbed : B b e d; exact tri_sum_contra bO dO eO (online_3_of_triangle dO bO tri_dbc) 
-    (by linperm) Bbed
-  by_cases Bbde : B b d e; exact tri_sum_contra bO eO dO (online_3_of_triangle dO bO tri_dbc) 
-    (by linperm) Bbde
-  have := B_or_B_of_sameside (ne_of_para_para ad aN aM dM eN paraLN paraLM) bL ⟨O, bO, dO, eO⟩ 
-    (sameside_trans adL $ sameside_of_para_online' aN eN paraLN); tauto
+    (eq_tri : area a b c = area b c d) : para L M :=
+  para_of_tri_sameside_area_far ad tri_abc tri_dbc bL cL bL cL aM dM adL rfl (by linperm)
 
 /--Euclid I.41, if a parallelogram shares the same parallels as a
   triangle and the same base, then the parallelogram has twice the area of the triangle-/
