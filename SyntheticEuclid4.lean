@@ -302,6 +302,8 @@ theorem ne_21_of_B (Babc : B a b c) : b ≠ a := Ne.symm $ ne_12_of_B Babc
 
 theorem ne_32_of_B (Babc : B a b c) : c ≠ b := Ne.symm $ ne_23_of_B Babc
 
+theorem ne_31_of_B (Babc : B a b c) : c ≠ a := Ne.symm $ ne_13_of_B Babc
+
 theorem sameside_or_of_diffside' (cL : ¬OnLine c L) (abL : diffside a b L) :
     SameSide a c L ∨ SameSide b c L := sameside_or_of_diffside abL.1 abL.2.1 cL abL.2.2
 
@@ -794,19 +796,23 @@ exact ⟨e, B_symm Bcea, B_of_col_diffside ⟨P, bP, dP, eP⟩ dO beO,
   by perma[triangle_of_ne_online (ne_13_of_B Bbde) bP eP caP.2.1], 
   by perma[triangle_of_ne_online (ne_23_of_B Bbde) dP eP caP.1]⟩ 
 
-theorem line_circle_inter_sameside_of_offline (aL : OnLine a L) (aM : OnLine a M) (cM : OnLine c M) (cL : ¬OnLine c L) (aα : CenterCircle a α) : ∃ d, OnLine d M ∧ SameSide c d L ∧ OnCircle d α := by
-rcases pts_of_linecircleinter $ linecircleinter_of_inside_online aM (inside_circle_of_center aα) with ⟨d, e, de, dM, eM, dα, eα⟩
+theorem line_circle_inter_sameside_of_offline (aL : OnLine a L) (aM : OnLine a M) (cM : OnLine c M) 
+    (cL : ¬OnLine c L) (aα : CenterCircle a α) : ∃ d, OnLine d M ∧ SameSide c d L ∧ OnCircle d α := by
+rcases pts_of_linecircleinter $ linecircleinter_of_inside_online aM (inside_circle_of_center aα) 
+  with ⟨d, e, de, dM, eM, dα, eα⟩
 have Bdae := B_of_linecircleinter de aM dM eM dα eα (inside_circle_of_center aα)
 have dL : ¬OnLine d L := --turn into API
   fun dL => cL (by rwa[line_unique_of_pts de dM eM dL (online_3_of_B Bdae dL aL)] at cM)
-have deL := diffside_of_B_offline'' Bdae dL aL
-rcases sameside_or_of_diffside' cL deL with dcL | ecL
+rcases sameside_or_of_diffside' cL (diffside_of_B_offline'' Bdae dL aL) with dcL | ecL
 exact ⟨d, dM, by perma[dcL], dα⟩; exact ⟨e, eM, by perma[ecL], eα⟩
 
 /--Euclid I.2, generalization-/
-theorem len_eq_of_sameside (bc : b ≠ c) (aM : OnLine a M) (bM : OnLine b M) (bL : OnLine b L) (cL : OnLine c L) (aL : ¬OnLine a L) : ∃ d, OnLine d L ∧ SameSide c d M ∧ length a b = length b d := by
+theorem len_eq_of_sameside (bc : b ≠ c) (aM : OnLine a M) (bM : OnLine b M) (bL : OnLine b L) 
+    (cL : OnLine c L) (aL : ¬OnLine a L) : 
+    ∃ d, OnLine d L ∧ SameSide c d M ∧ length a b = length b d := by
 rcases circle_of_ne $ ne_of_online bL aL with ⟨α, bα, aα⟩ 
-rcases line_circle_inter_sameside_of_offline bM bL cL (offline_of_ne_online_offline bc bL cL bM aM aL) bα with ⟨d, dL, cdM, dα⟩ 
+rcases line_circle_inter_sameside_of_offline bM bL cL (offline_of_ne_online_offline bc bL cL bM aM aL) bα
+  with ⟨d, dL, cdM, dα⟩ 
 exact ⟨d, dL, cdM, by perma[length_eq_of_oncircle bα aα dα]⟩  
 
 theorem offLine_of_angle_lt (ad : a ≠ d) (dL : OnLine d L) (cN : OnLine c N) (dN : OnLine d N) 
@@ -856,6 +862,20 @@ theorem sameside_of_not_sameside_para (bc : b ≠ c) (eh : e ≠ h) (eL : OnLine
   sameside_of_sameside_diffside eL eR eS hL cR bS (sameside_of_para_online' cN bN paraLN) 
   ⟨offline_of_online_offline eh cR eR eL hL (offline_of_para' cN paraLN), offline_of_online_offline 
   bc.symm eR cR cN bN (offline_of_para eL paraLN), not_sameside_symm bhR⟩ 
+
+theorem not_para (paraLM : ¬para L M) : ∃ a, OnLine a L ∧ OnLine a M := by 
+  unfold para at paraLM; push_neg at paraLM; exact paraLM
+
+/-- area of a triangle cannot equal the area of its subtriangle -/
+lemma tri_sum_contra (bO : OnLine b O) (dO : OnLine d O) (eO : OnLine e O) (cO : ¬OnLine c O)
+    (ar: area b c d = area b c e) : ¬B b e d := by
+  intro Bbed; apply cO; apply (area_zero_iff_online (ne_32_of_B Bbed) dO eO).mp
+  linperm [(area_add_iff_B (ne_12_of_B Bbed) (ne_23_of_B Bbed) (ne_31_of_B Bbed) bO eO dO cO).mp Bbed]
+
+theorem ne_of_para_para (ab : a ≠ b) (aM : OnLine a M) (aN : OnLine a N) (bN : OnLine b N) 
+    (cM : OnLine c M) (paraLM : para L M) (paraLN : ¬para L N) : b ≠ c := fun bc => paraLN (by rwa
+  [line_unique_of_pts ab aM (by rwa[←bc] at cM) aN bN] at paraLM)
+
  ---------------------------------------- Book I Refactored ---------------------------------------
 /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ c d L, OnLine a L ∧
@@ -1584,9 +1604,27 @@ theorem area_eq_of_tri_far (aL : OnLine a L) (dL : OnLine d L) (bM : OnLine b M)
   have half_pgram2 := area_eq_of_parallelogram pgram2
   linperm[paragram_area_comm pgram2]
 
+/--Euclid I.39, equal area triangles on the same side must be on the same parallels-/
+theorem para_of_tri_sameside_area (ad : a ≠ d) (tri_abc : triangle a b c) (tri_dbc : triangle d b c) 
+    (bL : OnLine b L) (cL : OnLine c L) (aM : OnLine a M) (dM : OnLine d M) (adL : SameSide a d L) 
+    (eq_tri : area a b c = area b c d) : para L M := by
+  by_contra paraLM
+  rcases line_of_pts b d with ⟨O, bO, dO⟩
+  rcases para_of_offline $ online_1_of_triangle bL cL tri_abc with ⟨N, aN, paraLN⟩
+  by_cases paraNO : para N O; have paraLO := para_trans (ne_line_of_online dO $ online_1_of_triangle bL 
+    cL tri_dbc) (para_symm paraLN) paraNO b; tauto
+  rcases not_para paraNO with ⟨e, eN, eO⟩
+  have abc_ebc := area_eq_of_tri aN eN bL cL $ para_symm paraLN
+  by_cases Bbed : B b e d; exact tri_sum_contra bO dO eO (online_3_of_triangle dO bO tri_dbc) 
+    (by linperm) Bbed
+  by_cases Bbde : B b d e; exact tri_sum_contra bO eO dO (online_3_of_triangle dO bO tri_dbc) 
+    (by linperm) Bbde
+  have := B_or_B_of_sameside (ne_of_para_para ad aN aM dM eN paraLN paraLM) bL ⟨O, bO, dO, eO⟩ 
+    (sameside_trans adL $ sameside_of_para_online' aN eN paraLN); tauto
+
 /--Euclid I.41, if a parallelogram shares the same parallels as a
   triangle and the same base, then the parallelogram has twice the area of the triangle-/
-theorem twice_pgram_of_tri  (eL : OnLine e L) (pgram : paragram a b c d L M N O) :
+theorem twice_pgram_of_tri (eL : OnLine e L) (pgram : paragram a b c d L M N O) :
     area a b d + area b c d = 2 * area c d e := by
   have ⟨_, _, _, _, cN, dN, _, _, paraLM, _⟩ := pgram
   have pgram_eq := area_eq_of_parallelogram pgram
