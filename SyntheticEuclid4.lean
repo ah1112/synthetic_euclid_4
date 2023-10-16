@@ -12,7 +12,7 @@ In this file we prove the Pythagorean theorem (Euclid I.47) using Avigad's axiom
 geometry.
 -/
 
-variable [i : IncidenceGeometry] {a a1 a2 b b1 b2 c d e f g h j k l x y :
+variable [I : IncidenceGeometry] {a a1 a2 b b1 b2 c d e f g h i j k l x y :
   IncidenceGeometry.Point} {L M N O P Q R S T U W V X : IncidenceGeometry.Line}
   {α β : IncidenceGeometry.Circle} {r : ℝ}
 open IncidenceGeometry
@@ -1637,6 +1637,36 @@ theorem twice_pgram_of_tri (eL : OnLine e L) (pgram : paragram a b c d L M N O) 
   have pgram_eq := area_eq_of_parallelogram pgram
   have tri_eq := area_eq_of_tri pgram.2.1 eL cN dN paraLM
   linperm
+
+/--Euclid I.42, to construct a parallelogram with the area of a given triangle and with a given angle-/
+theorem pgram_of_angle_tri (hi : h ≠ i) (tri_abc : triangle a b c) (tri_def : triangle d e f) 
+    (hL : OnLine h L) (iL : OnLine i L) (nL : ¬OnLine n L) : ∃ j l m M N O, paragram m l i j N M L O ∧ 
+    area j i l + area l m j = area a b c ∧ SameSide n l L  ∧ angle l i j = angle d e f := by
+  rcases bisect_segment (ne_23_of_tri tri_abc) with ⟨g, Bbgc, bg_cg⟩
+  rcases length_eq_B_of_ne_four hi (ne_12_of_B Bbgc) with ⟨j, Bhij, bg_ij⟩
+  have tri_inq := len_lt_of_tri $ tri132_of_tri123 $ tri_of_B_tri (B_symm Bbgc) (tri132_of_tri123 tri_abc)
+  rcases triangle_of_ineq iL (online_3_of_B Bhij hL iL) nL (by linperm : length i j < length b a + length 
+    g a) (by linperm) (by linperm) with ⟨k, ik_ba, jk_ga, knL⟩
+  rcases para_of_offline (not_online_of_sameside knL) with ⟨N, kN, paraLN⟩ 
+  rcases angle_copy (ne_23_of_B Bhij) iL (online_3_of_B Bhij hL iL) (not_online_of_sameside knL) 
+    (tri231_of_tri123 tri_def) with ⟨o, oij_def, okL⟩
+  rcases line_of_pts i o with ⟨M', iM', oM'⟩
+  by_cases paraNM : para N M'; have := para_trans (ne_line_of_online oM' 
+    (not_online_of_sameside okL)).symm paraNM (para_symm paraLN) i; tauto --turn into API
+  rcases not_para paraNM with ⟨l, lN, lM'⟩
+  rcases paragram_of_tri_para (ne_32_of_B Bhij) (online_3_of_B Bhij hL iL) iL lN paraLN 
+    with ⟨m, M, O, pgram⟩; have ⟨_, lN, lM, iM, iL, _⟩ := pgram
+  rcases line_of_pts b c with ⟨Q, bQ, cQ⟩
+  rcases para_of_offline (online_1_of_triangle bQ cQ tri_abc) with ⟨R, aR, paraQR⟩
+  have abg_acg := area_eq_of_tri_far aR aR bQ (online_2_of_B Bbgc bQ cQ) cQ (online_2_of_B Bbgc bQ cQ) 
+    bg_cg (para_symm paraQR)
+  have para_split := twice_pgram_of_tri kN pgram
+  have bga_ijk := area_eq_of_SSS bg_ij ik_ba.symm jk_ga.symm
+  have abc_split := area_add_of_B_offline Bbgc bQ cQ (online_1_of_triangle bQ cQ tri_abc)
+  exact ⟨j, l, m, M, N, O, pgram, by linperm, sameside_trans knL (sameside_of_para_online' kN lN paraLN),
+    by linperm[angle_extension_of_sameside (ne_32_of_B Bhij) iL ⟨M, iM, (by rwa[line_unique_of_pts 
+      (ne_of_para iL lN paraLN) iM lM iM' lM'] : OnLine o M), lM⟩ 
+        (sameside_symm $ sameside_trans (sameside_of_para_online' kN lN paraLN) okL)]⟩
 
 /--Euclid I.46, constructing a square out of a segment-/
 theorem square_of_len (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) (fL : ¬OnLine f L) :
