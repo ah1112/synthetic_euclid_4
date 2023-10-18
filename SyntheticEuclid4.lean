@@ -1060,6 +1060,16 @@ theorem two_right_of_flat_angle (Babc : B a b c) (aL : OnLine a L) (bL : OnLine 
     (sameside_of_B_sameside_sameside Babc bL bM bN aL eM dN edL cdM) (sameside_symm edL)
   linperm
 
+/--Euclid I.13, a corollary if we know one of the angles to be right-/
+theorem right_of_online_right (bd : b ≠ d) (tri_abc : triangle a b c) (bL : OnLine b L) (cL :
+    OnLine c L) (dL : OnLine d L) (abd : angle a b d = rightangle) : angle a b c = rightangle := by
+  rcases line_of_pts a b with ⟨M, aM, bM⟩
+  by_cases cdM : SameSide c d M;
+    linperm[angle_extension_of_sameside (ne_12_of_tri tri_abc) bM ⟨L, bL, cL, dL⟩ cdM]
+  linperm[two_right_of_flat_angle (B_of_col_diffside ⟨L, cL, bL, dL⟩ bM ⟨online_3_of_triangle aM
+    bM tri_abc, offline_of_online_offline bd aM bM bL dL $ online_1_of_triangle bL cL tri_abc,
+    cdM⟩) cL bL (online_1_of_triangle bL cL tri_abc)]
+
 /-- Euclid I.14, the converse of I.13. If angles add to two right angles then you have betweeness-/
 theorem flat_of_two_right_angle (bd : b ≠ d) (bL : OnLine b L) (dL : OnLine d L)
     (acL : diffside a c L) (two_ra : angle d b a + angle d b c = 2 * rightangle) : B a b c := by
@@ -1204,7 +1214,14 @@ theorem triangle_of_ineq (aL : OnLine a L) (bL : OnLine b L) (fL : ¬OnLine f L)
   have : length b d = length b e := length_eq_of_oncircle bβ dβ eβ
   exact ⟨e, by linarith, by linarith, efL⟩
 
-/--Euclid I.23, copying an angle-/
+/--Euclid I.22, corollary, if you are copying a triangle-/
+theorem triangle_copy (tri_def : triangle d e f) (aL : OnLine a L) (bL : OnLine b L) (gL : ¬OnLine g L) 
+    (ab_de : length a b = length d e) : ∃ c, length a c = length d f ∧ length b c = length e f ∧ 
+    SameSide c g L := 
+  triangle_of_ineq aL bL gL (by linarith[len_lt_of_tri tri_def] : length a b < length d f + length e f)
+    (by linperm[len_lt_of_tri tri_def]) (by linperm[len_lt_of_tri tri_def])
+
+/--Euclid I.23, copying an angle-/ --can simplify triangle_of_ineq?
 theorem angle_copy (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) (jL : ¬OnLine j L)
     (tri_cde : triangle c d e) : ∃ h, angle h a b = angle e c d ∧ SameSide h j L := by
   rcases length_eq_B_of_ne_four ab (ne_12_of_tri tri_cde) with ⟨g, Babg, cd_bg⟩
@@ -1227,9 +1244,8 @@ theorem angle_copy' (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) (jL : ¬O
     ⟨jL, fL, jfL⟩⟩
 
 theorem sameside_of_len_lt_tri (dN : OnLine d N) (fN : OnLine f N) (fO : OnLine f O) 
-    (gO : OnLine g O) (tri_def : triangle d e f) (ab_de : length a b = length d e) 
-    (ac_df : length a c = length d f) (tri_gdf : triangle g d f) (egN : diffside e g N) 
-    (ab_le_ac : length a b ≤ length a c) (tri_fge : ¬colinear f g e) 
+    (gO : OnLine g O) (tri_def : triangle d e f) (tri_gdf : triangle g d f) (egN : diffside e g N) 
+    (ab_le_ac : length d e ≤ length d f) (tri_fge : ¬colinear f g e) 
     (dgf_dfg : angle d g f = angle d f g) : SameSide d e O := by
   by_contra deO
   rcases pt_B_of_diffside ⟨online_2_of_triangle gO fO tri_gdf, online_3_of_triangle fO gO 
@@ -1265,13 +1281,13 @@ theorem opp_lt_of_ss_lt (tri_abc : triangle a b c) (tri_def : triangle d e f)
   have bc_eg := (sas ab_de (by linperm : length a c = length d g) $ by linperm).1
   by_cases tri_fge : colinear f g e; linperm[length_sum_of_B $ B_of_col_diffside (by perma  
     [tri_fge]) fN egN, len_pos_of_nq (ne_of_online gM fM)] --fake case...
-  have gfe_split := angle_add_of_sameside fO gO fP eP (sameside_symm $ sameside_of_len_lt_tri dN 
-    fN fO gO tri_def ab_de ac_df tri_gdf egN ab_le_ac tri_fge dgf_dfg) $ 
-    sameside_of_sameside_diffside fO fN fP gO dN eP (sameside_of_len_lt_tri dN fN fO gO tri_def 
-    ab_de ac_df tri_gdf egN ab_le_ac tri_fge dgf_dfg) $ diffside_symm egN 
+  have gfe_split := angle_add_of_sameside fO gO fP eP (sameside_symm $ sameside_of_len_lt_tri dN fN fO gO 
+    tri_def tri_gdf egN (by linarith) tri_fge dgf_dfg) $ sameside_of_sameside_diffside fO fN fP gO dN eP 
+    (sameside_of_len_lt_tri dN fN fO gO tri_def tri_gdf egN (by linarith) tri_fge dgf_dfg) $ 
+    diffside_symm egN 
   have dgf_split := angle_add_of_sameside gM dM gO fO (sameside_symm $ 
     sameside_of_sameside_diffside dL dN dM eL fN gM (sameside_symm $ sameside_trans hgL hfL) egN) $
-    sameside_of_len_lt_tri dN fN fO gO tri_def ab_de ac_df tri_gdf egN ab_le_ac tri_fge dgf_dfg
+    sameside_of_len_lt_tri dN fN fO gO tri_def tri_gdf egN (by linarith) tri_fge dgf_dfg
   have ef_eg := len_lt_of_ang_lt tri_fge (by linperm[zero_lt_angle_of_tri $ tri321 tri_def])
   rwa[bc_eg]
 
@@ -1431,6 +1447,12 @@ theorem para_trans (MN : M ≠ N) (paraLM : para L M) (paraLN : para L N) : para
     (para_symm paraLN)
   linarith[zero_lt_angle_of_tri $ triangle_of_ne_online (ne_of_sameside xO baO).symm int.2 bN
     (not_online_of_sameside $ sameside_symm yaN)]
+
+/--Euclid I.30, a corollary, a contrapositive of sorts of I.30-/
+theorem lines_inter_of_para (LM : L ≠ M) (aL : OnLine a L) (aM : OnLine a M) (paraMN : para M N) : 
+    ∃ b, OnLine b L ∧ OnLine b N := by
+  by_cases paraLN : para L N; have := para_trans LM (para_symm paraLN) (para_symm paraMN) a; tauto
+  unfold para at paraLN; push_neg at paraLN; exact paraLN
 
 /--Euclid I.31, through a point off a line there exists a parallel line-/
 theorem para_of_offline (aM : ¬OnLine a M) : ∃ N, OnLine a N ∧ para M N := by
@@ -1612,9 +1634,8 @@ theorem para_of_tri_sameside_area_far (ad : a ≠ d) (tri_abc : triangle a b c) 
   by_contra paraLM
   rcases line_of_pts e d with ⟨O, eO, dO⟩
   rcases para_of_offline $ online_1_of_triangle bL cL tri_abc with ⟨N, aN, paraLN⟩
-  by_cases paraNO : para N O; have paraLO := para_trans (ne_line_of_online dO $ online_1_of_triangle eL 
-    fL tri_def) (para_symm paraLN) paraNO e; tauto
-  rcases not_para paraNO with ⟨g, gN, gO⟩
+  rcases lines_inter_of_para (ne_line_of_online dO $ online_1_of_triangle eL 
+    fL tri_def).symm eO eL paraLN with ⟨g, gO, gN⟩
   have abc_gef := area_eq_of_tri_far aN gN bL cL eL fL bc_ef $ para_symm paraLN
   by_cases Begd : B e g d; exact tri_sum_contra eO dO gO (online_3_of_triangle dO eO tri_def) 
     (by linperm) Begd
@@ -1644,16 +1665,14 @@ theorem pgram_of_angle_tri (hi : h ≠ i) (tri_abc : triangle a b c) (tri_def : 
     area j i l + area l m j = area a b c ∧ SameSide n l L  ∧ angle l i j = angle d e f := by
   rcases bisect_segment (ne_23_of_tri tri_abc) with ⟨g, Bbgc, bg_cg⟩
   rcases length_eq_B_of_ne_four hi (ne_12_of_B Bbgc) with ⟨j, Bhij, bg_ij⟩
-  have tri_inq := len_lt_of_tri $ tri132_of_tri123 $ tri_of_B_tri (B_symm Bbgc) (tri132_of_tri123 tri_abc)
-  rcases triangle_of_ineq iL (online_3_of_B Bhij hL iL) nL (by linperm : length i j < length b a + length 
-    g a) (by linperm) (by linperm) with ⟨k, ik_ba, jk_ga, knL⟩
+  rcases triangle_copy (tri321 $ tri_of_B_tri (B_symm Bbgc) (tri132_of_tri123 tri_abc)) iL 
+    (online_3_of_B Bhij hL iL) nL bg_ij.symm with ⟨k, ik_ba, jk_ga, knL⟩
   rcases para_of_offline (not_online_of_sameside knL) with ⟨N, kN, paraLN⟩ 
   rcases angle_copy (ne_23_of_B Bhij) iL (online_3_of_B Bhij hL iL) (not_online_of_sameside knL) 
     (tri231_of_tri123 tri_def) with ⟨o, oij_def, okL⟩
   rcases line_of_pts i o with ⟨M', iM', oM'⟩
-  by_cases paraNM : para N M'; have := para_trans (ne_line_of_online oM' 
-    (not_online_of_sameside okL)).symm paraNM (para_symm paraLN) i; tauto --turn into API
-  rcases not_para paraNM with ⟨l, lN, lM'⟩
+  rcases lines_inter_of_para (ne_line_of_online oM' (not_online_of_sameside okL)).symm iM' iL paraLN
+    with ⟨l, lM', lN⟩
   rcases paragram_of_tri_para (ne_32_of_B Bhij) (online_3_of_B Bhij hL iL) iL lN paraLN 
     with ⟨m, M, O, pgram⟩; have ⟨_, lN, lM, iM, iL, _⟩ := pgram
   rcases line_of_pts b c with ⟨Q, bQ, cQ⟩
@@ -1699,15 +1718,6 @@ theorem square_of_len (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) (fL : �
     aL bL paraLM) dbN]) bca_cbd, para_symm paraLM⟩, by splitAll; repeat linperm,
     diffside_of_B_sameside Beac aL efL⟩
 
-lemma right_of_online_right (bd : b ≠ d) (tri_abc : triangle a b c) (bL : OnLine b L) (cL :
-    OnLine c L) (dL : OnLine d L) (abd : angle a b d = rightangle) : angle a b c = rightangle := by
-  rcases line_of_pts a b with ⟨M, aM, bM⟩
-  by_cases cdM : SameSide c d M;
-    linperm[angle_extension_of_sameside (ne_12_of_tri tri_abc) bM ⟨L, bL, cL, dL⟩ cdM]
-  linperm[two_right_of_flat_angle (B_of_col_diffside ⟨L, cL, bL, dL⟩ bM ⟨online_3_of_triangle aM
-    bM tri_abc, offline_of_online_offline bd aM bM bL dL $ online_1_of_triangle bL cL tri_abc,
-    cdM⟩) cL bL (online_1_of_triangle bL cL tri_abc)]
-
 lemma ne_of_perp_ineq (Bxdy : B x d y) (tri_abc : triangle a b c) (bL : OnLine b L)
     (cL : OnLine c L) (xL : OnLine x L) (cab_le_ra : rightangle ≤ angle c a b)
     (ady : angle a d y = rightangle) : b ≠ d := by
@@ -1725,13 +1735,6 @@ lemma not_B_of_right_le_right (tri_abc : triangle a b c) (col_bcd : colinear b c
     perma[triangle_of_ne_online (ne_13_of_B Bdbc) dL cL (online_1_of_triangle bL cL tri_abc)]) :
     0 < angle d c a), angle_extension_of_B (ne_of_online dL $ online_1_of_triangle bL cL
     tri_abc) Bdbc]
-
-lemma inter_sq_of_perp (Bbxc : B b x c) (aX : OnLine a X) (xX : OnLine x X)
-    (pgram1 : paragram b c d e L O P Q) (adL : diffside a d L) : ∃ l, OnLine l X ∧ OnLine l P := by
-  have ⟨bL, cL, _, _, _, _, _, _, paraLP, _⟩ := pgram1
-  by_cases paraXP : para X P; have := online_2_of_B Bbxc bL cL; have := para_trans
-    (ne_line_of_online aX adL.1) (para_symm paraLP) (para_symm paraXP) x; tauto
-  unfold para at paraXP; push_neg at paraXP; exact paraXP
 
 /--A big enough angle has its perpendicular on a triangle side-/
 lemma right_B_of_le_right (tri_abc : triangle a b c) (cab_le_ra : rightangle ≤ angle c a b) :
@@ -1788,7 +1791,8 @@ theorem pythagoras (tri_abc : triangle a b c) (ang : angle c a b = rightangle)
   have Bbah := flat_of_two_right_angle (ne_13_of_tri tri_abc) aM cM bhM (by linperm)
   rcases right_B_of_le_right tri_abc (by linarith) with ⟨x, axb, axc, Bbxc⟩
   rcases line_of_pts a x with ⟨X, aX, xX⟩
-  rcases inter_sq_of_perp Bbxc aX xX pgram1 adL with ⟨l, lX, lP⟩
+  rcases lines_inter_of_para (ne_line_of_online aX adL.1).symm xX (online_2_of_B Bbxc bL cL) paraLP
+    with ⟨l, lX, lP⟩
   have paraQX := para_of_ang_eq (ne_12_of_B Bbxc) eQ bQ bL (online_2_of_B Bbxc bL cL) xX aX
     (diffside_of_sameside_diffside (sameside_of_para_online' dP eP paraLP) (diffside_symm adL))
     (by linperm[angle_extension_of_B (ne_of_para bL eP paraLP) Bbxc])
