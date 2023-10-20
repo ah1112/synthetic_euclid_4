@@ -1762,46 +1762,59 @@ theorem pgram_complement_eq (Bakc : B a k c) (hM : OnLine h M) (hQ : OnLine h Q)
     (ne_of_para dN aL $ para_symm paraLN) dO aO (offline_of_para' cM paraOM)
   linperm
 
+theorem lines_inter_of_pgram (Babe : B a b e) (Bfgh : B f g h) (pgram1 : paragram f g b e Q P L R) 
+    (pgram2 : paragram a b g h L P Q M) (bS : OnLine b S) (hS : OnLine h S) (paraMR : para M R) : 
+    ∃ k, OnLine k S ∧ OnLine k R ∧ B h b k ∧ ¬OnLine k Q := by
+  have ⟨fQ, _, _, _, _, _, eR, fR, paraQL, paraPR⟩ := pgram1
+  have ⟨aL, bL, bP, gP, _, hQ, hM, _, _, paraPM⟩ := pgram2
+  rcases lines_inter_of_para (ne_line_of_online bS (offline_of_para bP paraPM)).symm hS hM paraMR
+    with ⟨k, kS, kR⟩
+  exact ⟨k, kS, kR, B_symm $ B_of_B_para_para (B_symm Bfgh) hM hS gP fR bS bP kS kR (para_symm 
+    paraPR) (para_symm paraMR) paraPM, online_2_of_triangle fQ hQ $ triangle_of_ne_online 
+    (ne_13_of_B $ B_of_B_B_para Babe Bfgh aL bL hM hS hQ bS bP gP eR fR fQ kS kR paraPR paraQL 
+    paraPM paraMR) fR kR (offline_of_para hM paraMR)⟩
+
+theorem lines_inter_of_pgram' (Babe : B a b e) (Bfgh : B f g h) (pgram1 : paragram f g b e Q P L R)
+    (pgram2 : paragram a b g h L P Q M) (bS : OnLine b S) (hS : OnLine h S) (kS : OnLine k S) 
+    (kR : OnLine k R) (kN : OnLine k N) (paraMR : para M R) (paraLN : para L N) (paraQN : para Q N)
+    : ∃ m, OnLine m P ∧ OnLine m N ∧ B g b m := by
+  have ⟨fQ, gQ, _, _, _, eL, eR, fR, paraQL, paraPR⟩ := pgram1
+  have ⟨aL, bL, bP, gP, _, hQ, hM, _, _, paraPM⟩ := pgram2
+  rcases lines_inter_of_para (ne_line_of_online hQ (offline_of_para' hM paraPM)) gP gQ paraQN 
+    with ⟨m, mP, mN⟩
+  exact ⟨m, mP, mN, B_of_sq (B_of_B_B_para Babe Bfgh aL bL hM hS hQ bS bP gP eR fR 
+    fQ kS kR paraPR paraQL paraPM paraMR) eL bL bP paraQL (para_symm paraLN) ⟨fR, kR, kN, mN, mP, 
+    gP, gQ, fQ, para_symm paraPR, para_symm paraQN⟩⟩
+  
 /--Euclid I.44, make a parallelogram on a segment with a prescribed area and angle-/
 theorem pgram_seg_of_tri_ang (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) 
     (tri_nop : triangle n o p) (tri_qrs : triangle q j s) (iL : ¬OnLine i L) : 
-    ∃ l m M N O, paragram a b m l L M N O ∧ area l b a + area l b m = area n o p ∧ angle a b m = 
-    angle q j s ∧ diffside m i L := by
-  rcases pgram_of_angle_tri ab tri_nop tri_qrs aL bL iL 
-    with ⟨e, g, f, P, Q, R, Babe, pgram1, pgram_tri, igL, gbe_qjs⟩
-  have ⟨fQ, gQ, gP, bP, bL, eL, eR, fR, paraQL, paraPR⟩ := pgram1
+    ∃ l m M N O, paragram a b m l L M N O ∧ area l b a + area l b m = area n o p ∧ 
+    angle a b m = angle q j s ∧ diffside m i L := by
+  rcases pgram_of_angle_tri ab tri_nop tri_qrs aL bL iL with ⟨e, g, f, P, Q, R, Babe, pgram1, 
+    pgram_tri, igL, gbe_qjs⟩; have ⟨fQ, gQ, gP, bP, bL, eL, eR, fR, paraQL, paraPR⟩ := pgram1
   rcases length_eq_B_of_ne_four (ne_of_para gP fR paraPR).symm ab with ⟨h, Bfgh, ab_gh⟩
   rcases line_of_pts h a with ⟨M, hM, aM⟩
   rcases line_of_pts h b with ⟨S, hS, bS⟩
   have pgram2 := pgram_of_para_len_eq aL bL bP gP gQ (online_3_of_B Bfgh fQ gQ) hM aM bS hS 
     (diffside_of_B_B_para Babe Bfgh aL bL hS bS bP gP eR fR fQ gQ paraPR paraQL) 
-    (para_symm paraQL) (by linperm)
-  have ⟨aL, bL, bP, gP, gQ, hQ, hM, aM, _, paraPM⟩ := pgram2
+    (para_symm paraQL) (by linperm); have ⟨aL, bL, bP, gP, gQ, hQ, hM, aM, _, paraPM⟩ := pgram2
   have paraMR := para_trans (ne_line_of_online aM $ not_online_of_sameside $ sameside_symm $
     sameside_of_B_not_online_2 (B_symm Babe) eR (offline_of_para bP paraPR)).symm paraPM paraPR
-  rcases lines_inter_of_para (ne_line_of_online bS (offline_of_para bP paraPM)).symm hS hM paraMR
-    with ⟨k, kS, kR⟩
-  rcases para_of_offline (online_2_of_triangle fQ hQ $ triangle_of_ne_online (ne_13_of_B $ 
-    B_of_B_B_para Babe Bfgh aL bL hM hS hQ bS bP gP eR fR fQ kS kR paraPR paraQL paraPM paraMR) fR 
-    kR (offline_of_para hM paraMR)) with ⟨N, kN, paraQN⟩
+  rcases lines_inter_of_pgram Babe Bfgh pgram1 pgram2 bS hS paraMR with ⟨k, kS, kR, Bhbk, kQ⟩
+  rcases para_of_offline kQ with ⟨N, kN, paraQN⟩
   rcases lines_inter_of_para (ne_line_of_online gQ (offline_of_para gP paraPM)) hM hQ paraQN 
     with ⟨l, lM, lN⟩
-  rcases lines_inter_of_para (ne_line_of_online hQ (offline_of_para' hM paraPM)) gP gQ paraQN 
-    with ⟨m, mP, mN⟩
-  have pgram_pgram := pgram_complement_eq (B_symm $ B_of_B_para_para (B_symm Bfgh) hM hS gP fR bS
-     bP kS kR (para_symm paraPR) (para_symm paraMR) paraPM) eR eL mN mP ⟨lM, hM, hQ, fQ, fR, kR, 
-     kN, lN, paraMR, paraQN⟩ ⟨aM, hM, hQ, gQ, gP, bP, bL, aL, para_symm paraPM, paraQL⟩
   have paraLN := para_trans (ne_line_of_online kN (diffside_of_B_para_para Bfgh bL hQ hM hS gP fR 
     bS bP kS kR paraPR paraMR paraPM paraQL).2.1) paraQL paraQN
-  have gbe_mba := vertical_angle (B_of_sq (B_of_B_B_para Babe Bfgh aL bL hM hS hQ bS bP gP eR fR 
-    fQ kS kR paraPR paraQL paraPM paraMR) eL bL bP paraQL (para_symm paraLN) ⟨fR, kR, kN, mN, mP, 
-    gP, gQ, fQ, para_symm paraPR, para_symm paraQN⟩) (B_symm Babe) gP bP (offline_of_para' eR 
-    paraPR)
+  rcases lines_inter_of_pgram' Babe Bfgh pgram1 pgram2 bS hS kS kR kN paraMR paraLN paraQN
+    with ⟨m, mP, mN, Bgbm⟩
+  have pgram_pgram := pgram_complement_eq Bhbk eR eL mN mP ⟨lM, hM, hQ, fQ, fR, kR, 
+     kN, lN, paraMR, paraQN⟩ ⟨aM, hM, hQ, gQ, gP, bP, bL, aL, para_symm paraPM, paraQL⟩
+  have gbe_mba := vertical_angle Bgbm (B_symm Babe) gP bP (offline_of_para' eR paraPR)
   exact ⟨l, m, P, N, M, ⟨aL, bL, bP, mP, mN, lN, lM, aM, paraLN, paraPM⟩, by 
     linperm[paragram_area_comm pgram1], by linperm, diffside_symm $ diffside_of_sameside_diffside 
-    (sameside_symm igL) $ diffside_of_B_offline' (B_of_sq (B_of_B_B_para Babe Bfgh aL bL hM hS hQ 
-    bS bP gP eR fR fQ kS kR paraPR paraQL paraPM paraMR) eL bL bP paraQL (para_symm paraLN) ⟨fR, 
-    kR, kN, mN, mP, gP, gQ, fQ, para_symm paraPR, para_symm paraQN⟩) bL (offline_of_para gQ paraQL)⟩
+    (sameside_symm igL) $ diffside_of_B_offline' Bgbm bL (offline_of_para gQ paraQL)⟩
 
 /--Euclid I.46, constructing a square out of a segment-/
 theorem square_of_len (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L) (fL : ¬OnLine f L) :
