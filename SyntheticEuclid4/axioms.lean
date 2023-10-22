@@ -51,7 +51,7 @@ rightangle : ℝ
 area : Point → Point → Point → ℝ
 
 /--From a set of points getting one additional one-/
-more_pts : ∀ (S : Set Point), S.Finite → ∃ a, a ∉ S
+more_pts : ∀ (S : Set Point), S.Finite → ∃ a, a ∉ S 
 /--Interpolating a segment by an arbitrary amount-/
 pt_B_of_ne : ∀ {b c}, b ≠ c → ∃ a, B b a c
 /--Extending a segment by an arbitrary amount-/
