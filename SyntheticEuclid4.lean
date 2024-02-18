@@ -878,6 +878,11 @@ lemma tri_sum_contra (bO : OnLine b O) (dO : OnLine d O) (eO : OnLine e O) (cO :
   linperm [(area_add_iff_B (ne_12_of_B Bbed) (ne_23_of_B Bbed) (ne_31_of_B Bbed) bO eO dO cO).mp
       Bbed]
 
+theorem zero_lt_area_tri (ab : a ≠ b)
+    (aL : OnLine a L) (bL : OnLine b L) (cL : ¬OnLine c L) : 0 < area a b c := by
+  have arz := (@area_zero_iff_online _ a b c L ab aL bL).mp
+  contrapose! arz; exact ⟨by linarith[area_nonneg a b c], cL⟩
+
 theorem ne_of_para_para (ab : a ≠ b) (aM : OnLine a M) (aN : OnLine a N) (bN : OnLine b N)
     (cM : OnLine c M) (paraLM : para L M) (paraLN : ¬para L N) : b ≠ c := fun bc => paraLN (by rwa
   [line_unique_of_pts ab aM (by rwa[←bc] at cM) aN bN] at paraLM)
@@ -923,6 +928,21 @@ theorem B_of_B_B_para (Babe : B a b e) (Bfgh : B f g h) (aL : OnLine a L) (bL : 
     (paraMR : para M R) : B f e k := B_of_col_diffside ⟨R, fR, eR, kR⟩ (online_3_of_B Babe aL bL)
   $ diffside_of_sameside_diffside (sameside_of_para_online hQ fQ paraQL) $ diffside_of_B_para_para
     Bfgh bL hQ hM hS gP fR bS bP kS kR paraPR paraMR paraPM paraQL
+
+theorem square_eq_of_length_eq (sq1 : square a b b' a') (sq2 : square c d d' c')
+    (pgram1 : paragram a b b' a' L M N O) (pgram2 : paragram c d d' c' P Q R S)
+    (len_eq : length a b = length c d) :
+    area a b a' + area a' b b' = area c d c' + area c' d d' := by
+  unfold square at sq1 sq2
+  have bisect_sq1 := area_eq_of_SSS (by linarith : length a b = length b' a')
+    (by linperm : length a a' = length b' b) (length_symm b a')
+  have bisect_sq2 := area_eq_of_SSS (by linarith : length c d = length d' c')
+    (by linperm : length c c' = length d' d) (length_symm d c')
+  have ba_dc := (sas (by linperm : length a b = length c d)
+    (by linperm : length a a' = length c c') (by linperm)).1
+  have key_area := area_eq_of_SSS (by linperm : length a b = length c d)
+    (by linperm : length a a' = length c c') ba_dc
+  linperm
 ---------------------------------------- Book I Refactored ---------------------------------------
 /-- Euclid I.1, construction of two equilateral triangles -/
 theorem iseqtri_iseqtri_diffside_of_ne (ab : a ≠ b) : ∃ c d L, OnLine a L ∧
@@ -1077,6 +1097,15 @@ theorem perpendicular_of_online' (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b
   rcases length_eq_B_of_ne ab ab.symm with ⟨d, Babd, _⟩
   rcases perpendicular_of_online Babd aL bL fL with ⟨c, cfL, right, _⟩
   exact ⟨c, cfL, by perma[right]⟩
+
+/-- Euclid I.11, Obtaining a perpendicular angle from a point on a line -/
+theorem perpendicular_of_online'' (ab : a ≠ b) (aL : OnLine a L) (bL : OnLine b L)
+    (fL : ¬OnLine f L) : ∃ c, diffside c f L ∧ angle a b c = rightangle := by
+  rcases length_eq_B_of_ne ab ab.symm with ⟨d, Babd, _⟩
+  rcases diffside_of_not_online fL with ⟨f', f'L, ff'L⟩
+  rcases perpendicular_of_online Babd aL bL f'L with ⟨c, cf'L, right, _⟩
+  exact ⟨c, diffside_of_sameside_diffside (sameside_symm cf'L) ⟨f'L, fL, not_sameside_symm ff'L⟩,
+    by perma[right]⟩
 
 /-- Euclid I.12, Obtaining perpendicular angles from a point off a line -/
 theorem perpendicular_of_not_online (aL : ¬OnLine a L) : ∃ c d e, B c e d ∧ OnLine c L ∧ OnLine d L
@@ -1351,7 +1380,7 @@ theorem ang_lt_of_ss_lt (tri_abc : triangle a b c) (tri_def : triangle d e f)
 theorem asa' (tri_abc : triangle a b c) (tri_def : triangle d e f) (ab_de : length a b = length d e)
     (bac_edf : angle b a c = angle e d f) (abc_def : angle a b c = angle d e f) :
     length a c = length d f ∧ length b c = length e f ∧ angle a c b = angle d f e := by
-  wlog df_le_ac : length d f ≤ length a c generalizing a b c d e f; have' := this tri_def tri_abc
+  wlog df_le_ac : length d f ≤ length a c generalizing a b c d e f; have := this tri_def tri_abc
     ab_de.symm bac_edf.symm abc_def.symm (by linarith); tauto
   by_cases ac_df : length a c = length d f; have := sas ab_de ac_df bac_edf; tauto
   rcases B_length_eq_of_ne_lt (ne_13_of_tri tri_def) $ Ne.lt_of_le (Ne.symm ac_df) df_le_ac
@@ -1989,4 +2018,80 @@ theorem pythagoras (tri_abc : triangle a b c) (ang : angle c a b = rightangle)
   have right_half := quad_area_comm (online_2_of_B Bbxc bL cL) cL cO dO dP lP
     (sameside_of_para_online (online_2_of_B Bbxc bL cL) cL paraLP)
     (sameside_of_para_online' dP lP paraLP) $ sameside_of_para_online' xX lX paraOX
+  linperm
+
+/--Lemma for I.48-/
+theorem length_eq_of_square_eq (sq1 : square a b b' a') (sq2 : square c d d' c')
+    (pgram1 : paragram a b b' a' L M N O) (pgram2 : paragram c d d' c' P Q R S)
+    (areas_eq : area a b a' + area a' b b' = area c d c' + area c' d d') :
+    length a b = length c d := by
+  by_contra len_nq
+  wlog len_lt : length c d ≤ length a b generalizing a b c d a' b' c' d' L M N O P Q R S;
+    exact this sq2 sq1 pgram2 pgram1 areas_eq.symm (by tauto) (by linarith)
+  have ⟨aL, bL, bM, b'M, b'N, a'N, a'O, aO, paraLN, paraMO⟩ := pgram1
+  have ⟨cP, dP, dQ, d'Q, d'R, c'R, c'S, cS, paraPR, paraQS⟩ := pgram2
+  unfold square at sq1 sq2
+  have bisect_sq1 := area_eq_of_SSS (by linarith : length a b = length b' a')
+    (by linperm : length a a' = length b' b) (length_symm b a')
+  have bisect_sq2 := area_eq_of_SSS (by linarith : length c d = length d' c')
+    (by linperm : length c c' = length d' d) (length_symm d c')
+  have cd_lt_ab := lt_of_le_of_ne len_lt (by tauto)
+  rcases B_length_eq_of_ne_lt (ne_of_para' dQ cS paraQS) (lt_of_le_of_ne len_lt (by tauto))
+    with ⟨e, Baeb, ae_cd⟩
+  rcases B_length_eq_of_ne_lt (ne_of_para cP c'R paraPR) (by linperm : length c c' < length a a')
+    with ⟨f, Bafa, af_cc⟩
+  have aab_area_split := area_add_of_B Baeb (tri312 $ triangle_of_ne_online
+    (ne_of_para' bM aO paraMO) aL bL (offline_of_para' a'N paraLN))
+  have tri_eaa := triangle_of_ne_online (ne_21_of_B Baeb)
+    (online_2_of_B Baeb aL bL) aL (offline_of_para' a'N paraLN)
+  have eea_area_split := area_add_of_B Bafa tri_eaa
+  have fe_cd := (sas (by linperm : length a f = length c c') (by linperm : length a e = length c d)
+    (by linperm[angle_extension_of_B (ne_12_of_B Baeb) Bafa, angle_extension_of_B (ne_13_of_B Bafa)
+                 Baeb])).1
+  have afe_ccd := area_eq_of_SSS (by linperm : length a f = length c c')
+    (by linperm : length a e = length c d) fe_cd
+  have nza := zero_lt_area_tri (ne_23_of_B Bafa) (online_2_of_B Bafa aO a'O) a'O
+    (online_1_of_triangle aO a'O tri_eaa)
+  linperm[zero_lt_area_tri (ne_23_of_B Baeb) (online_2_of_B Baeb aL bL) bL
+          (offline_of_para' a'N paraLN)]
+
+/-- Euclid I.48, the converse to the Pythagorean theorem-/
+theorem pythagoras_converse (tri_abc : triangle a b c) (sq1 : square c d e b)
+    (sq2 : square a g f b) (sq3 : square a h k c) (pgram1 : paragram b c d e L O P Q)
+    (pgram2 : paragram g a b f T N R S) (pgram3 : paragram h a c k U M W V) (adL : diffside a d L)
+    (bhM : diffside b h M) (cgN : diffside c g N)
+    (sq_sum : area b c d + area b d e = area a b f + area a g f + area a h k + area a c k) :
+    angle b a c = rightangle := by
+  have ⟨hU, aU, aM, cM, cW, kW, kV, hV, paraUW, paraMV⟩ := pgram3
+  have ⟨gT, aT, aN, bN, bR, fR, fS, gS, paraTR, paraNS⟩ := pgram2
+  have ⟨bL, cL, cO, dO, dP, eP, eQ, bQ, paraLP, paraOQ⟩ := pgram1
+  rcases length_eq_B_of_ne_four (ne_21_of_tri tri_abc) (ne_21_of_tri tri_abc)
+    with ⟨e', Bbae, ba_ae⟩
+  rcases perpendicular_of_online'' (ne_31_of_tri tri_abc) cM aM (offline_of_B_offline (B_symm Bbae)
+    (online_3_of_B Bbae bN aN) aN aM cM (online_3_of_triangle aN bN tri_abc))
+    with ⟨d', d'eL, cad'_ra⟩
+  rcases length_eq_B_of_ne_four (ne_of_online aM d'eL.1).symm (ne_21_of_tri tri_abc)
+    with ⟨d'', Bd'ad, ba_ad⟩
+  rcases line_of_pts a d' with ⟨M', aM', d'M'⟩
+  have cM' := online_2_of_triangle aM' d'M' $
+    triangle_of_ne_online (ne_13_of_tri tri_abc) aM cM d'eL.1
+  have ang_split := two_right_of_flat_angle Bd'ad d'M' aM' cM'
+  have tri_adc := triangle_of_ne_online (ne_23_of_B Bd'ad) aM' (online_3_of_B Bd'ad d'M' aM') cM'
+  rcases pythagoras_construct tri_adc with ⟨d1, e1, f1, g1, h1, k1, L1, M1, N1, O1, P1, Q1, R1,
+    S1, T1, U1, V1, W1, sq4, sq5, sq6, pgram4, pgram5, pgram6, ad1L1, dh1M1, cg1N1⟩
+  have sq_sum2 := pythagoras tri_adc (by linperm) sq4 sq5 sq6 pgram4 pgram5 pgram6 ad1L1 dh1M1 cg1N1
+  have ⟨g1T, aT1, aN1, dN1, dR1, f1R1, f1S1, g1S1, paraT1R1, paraN1S1⟩ := pgram5
+  have ⟨hU1, aU1, aM1, cM1, cW1, kW1, kV1, hV1, paraU1W1, paraM1V1⟩ := pgram6
+  have ⟨dL1, cL1, cO1, d1O1, d1P1, eP1, eQ1, dQ1, paraL1P1, paraO1Q1⟩ := pgram4
+  unfold square at sq1 sq2 sq3 sq4 sq5 sq6
+  have sq_eq1 := square_eq_of_length_eq sq2 sq5 ⟨aT, gT, gS, fS, fR, bR, bN, aN, paraTR, para_symm
+    paraNS⟩ ⟨aT1, g1T, g1S1, f1S1, f1R1, dR1, dN1, aN1, paraT1R1, para_symm paraN1S1⟩ (by linperm)
+  have sq_eq2 := square_eq_of_length_eq sq3 sq6 ⟨aU, hU, hV, kV, kW, cW, cM, aM, paraUW, para_symm
+    paraMV⟩ ⟨aU1, hU1, hV1, kV1, kW1, cW1, cM1, aM1, paraU1W1, para_symm paraM1V1⟩ (by linperm)
+  have cd_cd1 := length_eq_of_square_eq sq1 sq4 ⟨cO, dO, dP, eP, eQ, bQ, bL, cL, paraOQ, para_symm
+    paraLP⟩ ⟨cO1, d1O1, d1P1, eP1, eQ1, dQ1, dL1, cL1, paraO1Q1, para_symm paraL1P1⟩
+    (by linperm[paragram_area_comm pgram2, paragram_area_comm pgram5, paragram_area_comm pgram3,
+                paragram_area_comm pgram6])
+  have cad_cab := (sss (rfl : length c a = length c a) (by linperm : length a d'' = length a b)
+    (by linperm)).1
   linperm
