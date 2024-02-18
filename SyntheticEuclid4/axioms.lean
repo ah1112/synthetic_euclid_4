@@ -51,7 +51,7 @@ rightangle : ℝ
 area : Point → Point → Point → ℝ
 
 /--From a set of points getting one additional one-/
-more_pts : ∀ (S : Set Point), S.Finite → ∃ a, a ∉ S 
+more_pts : ∀ (S : Set Point), S.Finite → ∃ a, a ∉ S
 /--Interpolating a segment by an arbitrary amount-/
 pt_B_of_ne : ∀ {b c}, b ≠ c → ∃ a, B b a c
 /--Extending a segment by an arbitrary amount-/
@@ -194,9 +194,9 @@ angle_add_iff_sameside : ∀ {a b c d L M}, a ≠ b → a ≠ c → OnLine a L �
 angle_eq_iff_rightangle : ∀ {a b c d L}, OnLine a L → OnLine b L → ¬OnLine d L → B a c b →
   (angle a c d = angle d c b ↔ angle a c d = rightangle)
 /--A condition to extend angles in a predictable way-/
-angle_extension : ∀ {a b c a1 b1 c1 L M}, b ≠ a → b1 ≠ a → c ≠ a → c1 ≠ a → OnLine a L →
+angle_extension : ∀ {a b c b1 c1 L M}, b ≠ a → b1 ≠ a → c ≠ a → c1 ≠ a → OnLine a L →
   OnLine b L → OnLine b1 L → OnLine a M → OnLine c M → OnLine c1 M → ¬B b a b1 → ¬B c a c1 →
-  angle b a c = angle b1 a1 c1
+  angle b a c = angle b1 a c1
 /--The unparallel postulate-/
 unparallel_postulate : ∀ {a b c d L M N}, b ≠ c → OnLine a L → OnLine b L →
   OnLine b M → OnLine c M → OnLine c N → OnLine d N →  SameSide a d M → angle a b c +
