@@ -319,11 +319,16 @@ theorem rightangle_of_angle_eq (Babc : B a b c) (aL : OnLine a L) (cL : OnLine c
 theorem diffside_of_not_online' (aL : ¬OnLine a L) : ∃ b, diffside a b L := by
   rcases diffside_of_not_online aL with ⟨b, bL, abL⟩; exact ⟨b, aL, bL, abL⟩
 
-theorem pts_line_circle_of_not_sameside (aα : CenterCircle a α) (bα : OnCircle b α)
-    (abL : ¬SameSide a b L) : ∃ c d, c ≠ d ∧
+theorem linecircleinter_of_diffside (aα : CenterCircle a α) (bα : OnCircle b α)
+    (abL : diffside a b L) : LineCircleInter L α := by
+  obtain ⟨p, pL, Bapb⟩ := pt_B_of_diffside abL
+  obtain ⟨-, pb_pos, -, hsum⟩ := length_sum_perm_of_B Bapb
+  exact linecircleinter_of_inside_online pL (incirc_of_lt aα bα (by linarith))
+
+theorem pts_line_circle_of_diffside (aα : CenterCircle a α) (bα : OnCircle b α)
+    (abL : diffside a b L) : ∃ c d, c ≠ d ∧
     OnLine c L ∧ OnLine d L ∧ OnCircle c α ∧ OnCircle d α :=
-  pts_of_linecircleinter $ linecircleinter_of_not_sameside abL
-  (by right; exact inside_circle_of_center aα) $ by left; exact bα
+  pts_of_linecircleinter $ linecircleinter_of_diffside aα bα abL
 
 theorem B_or_B_of_B_B (cd : c ≠ d) (Babc : B a b c) (Babd : B a b d) :
     B b c d ∨ B b d c := by
@@ -1112,7 +1117,7 @@ theorem perpendicular_of_not_online (aL : ¬OnLine a L) : ∃ c d e, B c e d ∧
     ∧ OnLine e L ∧ angle a e c = rightangle ∧ angle a e d = rightangle := by
   rcases diffside_of_not_online' aL with ⟨b, abL⟩
   rcases circle_of_ne (ne_of_diffside abL) with ⟨α, aα, bα⟩
-  rcases pts_line_circle_of_not_sameside aα bα abL.2.2 with ⟨c, d, cd, cL, dL, cα, dα⟩
+  rcases pts_line_circle_of_diffside aα bα abL with ⟨c, d, cd, cL, dL, cα, dα⟩
   rcases bisect_segment cd with ⟨e, Bced, ce_de⟩
   have aec_aed : angle a e c = angle a e d := (sss (length_eq_of_oncircle aα cα dα) ce_de rfl).2.2
   have rightangles : angle a e c = rightangle ∧ angle a e d = rightangle :=

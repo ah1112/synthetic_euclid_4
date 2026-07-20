@@ -149,9 +149,6 @@ not_sameside_of_circle_inter : ∀ {a b c d L α β},  c ≠ d → α ≠ β →
 lines_inter_of_not_sameside : ∀ {a b L M}, OnLine a M → OnLine b M → ¬SameSide a b L →
   LinesInter L M
 /--Condition for line circle intersection-/
-linecircleinter_of_not_sameside : ∀ {a b L α}, ¬SameSide a b L → OnCircle a α ∨ InCircle a α →
-  OnCircle b α ∨ InCircle b α → LineCircleInter L α
-/--Condition for line circle intersection-/
 linecircleinter_of_inside_online : ∀ {a L α}, OnLine a L → InCircle a α → LineCircleInter L α
 /--Condition for circle circle intersection-/
 circlesinter_of_inside_on_circle : ∀ {a b α β}, OnCircle b α → OnCircle a β → InCircle a α →
