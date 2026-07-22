@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Vladimir Sedlacek
 -/
 import SyntheticEuclid4.axioms
+import Mathlib.Tactic.Linarith
 
 /-!
 Tactics document for permutation of arguments
@@ -231,7 +232,9 @@ Usage:
 In each of these variants but the last, `perm` can be replaced with `perm only [perm_type]`, where
 `perm_type` is one of area, colinear, triangle, length, angle, sameside, diffside.
  -/
-syntax "perm" (" [" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
+syntax "perm" (" [" term,* "]")? ("only " "[" ident "]")? ("at " ident,* )? : tactic
+/-- `perm at *`, optionally restricted to a single permutation type -/
+syntax "perm" ("only " "[" ident "]")? "at " "*" : tactic
 macro_rules
   | `(tactic| perm) => `(tactic|
     (
@@ -276,8 +279,8 @@ elab_rules : tactic
   | `(tactic| havePerms $[[$args,*]]?) => withMainContext do
     let hyps := (← ((args.map (TSepArray.getElems)).getD {}).mapM (elabTerm ·.raw none)).toList
     for h in hyps do
-      haveExpr "this" h
-      evalTactic (← `(tactic| perm at $(mkIdent "this")))
+      haveExpr `this h
+      evalTactic (← `(tactic| perm at $(mkIdent `this)))
 
 macro_rules
   | `(tactic| perm [$args,*] ) => `(tactic| havePerms [$args,*]; perm)
@@ -349,8 +352,9 @@ elab "assumption_symm" : tactic => withMainContext do
 /-- ## Tactic perma
 Like `perm`, but also tries to exact assumptions and their symmetrized versions.
  -/
-syntax "perma" ("[" term,* "]")? ("only [" ident "]")? ("at " ident,* )? ("at *")? : tactic
-
+syntax "perma" ("[" term,* "]")? ("only " "[" ident "]")? ("at " ident,* )? : tactic
+/-- `perma at *`, optionally restricted to a single permutation type -/
+syntax "perma" ("only " "[" ident "]")? "at " "*" : tactic
 macro_rules
   | `(tactic| perma) => `(tactic| perm; try assumption; try assumption_symm)
   | `(tactic| perma at $h) => `(tactic| perm at $h; try exact $h; try exact Eq.symm $h)
@@ -384,11 +388,11 @@ macro_rules
 macro "splitAll" : tactic => `(tactic | repeat' constructor)
 
 /-- by_contra followed push_neg-/
-syntax "push_contra" binderIdent location: tactic
+syntax "push_contra" rcasesPatMed location : tactic
 
 macro_rules
-  | `(tactic| push_contra $h:binderIdent $l:location) => `(tactic|
+  | `(tactic| push_contra $h:rcasesPatMed $l:location) => `(tactic|
     (
       by_contra $h
-      push_neg $l
+      push_neg $l:location
     ))

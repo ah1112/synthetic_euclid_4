@@ -33,7 +33,7 @@ theorem online_ne_of_line L : ∃ a b, a ≠ b ∧ OnLine  a L ∧ OnLine  b L :
 
 theorem online_ne_of_point_line a L : ∃ b, a ≠ b ∧ OnLine b L := by
   rcases online_ne_of_line L with ⟨b, c, bc, bL, cL⟩
-  by_cases c = a; use b; rw[h] at bc; exact ⟨bc.symm, bL⟩
+  by_cases h : c = a; use b; rw[h] at bc; exact ⟨bc.symm, bL⟩
   use c; exact ⟨Ne.symm h, cL⟩
 
 lemma len_pos_of_nq (ab : a ≠ b) : 0 < length a b :=
@@ -1464,7 +1464,7 @@ theorem para_of_int_ang_sum (bc : b ≠ c) (aM : OnLine a M) (bM : OnLine b M) (
 theorem alternate_eq_of_para (aM : OnLine a M) (bM : OnLine b M) (bL : OnLine b L)
     (cL : OnLine c L) (cN : OnLine c N) (dN : OnLine d N) (adL : diffside a d L)
     (paraMN : para M N) : angle a b c = angle b c d := by
-  wlog bcd_lt_abc : angle b c d < angle a b c generalizing a b c d M N; by_cases angle a b c =
+  wlog bcd_lt_abc : angle b c d < angle a b c generalizing a b c d M N; by_cases h : angle a b c =
     angle b c d; exact h; push_neg at bcd_lt_abc; linperm[this dN cN cL bL bM aM (by perma)
     (para_symm paraMN) $ by linperm[lt_of_le_of_ne bcd_lt_abc h]]
   rcases length_eq_B_of_ne (ne_of_online' bL adL.1) (ne_of_online bL adL.1) with ⟨e, Babe, -⟩
@@ -1619,9 +1619,12 @@ lemma B_sameside_of_2_paragram (Badf : B a d f) (pgram1 : paragram a d c b L M N
 /--Euclid I.35, parallelograms sharing two parallels have the same area-/
 theorem area_eq_of_paragram (pgram1 : paragram a d c b L M N O) (pgram2 : paragram e f c b L P N Q):
     area a d b + area d b c = area e f b + area f b c := by
-  wlog Badf : B a d f generalizing a b c d e f L M N O P Q; by_cases df : d = f; rw [←df] at pgram2
-    ⊢; linperm [(len_ang_area_eq_of_parallelogram pgram1).2.2, (len_ang_area_eq_of_parallelogram
-    pgram2).2.2]; exact (this pgram2 pgram1 $ B_of_B_2_paragram df Badf pgram1 pgram2).symm
+  wlog Badf : B a d f generalizing a b c d e f L M N O P Q
+  by_cases df : d = f
+  rw [←df] at pgram2 ⊢
+  linperm [(len_ang_area_eq_of_parallelogram pgram1).2.2,
+    (len_ang_area_eq_of_parallelogram pgram2).2.2]
+  exact (this pgram2 pgram1 $ B_of_B_2_paragram df Badf pgram1 pgram2).symm
   have ⟨Bfea, deP⟩ := B_sameside_of_2_paragram Badf pgram1 pgram2
   have ⟨aL, dL, dM, cM, cN, bN, bO, aO, paraLN, paraMO⟩ := pgram1
   have ⟨eL, fL, fP, cP, _, _, bQ, eQ, _, paraPQ⟩ := pgram2
